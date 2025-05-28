@@ -9,19 +9,67 @@ import * as path from 'path'
 const logFile: string = path.join('/tmp', `claude-log-${Date.now()}.txt`)
 const logStream: fs.WriteStream = fs.createWriteStream(logFile, { flags: 'a' })
 
+let ptyProcess: pty.IPty | undefined
+let childProcess: ChildProcess | undefined
+let isRawMode = false
+
+const childAppPath = '/home/mike/.claude/local/claude'
+
+function cleanup() {
+  if (logStream && !logStream.destroyed) {
+    logStream.end()
+  }
+
+  if (isRawMode && process.stdin.isTTY) {
+    process.stdin.setRawMode(false)
+    isRawMode = false
+  }
+
+  if (ptyProcess) {
+    try {
+      ptyProcess.kill()
+    } catch (e) {}
+  }
+
+  if (childProcess) {
+    try {
+      childProcess.kill()
+    } catch (e) {}
+  }
+}
+
+process.on('SIGINT', () => {
+  cleanup()
+  process.exit(130)
+})
+
+process.on('SIGTERM', () => {
+  cleanup()
+  process.exit(143)
+})
+
+process.on('SIGHUP', () => {
+  cleanup()
+  process.exit(129)
+})
+
+process.on('exit', cleanup)
+
+process.on('uncaughtException', error => {
+  console.error('Uncaught exception:', error)
+  cleanup()
+  process.exit(1)
+})
+
 if (process.stdin.isTTY) {
   const args: string[] = process.argv.slice(2)
-  const ptyProcess: pty.IPty = pty.spawn(
-    '/home/mike/.claude/local/claude',
-    args,
-    {
-      name: 'xterm-color',
-      cols: process.stdout.columns || 80,
-      rows: process.stdout.rows || 30,
-      env: process.env,
-      cwd: process.env.PWD,
-    },
-  )
+  ptyProcess = pty.spawn(childAppPath, args, {
+    name: 'xterm-color',
+    cols: process.stdout.columns || 80,
+    rows: process.stdout.rows || 30,
+    env: process.env,
+    cwd: process.env.PWD,
+  })
 
   ptyProcess.onData((data: string) => {
     process.stdout.write(data)
@@ -34,17 +82,15 @@ if (process.stdin.isTTY) {
   })
 
   process.stdin.setRawMode(true)
+  isRawMode = true
+
   process.stdin.on('data', (data: Buffer) => {
     ptyProcess.write(data.toString())
   })
 
-  ptyProcess.onExit(() => {
-    logStream.end()
-    process.exit()
-  })
-
-  process.on('exit', () => {
-    process.stdin.setRawMode(false)
+  ptyProcess.onExit(exitCode => {
+    cleanup()
+    process.exit(exitCode.exitCode || 0)
   })
 
   process.stdout.on('resize', () => {
@@ -52,22 +98,18 @@ if (process.stdin.isTTY) {
   })
 } else {
   const args: string[] = process.argv.slice(2)
-  const claudeProcess: ChildProcess = spawn(
-    '/home/mike/.claude/local/claude',
-    args,
-    {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env: {
-        ...process.env,
-        FORCE_COLOR: '1',
-        TERM: process.env.TERM || 'xterm-256color',
-      },
+  childProcess = spawn(childAppPath, args, {
+    stdio: ['pipe', 'pipe', 'pipe'],
+    env: {
+      ...process.env,
+      FORCE_COLOR: '1',
+      TERM: process.env.TERM || 'xterm-256color',
     },
-  )
+  })
 
-  process.stdin.pipe(claudeProcess.stdin!)
+  process.stdin.pipe(childProcess.stdin!)
 
-  claudeProcess.stdout!.on('data', (data: Buffer) => {
+  childProcess.stdout!.on('data', (data: Buffer) => {
     process.stdout.write(data)
     const lines: string[] = data.toString().split('\n')
     lines.forEach((line: string) => {
@@ -77,10 +119,10 @@ if (process.stdin.isTTY) {
     })
   })
 
-  claudeProcess.stderr!.pipe(process.stderr)
+  childProcess.stderr!.pipe(process.stderr)
 
-  claudeProcess.on('exit', (code: number | null) => {
-    logStream.end()
+  childProcess.on('exit', (code: number | null) => {
+    cleanup()
     process.exit(code || 0)
   })
 }
