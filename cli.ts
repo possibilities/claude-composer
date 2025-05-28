@@ -64,6 +64,10 @@ process.on('uncaughtException', error => {
   process.exit(1)
 })
 
+function log(message: string) {
+  console.info(`\x1b[36m${message}\x1b[0m`)
+}
+
 const program = new Command()
 program
   .name('claude-composer-next')
@@ -75,9 +79,13 @@ program
 
 const options = program.opts()
 
+log('※ Getting ready to launch Claude CLI')
+
 if (options.showNotifications) {
-  console.log('Notifications enabled')
+  log('※ Notifications are enabled')
 }
+
+log('※ Ready, Passing off control to Claude CLI')
 
 const knownOptions = new Set<string>()
 program.options.forEach(option => {
