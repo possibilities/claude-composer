@@ -1,6 +1,6 @@
 export type PatternAction =
   | { type: 'input'; response: string | string[] }
-  | { type: 'log'; logFile: string }
+  | { type: 'log'; path: string }
 
 export interface PatternConfig {
   id: string

@@ -190,13 +190,13 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: 'ERROR',
-        action: { type: 'log', logFile: '/tmp/test.log' },
+        action: { type: 'log', path: '/tmp/test.log' },
       }
       matcher.addPattern(config)
       const matches = matcher.processData('ERROR: something went wrong')
       expect(matches).toHaveLength(1)
       expect(matches[0].action.type).toBe('log')
-      expect((matches[0].action as any).logFile).toBe('/tmp/test.log')
+      expect((matches[0].action as any).path).toBe('/tmp/test.log')
       expect(matches[0].matchedText).toBe('ERROR')
       expect(matches[0].bufferContent).toContain('ERROR: something went wrong')
     })

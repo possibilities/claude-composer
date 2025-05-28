@@ -6,20 +6,28 @@ import { spawn, ChildProcess } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 import { Command } from 'commander'
+import stripAnsi from 'strip-ansi'
 import { PatternMatcher } from './pattern-matcher'
 import { ResponseQueue } from './response-queue'
-import { PATTERNS, SETTINGS } from './patterns'
 
 let ptyProcess: pty.IPty | undefined
 let childProcess: ChildProcess | undefined
 let isRawMode = false
+let patternMatcher: PatternMatcher
+let responseQueue: ResponseQueue
 
-const patternMatcher = new PatternMatcher(SETTINGS.bufferSize)
-const responseQueue = new ResponseQueue()
+async function initializePatterns() {
+  // Load patterns from specified file or default
+  const patternsPath = process.env.CLAUDE_PATTERNS_PATH || './patterns'
+  const { PATTERNS, SETTINGS } = await import(patternsPath)
 
-PATTERNS.forEach(pattern => {
-  patternMatcher.addPattern(pattern)
-})
+  patternMatcher = new PatternMatcher(SETTINGS.bufferSize)
+  responseQueue = new ResponseQueue()
+
+  PATTERNS.forEach(pattern => {
+    patternMatcher.addPattern(pattern)
+  })
+}
 
 const childAppPath =
   process.env.CLAUDE_APP_PATH ||
@@ -81,101 +89,110 @@ function handlePatternMatches(data: string): void {
       const logEntry = {
         timestamp: new Date().toISOString(),
         patternId: match.patternId,
-        matchedText: match.matchedText,
-        bufferContent: match.bufferContent,
+        matchedText: stripAnsi(match.matchedText),
+        bufferContent: stripAnsi(match.bufferContent),
       }
-      fs.appendFileSync(match.action.logFile, JSON.stringify(logEntry) + '\n')
+      fs.appendFileSync(match.action.path, JSON.stringify(logEntry) + '\n')
     }
   }
 }
 
-const program = new Command()
-program
-  .name('claude-composer')
-  .description('Claude Composer CLI')
-  .option('--show-notifications', 'Show notifications')
-  .allowUnknownOption()
-  .argument('[args...]', 'Arguments to pass to `claude`')
-  .parse(process.argv)
+async function main() {
+  await initializePatterns()
 
-const options = program.opts()
+  const program = new Command()
+  program
+    .name('claude-composer')
+    .description('Claude Composer CLI')
+    .option('--show-notifications', 'Show notifications')
+    .allowUnknownOption()
+    .argument('[args...]', 'Arguments to pass to `claude`')
+    .parse(process.argv)
 
-log('※ Getting ready to launch Claude CLI')
+  const options = program.opts()
 
-if (options.showNotifications) {
-  log('※ Notifications are enabled')
-}
+  log('※ Getting ready to launch Claude CLI')
 
-log('※ Ready, Passing off control to Claude CLI')
+  if (options.showNotifications) {
+    log('※ Notifications are enabled')
+  }
 
-const knownOptions = new Set<string>()
-program.options.forEach(option => {
-  if (option.long) knownOptions.add(option.long)
-})
+  log('※ Ready, Passing off control to Claude CLI')
 
-const childArgs: string[] = []
-for (let i = 2; i < process.argv.length; i++) {
-  const arg = process.argv[i]
-  if (!knownOptions.has(arg)) {
-    childArgs.push(arg)
+  const knownOptions = new Set<string>()
+  program.options.forEach(option => {
+    if (option.long) knownOptions.add(option.long)
+  })
+
+  const childArgs: string[] = []
+  for (let i = 2; i < process.argv.length; i++) {
+    const arg = process.argv[i]
+    if (!knownOptions.has(arg)) {
+      childArgs.push(arg)
+    }
+  }
+
+  if (process.stdin.isTTY) {
+    ptyProcess = pty.spawn(childAppPath, childArgs, {
+      name: 'xterm-color',
+      cols: process.stdout.columns || 80,
+      rows: process.stdout.rows || 30,
+      env: process.env,
+      cwd: process.env.PWD,
+    })
+
+    responseQueue.setTargets(ptyProcess, undefined)
+
+    ptyProcess.onData((data: string) => {
+      process.stdout.write(data)
+      handlePatternMatches(data)
+    })
+
+    process.stdin.setRawMode(true)
+    isRawMode = true
+
+    process.stdin.on('data', (data: Buffer) => {
+      ptyProcess.write(data.toString())
+    })
+
+    ptyProcess.onExit(exitCode => {
+      cleanup()
+      process.exit(exitCode.exitCode || 0)
+    })
+
+    process.stdout.on('resize', () => {
+      ptyProcess.resize(process.stdout.columns || 80, process.stdout.rows || 30)
+    })
+  } else {
+    childProcess = spawn(childAppPath, childArgs, {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: {
+        ...process.env,
+        FORCE_COLOR: '1',
+        TERM: process.env.TERM || 'xterm-256color',
+      },
+    })
+
+    responseQueue.setTargets(undefined, childProcess)
+
+    process.stdin.pipe(childProcess.stdin!)
+
+    childProcess.stdout!.on('data', (data: Buffer) => {
+      const dataStr = data.toString()
+      process.stdout.write(data)
+      handlePatternMatches(dataStr)
+    })
+
+    childProcess.stderr!.pipe(process.stderr)
+
+    childProcess.on('exit', (code: number | null) => {
+      cleanup()
+      process.exit(code || 0)
+    })
   }
 }
 
-if (process.stdin.isTTY) {
-  ptyProcess = pty.spawn(childAppPath, childArgs, {
-    name: 'xterm-color',
-    cols: process.stdout.columns || 80,
-    rows: process.stdout.rows || 30,
-    env: process.env,
-    cwd: process.env.PWD,
-  })
-
-  responseQueue.setTargets(ptyProcess, undefined)
-
-  ptyProcess.onData((data: string) => {
-    process.stdout.write(data)
-    handlePatternMatches(data)
-  })
-
-  process.stdin.setRawMode(true)
-  isRawMode = true
-
-  process.stdin.on('data', (data: Buffer) => {
-    ptyProcess.write(data.toString())
-  })
-
-  ptyProcess.onExit(exitCode => {
-    cleanup()
-    process.exit(exitCode.exitCode || 0)
-  })
-
-  process.stdout.on('resize', () => {
-    ptyProcess.resize(process.stdout.columns || 80, process.stdout.rows || 30)
-  })
-} else {
-  childProcess = spawn(childAppPath, childArgs, {
-    stdio: ['pipe', 'pipe', 'pipe'],
-    env: {
-      ...process.env,
-      FORCE_COLOR: '1',
-      TERM: process.env.TERM || 'xterm-256color',
-    },
-  })
-
-  responseQueue.setTargets(undefined, childProcess)
-
-  process.stdin.pipe(childProcess.stdin!)
-
-  childProcess.stdout!.on('data', (data: Buffer) => {
-    const dataStr = data.toString()
-    process.stdout.write(data)
-    handlePatternMatches(dataStr)
-  })
-
-  childProcess.stderr!.pipe(process.stderr)
-
-  childProcess.on('exit', (code: number | null) => {
-    cleanup()
-    process.exit(code || 0)
-  })
-}
+main().catch(error => {
+  console.error('Failed to start CLI:', error)
+  process.exit(1)
+})

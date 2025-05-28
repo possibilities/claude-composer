@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { spawn, ChildProcess } from 'child_process'
 import * as path from 'path'
 import * as fs from 'fs'
@@ -13,6 +13,11 @@ describe('CLI Wrapper', () => {
 
   afterEach(() => {
     delete process.env.CLAUDE_APP_PATH
+    delete process.env.CLAUDE_PATTERNS_PATH
+    // Clean up test log file
+    try {
+      fs.unlinkSync('/tmp/test-pattern-match.log')
+    } catch {}
   })
 
   function runCli(
@@ -233,12 +238,17 @@ describe('CLI Wrapper', () => {
   describe('Pattern matching integration', () => {
     it('should trigger pattern response when child outputs "Welcome to"', async () => {
       const pty = await import('node-pty')
+      const testPatternsPath = path.join(__dirname, 'test-patterns')
 
       const ptyProcess = pty.spawn('pnpm', ['tsx', cliPath, '--welcome'], {
         name: 'xterm-color',
         cols: 80,
         rows: 30,
-        env: { ...process.env, CLAUDE_APP_PATH: mockAppPath },
+        env: {
+          ...process.env,
+          CLAUDE_APP_PATH: mockAppPath,
+          CLAUDE_PATTERNS_PATH: testPatternsPath,
+        },
       })
 
       let output = ''
@@ -246,14 +256,18 @@ describe('CLI Wrapper', () => {
         output += data
       })
 
-      // Wait for initial output
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Wait for initial output and pattern processing
+      await new Promise(resolve => setTimeout(resolve, 3000))
 
       // Check that welcome message was output
       expect(output).toContain('Welcome to Claude Code!')
 
+      // Check if the log pattern was triggered (verifies pattern matching works)
+      const logExists = fs.existsSync('/tmp/test-pattern-match.log')
+      expect(logExists).toBe(true)
+
       // Check that pattern response was received by mock app
-      expect(output).toContain('Received input: Claude Composer is ready!')
+      expect(output).toContain('Received input: Test response')
 
       ptyProcess.write('exit\r')
       await new Promise(resolve => {
