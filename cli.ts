@@ -77,7 +77,7 @@ function handlePatternMatches(data: string): void {
   const matches = patternMatcher.processData(data)
 
   for (const match of matches) {
-    responseQueue.enqueue(match.response, match.delay)
+    responseQueue.enqueue(match.response)
   }
 }
 

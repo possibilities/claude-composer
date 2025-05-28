@@ -86,7 +86,6 @@ describe('PatternMatcher', () => {
       expect(matches[0]).toEqual({
         patternId: 'test1',
         response: 'Error detected!',
-        delay: 0,
       })
     })
 
@@ -176,19 +175,6 @@ describe('PatternMatcher', () => {
       const matches = matcher.processData('I need help')
       expect(matches).toHaveLength(1)
       expect(matches[0].response).toEqual(['Sure!', 'How can I help?'])
-    })
-
-    it('should include delay in match result', () => {
-      const config: PatternConfig = {
-        id: 'test1',
-        pattern: 'wait',
-        response: 'Waiting...',
-        delay: 1000,
-      }
-      matcher.addPattern(config)
-      const matches = matcher.processData('please wait')
-      expect(matches).toHaveLength(1)
-      expect(matches[0].delay).toBe(1000)
     })
   })
 

@@ -2,7 +2,6 @@ export interface PatternConfig {
   id: string
   pattern: string | RegExp
   response: string | string[]
-  delay?: number
   cooldown?: number
   multiline?: boolean
   caseSensitive?: boolean
@@ -11,7 +10,6 @@ export interface PatternConfig {
 export interface MatchResult {
   patternId: string
   response: string | string[]
-  delay: number
 }
 
 export class CircularBuffer {
@@ -73,7 +71,6 @@ export class PatternMatcher {
         matches.push({
           patternId: id,
           response: pattern.config.response,
-          delay: pattern.config.delay || 0,
         })
         this.lastMatchTimes.set(id, now)
       }
