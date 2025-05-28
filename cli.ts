@@ -9,6 +9,7 @@ import { Command } from 'commander'
 import stripAnsi from 'strip-ansi'
 import * as yaml from 'js-yaml'
 import notifier from 'node-notifier'
+import * as readline from 'readline'
 import { PatternMatcher, MatchResult } from './pattern-matcher'
 import { ResponseQueue } from './response-queue'
 
@@ -119,6 +120,35 @@ process.on('uncaughtException', error => {
 
 function log(message: string) {
   console.info(`\x1b[36m${message}\x1b[0m`)
+}
+
+function warn(message: string) {
+  console.warn(`\x1b[33m${message}\x1b[0m`)
+}
+
+async function askYesNo(
+  question: string,
+  defaultNo: boolean = true,
+): Promise<boolean> {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  })
+
+  const prompt = defaultNo ? `${question} (y/N): ` : `${question} (Y/n): `
+
+  return new Promise(resolve => {
+    rl.question(prompt, answer => {
+      rl.close()
+      const normalizedAnswer = answer.trim().toLowerCase()
+
+      if (normalizedAnswer === '') {
+        resolve(!defaultNo)
+      } else {
+        resolve(normalizedAnswer === 'y' || normalizedAnswer === 'yes')
+      }
+    })
+  })
 }
 
 function showNotification(match: MatchResult): void {
@@ -277,6 +307,20 @@ async function main() {
 
   if (appConfig.show_notifications !== false) {
     log('※ Notifications are enabled')
+  }
+
+  // Check for version control
+  const gitDir = path.join(process.cwd(), '.git')
+  if (!fs.existsSync(gitDir)) {
+    if (!appConfig.dangerously_allow_without_version_control) {
+      console.error('※ Running in project without version control')
+      const proceed = await askYesNo('Do you want to continue?', true)
+      if (!proceed) {
+        console.error('※ Exiting: Version control is required')
+        process.exit(1)
+      }
+    }
+    warn('※ Dangerously running in project without version control')
   }
 
   log('※ Ready, Passing off control to Claude CLI')
