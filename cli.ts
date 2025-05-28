@@ -152,14 +152,45 @@ async function main() {
   await loadConfig()
   await initializePatterns()
 
+  // Check if --help was requested before parsing
+  const helpRequested =
+    process.argv.includes('--help') || process.argv.includes('-h')
+
   const program = new Command()
   program
     .name('claude-composer')
-    .description('Claude Composer CLI')
+    .description('A wrapper that enhances the Claude Code CLI')
     .option('--show-notifications', 'Show notifications')
     .allowUnknownOption()
     .argument('[args...]', 'Arguments to pass to `claude`')
-    .parse(process.argv)
+
+  if (helpRequested) {
+    // Configure commander to not exit on help
+    program.exitOverride()
+    try {
+      program.parse(process.argv)
+    } catch (err: any) {
+      // Commander throws an error with exitCode 0 for help
+      if (err.exitCode === 0) {
+        // Now show the child app's help
+        console.log('\n--- Claude CLI Help ---\n')
+
+        const helpProcess = spawn(childAppPath, ['--help'], {
+          stdio: 'inherit',
+          env: process.env,
+        })
+
+        helpProcess.on('exit', code => {
+          process.exit(code || 0)
+        })
+
+        return
+      }
+      throw err
+    }
+  } else {
+    program.parse(process.argv)
+  }
 
   const options = program.opts()
 
