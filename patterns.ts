@@ -2,16 +2,9 @@ import { PatternConfig } from './pattern-matcher'
 
 export const PATTERNS: PatternConfig[] = [
   {
-    id: 'example-confirm',
-    pattern: 'Do you want to continue? (y/n)',
-    response: 'y\r',
-    cooldown: 2000,
-    caseSensitive: false,
-  },
-  {
-    id: 'example-enter-to-continue',
-    pattern: 'Press Enter to continue',
-    response: '\r',
+    id: 'example-welcome-to',
+    pattern: 'Welcome to',
+    response: 'Welcome to Claude Composer',
     cooldown: 3000,
     caseSensitive: false,
   },
