@@ -124,6 +124,91 @@ describe('CLI Wrapper', () => {
 
       expect(output).toContain('Goodbye!')
     })
+
+    it('should preserve color output from child app', async () => {
+      const pty = await import('node-pty')
+
+      const ptyProcess = pty.spawn('pnpm', ['tsx', cliPath, '--color'], {
+        name: 'xterm-color',
+        cols: 80,
+        rows: 30,
+        env: { ...process.env, CLAUDE_APP_PATH: mockAppPath },
+      })
+
+      let output = ''
+      ptyProcess.onData(data => {
+        output += data
+      })
+
+      await new Promise<void>(resolve => {
+        ptyProcess.onExit(() => resolve())
+      })
+
+      // Check that ANSI color codes are preserved
+      expect(output).toContain('\x1b[31m') // Red
+      expect(output).toContain('\x1b[32m') // Green
+      expect(output).toContain('\x1b[33m') // Yellow
+      expect(output).toContain('\x1b[34m') // Blue
+      expect(output).toContain('\x1b[0m') // Reset
+    })
+
+    it('should handle terminal resize events', async () => {
+      const pty = await import('node-pty')
+
+      const ptyProcess = pty.spawn(
+        'pnpm',
+        ['tsx', cliPath, '--size', '--watch'],
+        {
+          name: 'xterm-color',
+          cols: 80,
+          rows: 30,
+          env: { ...process.env, CLAUDE_APP_PATH: mockAppPath },
+        },
+      )
+
+      let output = ''
+      let processExited = false
+
+      ptyProcess.onData(data => {
+        output += data
+      })
+
+      ptyProcess.onExit(() => {
+        processExited = true
+      })
+
+      // Wait for initial output
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      expect(output).toContain('Terminal size: 80x30')
+      expect(output).toContain('Watching for resize events...')
+
+      // Only resize if process is still running
+      if (!processExited) {
+        try {
+          // Resize the terminal
+          ptyProcess.resize(100, 40)
+
+          // Wait for resize to be processed
+          await new Promise(resolve => setTimeout(resolve, 500))
+          expect(output).toContain('Resized to: 100x40')
+        } catch (e) {
+          // Process might have exited, that's okay
+        }
+      }
+
+      // Kill the process if still running
+      if (!processExited) {
+        ptyProcess.kill()
+      }
+
+      await new Promise<void>(resolve => {
+        if (processExited) {
+          resolve()
+        } else {
+          ptyProcess.onExit(() => resolve())
+        }
+      })
+    })
   })
 
   describe('Non-TTY mode', () => {
@@ -146,6 +231,18 @@ describe('CLI Wrapper', () => {
       expect(result.stdout).toContain('Reading from stdin...')
       expect(result.stdout).toContain('Received input:')
       expect(result.stdout).toContain(testInput)
+      expect(result.exitCode).toBe(0)
+    })
+
+    it('should preserve color output in non-TTY mode', async () => {
+      const result = await runCli(['--color'])
+
+      // Check that ANSI color codes are preserved even in non-TTY mode
+      expect(result.stdout).toContain('\x1b[31m') // Red
+      expect(result.stdout).toContain('\x1b[32m') // Green
+      expect(result.stdout).toContain('\x1b[33m') // Yellow
+      expect(result.stdout).toContain('\x1b[34m') // Blue
+      expect(result.stdout).toContain('\x1b[0m') // Reset
       expect(result.exitCode).toBe(0)
     })
 

@@ -15,6 +15,42 @@ if (args.includes('--exit')) {
   process.exit(exitCode)
 }
 
+if (args.includes('--color')) {
+  // Test color output
+  console.log('\x1b[31mRed text\x1b[0m')
+  console.log('\x1b[32mGreen text\x1b[0m')
+  console.log('\x1b[33mYellow text\x1b[0m')
+  console.log('\x1b[34mBlue text\x1b[0m')
+  console.log('Normal text')
+  process.exit(0)
+}
+
+if (args.includes('--size')) {
+  // Test terminal size
+  console.log(
+    'Terminal size:',
+    process.stdout.columns + 'x' + process.stdout.rows,
+  )
+
+  if (args.includes('--watch')) {
+    // Watch for resize events
+    console.log('Watching for resize events...')
+    process.stdout.on('resize', () => {
+      console.log(
+        'Resized to:',
+        process.stdout.columns + 'x' + process.stdout.rows,
+      )
+    })
+    // Keep running for a bit
+    setTimeout(() => {
+      console.log('Size watch complete')
+      process.exit(0)
+    }, 5000)
+  } else {
+    process.exit(0)
+  }
+}
+
 if (args.includes('--sleep')) {
   const sleepIndex = args.indexOf('--sleep')
   const sleepMs = parseInt(args[sleepIndex + 1] || '1000', 10)
