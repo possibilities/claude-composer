@@ -37,7 +37,7 @@ describe('Version Control Check', () => {
     child.stdout.on('data', data => {
       output += data.toString()
       // When we see the prompt, respond with 'n'
-      if (output.includes('Do you want to continue? (y/N):')) {
+      if (output.includes('※ Do you want to continue? (y/N):')) {
         child.stdin.write('n\n')
       }
     })
@@ -67,7 +67,7 @@ describe('Version Control Check', () => {
     child.stdout.on('data', data => {
       output += data.toString()
       // When we see the prompt, respond with 'y'
-      if (output.includes('Do you want to continue? (y/N):')) {
+      if (output.includes('※ Do you want to continue? (y/N):')) {
         child.stdin.write('y\n')
       }
     })
@@ -112,7 +112,7 @@ describe('Version Control Check', () => {
 
     child.on('exit', code => {
       expect(code).toBe(0)
-      expect(output).not.toContain('Do you want to continue?')
+      expect(output).not.toContain('※ Do you want to continue?')
       expect(output).toContain(
         'Dangerously running in project without version control',
       )
@@ -209,7 +209,7 @@ describe('Version Control Check', () => {
       }
 
       expect(code).toBe(0)
-      expect(output).not.toContain('Do you want to continue?')
+      expect(output).not.toContain('※ Do you want to continue?')
       expect(output).toContain(
         'Dangerously running in project without version control',
       )
