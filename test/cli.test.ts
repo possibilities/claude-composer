@@ -18,7 +18,6 @@ describe('CLI Wrapper', () => {
   afterEach(() => {
     delete process.env.CLAUDE_APP_PATH
 
-    // Clean up temp dir
     try {
       fs.rmSync(tempDir, { recursive: true })
     } catch (e) {}
@@ -102,21 +101,17 @@ describe('CLI Wrapper', () => {
         output += data
       })
 
-      // Wait for prompt
       await new Promise(resolve => setTimeout(resolve, 2000))
 
       expect(output).toContain('Mock interactive mode')
       expect(output).toContain('mock>')
 
-      // Send input
       ptyProcess.write('hello\r')
       await new Promise(resolve => setTimeout(resolve, 500))
 
-      // Strip ANSI escape sequences for easier testing
       const cleanOutput = output.replace(/\x1b\[[0-9;]*[mGKJ]/g, '')
       expect(cleanOutput).toContain('Echo: hello')
 
-      // Exit
       ptyProcess.write('exit\r')
       await new Promise(resolve => {
         ptyProcess.onExit(() => resolve(undefined))
@@ -144,12 +139,11 @@ describe('CLI Wrapper', () => {
         ptyProcess.onExit(() => resolve())
       })
 
-      // Check that ANSI color codes are preserved
-      expect(output).toContain('\x1b[31m') // Red
-      expect(output).toContain('\x1b[32m') // Green
-      expect(output).toContain('\x1b[33m') // Yellow
-      expect(output).toContain('\x1b[34m') // Blue
-      expect(output).toContain('\x1b[0m') // Reset
+      expect(output).toContain('\x1b[31m')
+      expect(output).toContain('\x1b[32m')
+      expect(output).toContain('\x1b[33m')
+      expect(output).toContain('\x1b[34m')
+      expect(output).toContain('\x1b[0m')
     })
 
     it('should handle terminal resize events', async () => {
@@ -177,26 +171,19 @@ describe('CLI Wrapper', () => {
         processExited = true
       })
 
-      // Wait for initial output
       await new Promise(resolve => setTimeout(resolve, 1000))
       expect(output).toContain('Terminal size: 80x30')
       expect(output).toContain('Watching for resize events...')
 
-      // Only resize if process is still running
       if (!processExited) {
         try {
-          // Resize the terminal
           ptyProcess.resize(100, 40)
 
-          // Wait for resize to be processed
           await new Promise(resolve => setTimeout(resolve, 500))
           expect(output).toContain('Resized to: 100x40')
-        } catch (e) {
-          // Process might have exited, that's okay
-        }
+        } catch (e) {}
       }
 
-      // Kill the process if still running
       if (!processExited) {
         ptyProcess.kill()
       }
@@ -237,18 +224,15 @@ describe('CLI Wrapper', () => {
     it('should preserve color output in non-TTY mode', async () => {
       const result = await runCli(['--color'])
 
-      // Check that ANSI color codes are preserved even in non-TTY mode
-      expect(result.stdout).toContain('\x1b[31m') // Red
-      expect(result.stdout).toContain('\x1b[32m') // Green
-      expect(result.stdout).toContain('\x1b[33m') // Yellow
-      expect(result.stdout).toContain('\x1b[34m') // Blue
-      expect(result.stdout).toContain('\x1b[0m') // Reset
+      expect(result.stdout).toContain('\x1b[31m')
+      expect(result.stdout).toContain('\x1b[32m')
+      expect(result.stdout).toContain('\x1b[33m')
+      expect(result.stdout).toContain('\x1b[34m')
+      expect(result.stdout).toContain('\x1b[0m')
       expect(result.exitCode).toBe(0)
     })
 
     it('should set FORCE_COLOR and TERM environment variables', async () => {
-      // This test would need the mock app to echo these env vars
-      // For now, we just verify the process runs correctly
       const result = await runCli()
       expect(result.exitCode).toBe(0)
     })
