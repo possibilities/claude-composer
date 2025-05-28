@@ -135,11 +135,19 @@ async function askYesNo(
     output: process.stdout,
   })
 
-  const prompt = defaultNo ? `${question} (y/N): ` : `${question} (Y/n): `
+  const prompt = defaultNo
+    ? `\x1b[33m${question} (y/N): \x1b[0m`
+    : `\x1b[33m${question} (Y/n): \x1b[0m`
 
   return new Promise(resolve => {
     rl.question(prompt, answer => {
       rl.close()
+
+      // Ensure stdin is resumed after readline
+      if (process.stdin.isPaused()) {
+        process.stdin.resume()
+      }
+
       const normalizedAnswer = answer.trim().toLowerCase()
 
       if (normalizedAnswer === '') {
@@ -314,7 +322,7 @@ async function main() {
   if (!fs.existsSync(gitDir)) {
     if (!appConfig.dangerously_allow_without_version_control) {
       console.error('※ Running in project without version control')
-      const proceed = await askYesNo('Do you want to continue?', true)
+      const proceed = await askYesNo('※ Do you want to continue?', true)
       if (!proceed) {
         console.error('※ Exiting: Version control is required')
         process.exit(1)
@@ -363,6 +371,9 @@ async function main() {
       process.stdout.write(data)
       handlePatternMatches(data)
     })
+
+    // Remove any existing data listeners that might have been added by readline
+    process.stdin.removeAllListeners('data')
 
     process.stdin.setRawMode(true)
     isRawMode = true
