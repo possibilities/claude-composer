@@ -13,7 +13,8 @@ let ptyProcess: pty.IPty | undefined
 let childProcess: ChildProcess | undefined
 let isRawMode = false
 
-const childAppPath = '/home/mike/.claude/local/claude'
+const childAppPath =
+  process.env.CLAUDE_APP_PATH || '/home/mike/.claude/local/claude'
 
 function cleanup() {
   if (logStream && !logStream.destroyed) {
