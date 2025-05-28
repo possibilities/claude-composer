@@ -241,7 +241,7 @@ describe('CLI Wrapper', () => {
   describe('Parent CLI options', () => {
     it('should handle --show-notifications flag', async () => {
       const result = await runCli(['--show-notifications'])
-      expect(result.stdout).toContain('Notifications enabled')
+      expect(result.stdout).toContain('Notifications are enabled')
       expect(result.stdout).toContain('Mock child app running')
       expect(result.exitCode).toBe(0)
     })
@@ -253,7 +253,7 @@ describe('CLI Wrapper', () => {
         'test1',
         'test2',
       ])
-      expect(result.stdout).toContain('Notifications enabled')
+      expect(result.stdout).toContain('Notifications are enabled')
       expect(result.stdout).toContain('ARGS: --echo-args test1 test2')
       expect(result.stdout).not.toContain('--show-notifications')
       expect(result.exitCode).toBe(0)
@@ -266,7 +266,7 @@ describe('CLI Wrapper', () => {
         'arg1',
         'arg2',
       ])
-      expect(result.stdout).toContain('Notifications enabled')
+      expect(result.stdout).toContain('Notifications are enabled')
       expect(result.stdout).toContain('ARGS: --echo-args arg1 arg2')
       expect(result.exitCode).toBe(0)
     })

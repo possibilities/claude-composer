@@ -6,23 +6,28 @@ import { spawn, ChildProcess } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 import { Command } from 'commander'
-
-const logFile: string = path.join('/tmp', `claude-log-${Date.now()}.txt`)
-const logStream: fs.WriteStream = fs.createWriteStream(logFile, { flags: 'a' })
+import { PatternMatcher } from './pattern-matcher'
+import { ResponseQueue } from './response-queue'
+import { PatternConfigManager } from './pattern-config'
 
 let ptyProcess: pty.IPty | undefined
 let childProcess: ChildProcess | undefined
 let isRawMode = false
+
+const configManager = new PatternConfigManager()
+const settings = configManager.getSettings()
+const patternMatcher = new PatternMatcher(settings.bufferSize)
+const responseQueue = new ResponseQueue()
+
+configManager.getPatterns().forEach(pattern => {
+  patternMatcher.addPattern(pattern)
+})
 
 const childAppPath =
   process.env.CLAUDE_APP_PATH ||
   path.join(os.homedir(), '.claude', 'local', 'claude')
 
 function cleanup() {
-  if (logStream && !logStream.destroyed) {
-    logStream.end()
-  }
-
   if (isRawMode && process.stdin.isTTY) {
     process.stdin.setRawMode(false)
     isRawMode = false
@@ -68,6 +73,14 @@ function log(message: string) {
   console.info(`\x1b[36m${message}\x1b[0m`)
 }
 
+function handlePatternMatches(data: string): void {
+  const matches = patternMatcher.processData(data)
+
+  for (const match of matches) {
+    responseQueue.enqueue(match.response, match.delay)
+  }
+}
+
 const program = new Command()
 program
   .name('claude-composer')
@@ -109,14 +122,11 @@ if (process.stdin.isTTY) {
     cwd: process.env.PWD,
   })
 
+  responseQueue.setTargets(ptyProcess, undefined)
+
   ptyProcess.onData((data: string) => {
     process.stdout.write(data)
-    const lines: string[] = data.split('\n')
-    lines.forEach((line: string) => {
-      if (line.trim()) {
-        logStream.write(`[${new Date().toISOString()}] ${line}\n`)
-      }
-    })
+    handlePatternMatches(data)
   })
 
   process.stdin.setRawMode(true)
@@ -144,16 +154,14 @@ if (process.stdin.isTTY) {
     },
   })
 
+  responseQueue.setTargets(undefined, childProcess)
+
   process.stdin.pipe(childProcess.stdin!)
 
   childProcess.stdout!.on('data', (data: Buffer) => {
+    const dataStr = data.toString()
     process.stdout.write(data)
-    const lines: string[] = data.toString().split('\n')
-    lines.forEach((line: string) => {
-      if (line.trim()) {
-        logStream.write(`[${new Date().toISOString()}] ${line}\n`)
-      }
-    })
+    handlePatternMatches(dataStr)
   })
 
   childProcess.stderr!.pipe(process.stderr)
