@@ -16,7 +16,6 @@ if (args.includes('--exit')) {
 }
 
 if (args.includes('--color')) {
-  // Test color output
   console.log('\x1b[31mRed text\x1b[0m')
   console.log('\x1b[32mGreen text\x1b[0m')
   console.log('\x1b[33mYellow text\x1b[0m')
@@ -26,14 +25,12 @@ if (args.includes('--color')) {
 }
 
 if (args.includes('--size')) {
-  // Test terminal size
   console.log(
     'Terminal size:',
     process.stdout.columns + 'x' + process.stdout.rows,
   )
 
   if (args.includes('--watch')) {
-    // Watch for resize events
     console.log('Watching for resize events...')
     process.stdout.on('resize', () => {
       console.log(
@@ -41,7 +38,6 @@ if (args.includes('--size')) {
         process.stdout.columns + 'x' + process.stdout.rows,
       )
     })
-    // Keep running for a bit
     setTimeout(() => {
       console.log('Size watch complete')
       process.exit(0)
@@ -82,7 +78,6 @@ if (args.includes('--sleep')) {
     process.exit(0)
   })
 } else if (args.includes('--stdin')) {
-  // Non-interactive mode that reads from stdin
   console.log('Reading from stdin...')
 
   let inputData = ''
