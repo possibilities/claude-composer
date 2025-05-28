@@ -45,6 +45,21 @@ if (args.includes('--sleep')) {
     console.log('Goodbye!')
     process.exit(0)
   })
+} else if (args.includes('--stdin')) {
+  // Non-interactive mode that reads from stdin
+  console.log('Reading from stdin...')
+
+  let inputData = ''
+  process.stdin.on('data', chunk => {
+    inputData += chunk.toString()
+  })
+
+  process.stdin.on('end', () => {
+    console.log('Received input:')
+    console.log(inputData)
+    console.log('Input length:', inputData.length)
+    process.exit(0)
+  })
 } else {
   console.log('Mock child app running')
   console.log('Environment:', process.env.MOCK_ENV || 'not set')

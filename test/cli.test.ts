@@ -127,14 +127,26 @@ describe('CLI Wrapper', () => {
   })
 
   describe('Non-TTY mode', () => {
-    it('should handle piped input/output', async () => {
+    it('should handle piped input/output in interactive mode', async () => {
       const result = await runCli(['--interactive'], {
-        input: 'hello\\nexit\\n',
+        input: 'hello\nexit\n',
       })
 
       expect(result.stdout).toContain('Mock interactive mode')
       expect(result.stdout).toContain('Echo: hello')
       expect(result.stdout).toContain('Goodbye!')
+    })
+
+    it('should handle piped input in non-interactive mode', async () => {
+      const testInput = 'This is test data\nWith multiple lines'
+      const result = await runCli(['--stdin'], {
+        input: testInput,
+      })
+
+      expect(result.stdout).toContain('Reading from stdin...')
+      expect(result.stdout).toContain('Received input:')
+      expect(result.stdout).toContain(testInput)
+      expect(result.exitCode).toBe(0)
     })
 
     it('should set FORCE_COLOR and TERM environment variables', async () => {
