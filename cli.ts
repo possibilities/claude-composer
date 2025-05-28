@@ -8,7 +8,8 @@ import * as path from 'path'
 import { Command } from 'commander'
 import stripAnsi from 'strip-ansi'
 import * as yaml from 'js-yaml'
-import { PatternMatcher } from './pattern-matcher'
+import notifier from 'node-notifier'
+import { PatternMatcher, MatchResult } from './pattern-matcher'
 import { ResponseQueue } from './response-queue'
 
 interface AppConfig {
@@ -110,6 +111,19 @@ function log(message: string) {
   console.info(`\x1b[36m${message}\x1b[0m`)
 }
 
+function showNotification(match: MatchResult): void {
+  const title = '🤖 Claude Composer Next'
+  const message = `Pattern triggered: ${match.patternId}\nMatched: ${stripAnsi(match.matchedText).substring(0, 100)}`
+
+  notifier.notify({
+    title,
+    message,
+    timeout: false, // Stay forever until dismissed
+    wait: false,
+    sound: false,
+  })
+}
+
 function handlePatternMatches(data: string): void {
   const matches = patternMatcher.processData(data)
 
@@ -124,6 +138,11 @@ function handlePatternMatches(data: string): void {
         bufferContent: stripAnsi(match.bufferContent),
       }
       fs.appendFileSync(match.action.path, JSON.stringify(logEntry) + '\n')
+    }
+
+    // Show notification if enabled
+    if (appConfig.show_notifications) {
+      showNotification(match)
     }
   }
 }
