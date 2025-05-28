@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
 import { PatternConfig } from './pattern-matcher'
+import { PATTERNS, SETTINGS } from './patterns'
 
 export interface PatternConfigFile {
   patterns: PatternConfig[]
@@ -50,29 +51,8 @@ export class PatternConfigManager {
 
   private getDefaultConfig(): PatternConfigFile {
     return {
-      patterns: [
-        {
-          id: 'example-confirm',
-          pattern: 'Do you want to continue? (y/n)',
-          response: 'y\r',
-          delay: 500,
-          cooldown: 2000,
-          caseSensitive: false,
-        },
-        {
-          id: 'example-enter-to-continue',
-          pattern: 'Press Enter to continue',
-          response: '\r',
-          delay: 1000,
-          cooldown: 3000,
-          caseSensitive: false,
-        },
-      ],
-      settings: {
-        bufferSize: 2048,
-        defaultCooldown: 1000,
-        logMatches: false,
-      },
+      patterns: PATTERNS,
+      settings: SETTINGS,
     }
   }
 
