@@ -5,6 +5,7 @@ import * as pty from 'node-pty'
 import { spawn, ChildProcess } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
+import { Command } from 'commander'
 
 const logFile: string = path.join('/tmp', `claude-log-${Date.now()}.txt`)
 const logStream: fs.WriteStream = fs.createWriteStream(logFile, { flags: 'a' })
@@ -63,9 +64,36 @@ process.on('uncaughtException', error => {
   process.exit(1)
 })
 
+const program = new Command()
+program
+  .name('claude-composer-next')
+  .description('Claude Composer CLI')
+  .option('--show-notifications', 'Show notifications')
+  .allowUnknownOption()
+  .argument('[args...]', 'Arguments to pass to `claude`')
+  .parse(process.argv)
+
+const options = program.opts()
+
+if (options.showNotifications) {
+  console.log('Notifications enabled')
+}
+
+const knownOptions = new Set<string>()
+program.options.forEach(option => {
+  if (option.long) knownOptions.add(option.long)
+})
+
+const childArgs: string[] = []
+for (let i = 2; i < process.argv.length; i++) {
+  const arg = process.argv[i]
+  if (!knownOptions.has(arg)) {
+    childArgs.push(arg)
+  }
+}
+
 if (process.stdin.isTTY) {
-  const args: string[] = process.argv.slice(2)
-  ptyProcess = pty.spawn(childAppPath, args, {
+  ptyProcess = pty.spawn(childAppPath, childArgs, {
     name: 'xterm-color',
     cols: process.stdout.columns || 80,
     rows: process.stdout.rows || 30,
@@ -99,8 +127,7 @@ if (process.stdin.isTTY) {
     ptyProcess.resize(process.stdout.columns || 80, process.stdout.rows || 30)
   })
 } else {
-  const args: string[] = process.argv.slice(2)
-  childProcess = spawn(childAppPath, args, {
+  childProcess = spawn(childAppPath, childArgs, {
     stdio: ['pipe', 'pipe', 'pipe'],
     env: {
       ...process.env,

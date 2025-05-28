@@ -237,4 +237,38 @@ describe('CLI Wrapper', () => {
       expect(result.exitCode).toBe(0)
     })
   })
+
+  describe('Parent CLI options', () => {
+    it('should handle --show-notifications flag', async () => {
+      const result = await runCli(['--show-notifications'])
+      expect(result.stdout).toContain('Notifications enabled')
+      expect(result.stdout).toContain('Mock child app running')
+      expect(result.exitCode).toBe(0)
+    })
+
+    it('should filter parent options from child args', async () => {
+      const result = await runCli([
+        '--show-notifications',
+        '--echo-args',
+        'test1',
+        'test2',
+      ])
+      expect(result.stdout).toContain('Notifications enabled')
+      expect(result.stdout).toContain('ARGS: --echo-args test1 test2')
+      expect(result.stdout).not.toContain('--show-notifications')
+      expect(result.exitCode).toBe(0)
+    })
+
+    it('should work with multiple parent and child options mixed', async () => {
+      const result = await runCli([
+        '--echo-args',
+        '--show-notifications',
+        'arg1',
+        'arg2',
+      ])
+      expect(result.stdout).toContain('Notifications enabled')
+      expect(result.stdout).toContain('ARGS: --echo-args arg1 arg2')
+      expect(result.exitCode).toBe(0)
+    })
+  })
 })
