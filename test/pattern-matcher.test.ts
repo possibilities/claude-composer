@@ -52,19 +52,20 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: 'hello',
-        response: 'world',
+        action: { type: 'input', response: 'world' },
       }
       matcher.addPattern(config)
       const matches = matcher.processData('hello')
       expect(matches).toHaveLength(1)
-      expect(matches[0].response).toBe('world')
+      expect(matches[0].action.type).toBe('input')
+      expect((matches[0].action as any).response).toBe('world')
     })
 
     it('should remove pattern', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: 'hello',
-        response: 'world',
+        action: { type: 'input', response: 'world' },
       }
       matcher.addPattern(config)
       matcher.removePattern('test1')
@@ -78,34 +79,35 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: 'error',
-        response: 'Error detected!',
+        action: { type: 'input', response: 'Error detected!' },
       }
       matcher.addPattern(config)
       const matches = matcher.processData('An error occurred')
       expect(matches).toHaveLength(1)
-      expect(matches[0]).toEqual({
-        patternId: 'test1',
-        response: 'Error detected!',
-      })
+      expect(matches[0].patternId).toBe('test1')
+      expect(matches[0].action.type).toBe('input')
+      expect((matches[0].action as any).response).toBe('Error detected!')
+      expect(matches[0].matchedText).toBe('error')
     })
 
     it('should match regex pattern', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: /\d{3}-\d{3}-\d{4}/,
-        response: 'Phone number found',
+        action: { type: 'input', response: 'Phone number found' },
       }
       matcher.addPattern(config)
       const matches = matcher.processData('Call me at 123-456-7890')
       expect(matches).toHaveLength(1)
-      expect(matches[0].response).toBe('Phone number found')
+      expect((matches[0].action as any).response).toBe('Phone number found')
+      expect(matches[0].matchedText).toBe('123-456-7890')
     })
 
     it('should handle case-insensitive matching', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: 'ERROR',
-        response: 'Found error',
+        action: { type: 'input', response: 'Found error' },
         caseSensitive: false,
       }
       matcher.addPattern(config)
@@ -117,7 +119,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: 'ERROR',
-        response: 'Found error',
+        action: { type: 'input', response: 'Found error' },
         caseSensitive: true,
       }
       matcher.addPattern(config)
@@ -129,7 +131,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: /^ERROR/m,
-        response: 'Line starts with ERROR',
+        action: { type: 'input', response: 'Line starts with ERROR' },
         multiline: true,
       }
       matcher.addPattern(config)
@@ -141,7 +143,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: 'What?',
-        response: 'Question found',
+        action: { type: 'input', response: 'Question found' },
       }
       matcher.addPattern(config)
       const matches = matcher.processData('What? is happening')
@@ -152,29 +154,51 @@ describe('PatternMatcher', () => {
       matcher.addPattern({
         id: 'test1',
         pattern: 'error',
-        response: 'Error found',
+        action: { type: 'input', response: 'Error found' },
       })
       matcher.addPattern({
         id: 'test2',
         pattern: 'warning',
-        response: 'Warning found',
+        action: { type: 'input', response: 'Warning found' },
       })
       const matches = matcher.processData('error and warning')
       expect(matches).toHaveLength(2)
-      expect(matches.map(m => m.response)).toContain('Error found')
-      expect(matches.map(m => m.response)).toContain('Warning found')
+      expect(matches.map(m => (m.action as any).response)).toContain(
+        'Error found',
+      )
+      expect(matches.map(m => (m.action as any).response)).toContain(
+        'Warning found',
+      )
     })
 
     it('should handle array responses', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: 'help',
-        response: ['Sure!', 'How can I help?'],
+        action: { type: 'input', response: ['Sure!', 'How can I help?'] },
       }
       matcher.addPattern(config)
       const matches = matcher.processData('I need help')
       expect(matches).toHaveLength(1)
-      expect(matches[0].response).toEqual(['Sure!', 'How can I help?'])
+      expect((matches[0].action as any).response).toEqual([
+        'Sure!',
+        'How can I help?',
+      ])
+    })
+
+    it('should handle log action type', () => {
+      const config: PatternConfig = {
+        id: 'test1',
+        pattern: 'ERROR',
+        action: { type: 'log', logFile: '/tmp/test.log' },
+      }
+      matcher.addPattern(config)
+      const matches = matcher.processData('ERROR: something went wrong')
+      expect(matches).toHaveLength(1)
+      expect(matches[0].action.type).toBe('log')
+      expect((matches[0].action as any).logFile).toBe('/tmp/test.log')
+      expect(matches[0].matchedText).toBe('ERROR')
+      expect(matches[0].bufferContent).toContain('ERROR: something went wrong')
     })
   })
 
@@ -183,7 +207,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: 'trigger',
-        response: 'Response',
+        action: { type: 'input', response: 'Response' },
         cooldown: 5000,
       }
       matcher.addPattern(config)
@@ -204,7 +228,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: 'trigger',
-        response: 'Response',
+        action: { type: 'input', response: 'Response' },
       }
       matcher.addPattern(config)
 
@@ -224,13 +248,13 @@ describe('PatternMatcher', () => {
       matcher.addPattern({
         id: 'test1',
         pattern: 'pattern1',
-        response: 'Response1',
+        action: { type: 'input', response: 'Response1' },
         cooldown: 2000,
       })
       matcher.addPattern({
         id: 'test2',
         pattern: 'pattern2',
-        response: 'Response2',
+        action: { type: 'input', response: 'Response2' },
         cooldown: 3000,
       })
 
@@ -249,14 +273,14 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: 'complete message',
-        response: 'Found it!',
+        action: { type: 'input', response: 'Found it!' },
       }
       matcher.addPattern(config)
 
       matcher.processData('This is a comp')
       const matches = matcher.processData('lete message')
       expect(matches).toHaveLength(1)
-      expect(matches[0].response).toBe('Found it!')
+      expect((matches[0].action as any).response).toBe('Found it!')
     })
 
     it('should respect buffer size limit', () => {
@@ -264,7 +288,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: 'old',
-        response: 'Found old',
+        action: { type: 'input', response: 'Found old' },
       }
       smallMatcher.addPattern(config)
 

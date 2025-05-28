@@ -1,7 +1,11 @@
+export type PatternAction =
+  | { type: 'input'; response: string | string[] }
+  | { type: 'log'; logFile: string }
+
 export interface PatternConfig {
   id: string
   pattern: string | RegExp
-  response: string | string[]
+  action: PatternAction
   cooldown?: number
   multiline?: boolean
   caseSensitive?: boolean
@@ -9,7 +13,9 @@ export interface PatternConfig {
 
 export interface MatchResult {
   patternId: string
-  response: string | string[]
+  action: PatternAction
+  matchedText: string
+  bufferContent: string
 }
 
 export class CircularBuffer {
@@ -73,17 +79,19 @@ export class PatternMatcher {
         continue
       }
 
-      const testResult = pattern.regex.test(content)
+      const matchResult = pattern.regex.exec(content)
       // if (process.env.NODE_ENV === 'test' || content.includes('Welcome to')) {
       //   console.error(
       //     `[PatternMatcher] Testing pattern ${id} (${pattern.config.pattern}) against buffer: ${testResult}`,
       //   )
       // }
 
-      if (testResult) {
+      if (matchResult) {
         matches.push({
           patternId: id,
-          response: pattern.config.response,
+          action: pattern.config.action,
+          matchedText: matchResult[0],
+          bufferContent: content,
         })
         this.lastMatchTimes.set(id, now)
       }

@@ -1,6 +1,5 @@
 import * as pty from 'node-pty'
 import { ChildProcess } from 'child_process'
-import * as fs from 'fs'
 
 export interface QueuedResponse {
   id: string
@@ -18,12 +17,6 @@ export class ResponseQueue {
   constructor(ptyProcess?: pty.IPty, childProcess?: ChildProcess) {
     this.ptyProcess = ptyProcess
     this.childProcess = childProcess
-  }
-
-  private debugLog(message: string) {
-    const timestamp = new Date().toISOString()
-    const logMessage = `${timestamp}: ${message}\n`
-    fs.appendFileSync('/tmp/claude-composer-debug.log', logMessage)
   }
 
   setTargets(ptyProcess?: pty.IPty, childProcess?: ChildProcess): void {
@@ -72,7 +65,6 @@ export class ResponseQueue {
     const responses = Array.isArray(response) ? response : [response]
 
     for (const resp of responses) {
-      this.debugLog(`Sending response: ${resp}`)
       if (this.ptyProcess) {
         this.ptyProcess.write(resp)
       } else if (this.childProcess?.stdin) {

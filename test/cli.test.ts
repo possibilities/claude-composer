@@ -2,25 +2,17 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { spawn, ChildProcess } from 'child_process'
 import * as path from 'path'
 import * as fs from 'fs'
-import * as os from 'os'
 
 const cliPath = path.join(__dirname, '..', 'cli.ts')
 const mockAppPath = path.join(__dirname, 'mock-child-app.ts')
 
 describe('CLI Wrapper', () => {
-  let tempDir: string
-
   beforeEach(() => {
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'cli-test-'))
     process.env.CLAUDE_APP_PATH = mockAppPath
   })
 
   afterEach(() => {
     delete process.env.CLAUDE_APP_PATH
-
-    try {
-      fs.rmSync(tempDir, { recursive: true })
-    } catch (e) {}
   })
 
   function runCli(

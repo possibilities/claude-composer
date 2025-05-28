@@ -4,7 +4,7 @@
   "description": "Claude Composer",
   "scripts": {
     "format": "prettier --write \"**/*.{js,mjs,jsx,ts,tsx,json,md,mdx,css,yml,yaml}\"",
-    "test": "vitest",
+    "test": "vitest --reporter verbose --run",
     "test:watch": "vitest --watch"
   },
   "type": "module",

@@ -71,44 +71,21 @@ function log(message: string) {
   console.info(`\x1b[36m${message}\x1b[0m`)
 }
 
-function debugLog(message: string) {
-  const timestamp = new Date().toISOString()
-  const logMessage = `${timestamp}: ${message}\n`
-  fs.appendFileSync('/tmp/claude-composer-debug.log', logMessage)
-}
-
-function outputLog(data: string) {
-  const timestamp = new Date().toISOString()
-  const logMessage = `${timestamp}: ${JSON.stringify(data)}\n`
-  fs.appendFileSync('/tmp/claude-composer-output.log', logMessage)
-}
-
 function handlePatternMatches(data: string): void {
-  // Always log when we receive data during tests
-  if (SETTINGS.logMatches) {
-    debugLog(
-      `Processing data chunk (length: ${data.length}): ${JSON.stringify(data.substring(0, 100))}...`,
-    )
-    if (data.includes('Welcome to')) {
-      debugLog(`Data contains 'Welcome to': ${JSON.stringify(data)}`)
-    }
-  }
-
   const matches = patternMatcher.processData(data)
 
-  if (SETTINGS.logMatches) {
-    debugLog(`Pattern matcher returned ${matches.length} matches`)
-    if (matches.length > 0) {
-      debugLog(`Found ${matches.length} pattern matches`)
-      matches.forEach(m =>
-        debugLog(`  → Pattern ${m.patternId}: ${m.response}`),
-      )
-    }
-  }
-
   for (const match of matches) {
-    debugLog(`Enqueueing response: ${match.response}`)
-    responseQueue.enqueue(match.response)
+    if (match.action.type === 'input') {
+      responseQueue.enqueue(match.action.response)
+    } else if (match.action.type === 'log') {
+      const logEntry = {
+        timestamp: new Date().toISOString(),
+        patternId: match.patternId,
+        matchedText: match.matchedText,
+        bufferContent: match.bufferContent,
+      }
+      fs.appendFileSync(match.action.logFile, JSON.stringify(logEntry) + '\n')
+    }
   }
 }
 
@@ -156,7 +133,6 @@ if (process.stdin.isTTY) {
   responseQueue.setTargets(ptyProcess, undefined)
 
   ptyProcess.onData((data: string) => {
-    outputLog(data)
     process.stdout.write(data)
     handlePatternMatches(data)
   })
@@ -192,7 +168,6 @@ if (process.stdin.isTTY) {
 
   childProcess.stdout!.on('data', (data: Buffer) => {
     const dataStr = data.toString()
-    outputLog(dataStr)
     process.stdout.write(data)
     handlePatternMatches(dataStr)
   })
