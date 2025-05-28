@@ -354,7 +354,7 @@ describe('CLI Wrapper', () => {
       const result = await runCli([], {
         env: { ...process.env, HOME: testHomeDir },
       })
-      expect(result.stdout).not.toContain('Notifications are enabled')
+      expect(result.stdout).toContain('Notifications are enabled')
       expect(result.stdout).toContain('Mock child app running')
       expect(result.exitCode).toBe(0)
     })
@@ -384,7 +384,21 @@ describe('CLI Wrapper', () => {
       expect(result.stdout).toContain('Mock child app running')
     })
 
-    it('should respect show_notifications config when enabled', async () => {
+    it('should show notifications by default when no config exists', async () => {
+      // Ensure no config file exists
+      if (fs.existsSync(testConfigPath)) {
+        fs.unlinkSync(testConfigPath)
+      }
+
+      const result = await runCli([], {
+        env: { ...process.env, HOME: testHomeDir },
+      })
+
+      expect(result.stdout).toContain('Notifications are enabled')
+      expect(result.exitCode).toBe(0)
+    })
+
+    it('should respect show_notifications config when explicitly enabled', async () => {
       const configContent = 'show_notifications: true'
       fs.writeFileSync(testConfigPath, configContent)
 
@@ -437,30 +451,36 @@ describe('CLI Wrapper', () => {
       expect(result.stdout).toContain('Mock child app running')
     })
 
-    it('should not trigger notifications when no config file exists', async () => {
-      // Ensure no config file exists
-      if (fs.existsSync(testConfigPath)) {
-        fs.unlinkSync(testConfigPath)
-      }
-
-      // Create a pattern that would normally trigger notifications
-      const testPatternPath = path.join(testHomeDir, 'test-patterns.json')
-      const testPatterns = [
-        {
-          id: 'no-config-test',
-          pattern: 'Mock child app running',
-          action: { type: 'log', path: '/tmp/no-config-test.log' },
-        },
-      ]
-      fs.writeFileSync(testPatternPath, JSON.stringify(testPatterns, null, 2))
-
-      const result = await runCli(['--patterns', testPatternPath], {
+    it('should handle --no-show-notifications flag', async () => {
+      const result = await runCli(['--no-show-notifications'], {
         env: { ...process.env, HOME: testHomeDir },
       })
 
+      expect(result.stdout).not.toContain('Notifications are enabled')
       expect(result.exitCode).toBe(0)
-      expect(result.stdout).toContain('Mock child app running')
-      // Should work normally but without notifications since show_notifications is undefined
+    })
+
+    it('should handle --show-notifications flag explicitly', async () => {
+      const result = await runCli(['--show-notifications'], {
+        env: { ...process.env, HOME: testHomeDir },
+      })
+
+      expect(result.stdout).toContain('Notifications are enabled')
+      expect(result.exitCode).toBe(0)
+    })
+
+    it('should prioritize CLI flag over config file', async () => {
+      // Set config to disable notifications
+      const configContent = 'show_notifications: false'
+      fs.writeFileSync(testConfigPath, configContent)
+
+      // But enable via CLI flag
+      const result = await runCli(['--show-notifications'], {
+        env: { ...process.env, HOME: testHomeDir },
+      })
+
+      expect(result.stdout).toContain('Notifications are enabled')
+      expect(result.exitCode).toBe(0)
     })
   })
 })

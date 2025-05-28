@@ -21,7 +21,7 @@ let childProcess: ChildProcess | undefined
 let isRawMode = false
 let patternMatcher: PatternMatcher
 let responseQueue: ResponseQueue
-let appConfig: AppConfig = {}
+let appConfig: AppConfig = { show_notifications: true }
 
 async function loadConfig(configPath?: string): Promise<void> {
   const finalConfigPath =
@@ -140,8 +140,8 @@ function handlePatternMatches(data: string): void {
       fs.appendFileSync(match.action.path, JSON.stringify(logEntry) + '\n')
     }
 
-    // Show notification if enabled
-    if (appConfig.show_notifications) {
+    // Show notification if enabled (default true)
+    if (appConfig.show_notifications !== false) {
       showNotification(match)
     }
   }
@@ -160,7 +160,8 @@ async function main() {
   program
     .name('claude-composer')
     .description('A wrapper that enhances the Claude Code CLI')
-    .option('--show-notifications', 'Show notifications')
+    .option('--show-notifications', 'Show notifications (default: true)')
+    .option('--no-show-notifications', 'Disable notifications')
     .allowUnknownOption()
     .argument('[args...]', 'Arguments to pass to `claude`')
 
@@ -196,11 +197,12 @@ async function main() {
 
   log('※ Getting ready to launch Claude CLI')
 
-  // CLI flag takes precedence over YAML config
-  const showNotifications =
-    options.showNotifications ?? appConfig.show_notifications ?? false
+  // CLI flag takes precedence over YAML config, default true
+  if (options.showNotifications !== undefined) {
+    appConfig.show_notifications = options.showNotifications
+  }
 
-  if (showNotifications) {
+  if (appConfig.show_notifications !== false) {
     log('※ Notifications are enabled')
   }
 

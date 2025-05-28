@@ -1,10 +1,10 @@
 [
   {
-    "id": "no-config-test",
+    "id": "integration-test",
     "pattern": "Mock child app running",
     "action": {
       "type": "log",
-      "path": "/tmp/no-config-test.log"
+      "path": "/tmp/integration-test.log"
     }
   }
 ]
