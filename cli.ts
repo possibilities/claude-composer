@@ -70,7 +70,7 @@ function log(message: string) {
 
 const program = new Command()
 program
-  .name('claude-composer-next')
+  .name('claude-composer')
   .description('Claude Composer CLI')
   .option('--show-notifications', 'Show notifications')
   .allowUnknownOption()
