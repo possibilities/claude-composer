@@ -311,85 +311,76 @@ describe('CLI Wrapper', () => {
   })
 
   describe('YAML Configuration', () => {
-    const testConfigPath = path.join(__dirname, 'test-config.yaml')
+    const testHomeDir = path.join(__dirname, 'tmp-home')
+    const testConfigDir = path.join(testHomeDir, '.claude-composer')
+    const testConfigPath = path.join(testConfigDir, 'config.yaml')
+
+    beforeEach(() => {
+      // Create test home directory structure
+      if (!fs.existsSync(testConfigDir)) {
+        fs.mkdirSync(testConfigDir, { recursive: true })
+      }
+    })
 
     afterEach(() => {
-      // Clean up test config file
+      // Clean up test config directory
       try {
-        fs.unlinkSync(testConfigPath)
+        if (fs.existsSync(testConfigPath)) {
+          fs.unlinkSync(testConfigPath)
+        }
+        if (fs.existsSync(testConfigDir)) {
+          fs.rmdirSync(testConfigDir)
+        }
+        if (fs.existsSync(testHomeDir)) {
+          fs.rmdirSync(testHomeDir)
+        }
       } catch {}
     })
 
     it('should load show_notifications setting from YAML config', async () => {
-      // Create test config file in the current directory (where the test runs)
-      const currentDirConfigPath = path.join(
-        process.cwd(),
-        'claude-composer.yaml',
-      )
       const configContent = 'show_notifications: true'
-      fs.writeFileSync(currentDirConfigPath, configContent)
+      fs.writeFileSync(testConfigPath, configContent)
 
-      try {
-        const result = await runCli()
-        expect(result.stdout).toContain('Notifications are enabled')
-        expect(result.exitCode).toBe(0)
-      } finally {
-        // Clean up
-        try {
-          fs.unlinkSync(currentDirConfigPath)
-        } catch {}
-      }
+      const result = await runCli([], {
+        env: { ...process.env, HOME: testHomeDir },
+      })
+
+      expect(result.stdout).toContain('Notifications are enabled')
+      expect(result.exitCode).toBe(0)
     })
 
     it('should work without config file (default behavior)', async () => {
-      const result = await runCli()
+      const result = await runCli([], {
+        env: { ...process.env, HOME: testHomeDir },
+      })
       expect(result.stdout).not.toContain('Notifications are enabled')
       expect(result.stdout).toContain('Mock child app running')
       expect(result.exitCode).toBe(0)
     })
 
     it('should prioritize CLI flag over YAML config', async () => {
-      // Create config with notifications disabled in current directory
-      const currentDirConfigPath = path.join(
-        process.cwd(),
-        'claude-composer.yaml',
-      )
       const configContent = 'show_notifications: false'
-      fs.writeFileSync(currentDirConfigPath, configContent)
+      fs.writeFileSync(testConfigPath, configContent)
 
-      try {
-        // Run with --show-notifications flag (should override config)
-        const result = await runCli(['--show-notifications'])
-        expect(result.stdout).toContain('Notifications are enabled')
-        expect(result.exitCode).toBe(0)
-      } finally {
-        // Clean up
-        try {
-          fs.unlinkSync(currentDirConfigPath)
-        } catch {}
-      }
+      const result = await runCli(['--show-notifications'], {
+        env: { ...process.env, HOME: testHomeDir },
+      })
+
+      expect(result.stdout).toContain('Notifications are enabled')
+      expect(result.exitCode).toBe(0)
     })
 
     it('should handle invalid YAML config gracefully', async () => {
-      // Create invalid YAML in current directory
-      const currentDirConfigPath = path.join(
-        process.cwd(),
-        'claude-composer.yaml',
-      )
       const invalidConfig = 'show_notifications: [invalid: yaml'
-      fs.writeFileSync(currentDirConfigPath, invalidConfig)
+      fs.writeFileSync(testConfigPath, invalidConfig)
 
-      try {
-        const result = await runCli()
-        // Should still work despite invalid config
-        expect(result.exitCode).toBe(0)
-        expect(result.stdout).toContain('Mock child app running')
-      } finally {
-        // Clean up
-        try {
-          fs.unlinkSync(currentDirConfigPath)
-        } catch {}
-      }
+      const result = await runCli([], {
+        env: { ...process.env, HOME: testHomeDir },
+      })
+
+      // Should still work despite invalid config
+      expect(result.exitCode).toBe(0)
+      expect(result.stdout).toContain('Mock child app running')
     })
   })
 })

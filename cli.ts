@@ -24,7 +24,7 @@ let appConfig: AppConfig = {}
 
 async function loadConfig(configPath?: string): Promise<void> {
   const finalConfigPath =
-    configPath || path.join(process.cwd(), 'claude-composer.yaml')
+    configPath || path.join(os.homedir(), '.claude-composer', 'config.yaml')
 
   if (fs.existsSync(finalConfigPath)) {
     try {
@@ -34,6 +34,13 @@ async function loadConfig(configPath?: string): Promise<void> {
     } catch (error) {
       console.error('Error loading configuration file:', error)
     }
+  }
+}
+
+function ensureConfigDirectory(): void {
+  const configDir = path.join(os.homedir(), '.claude-composer')
+  if (!fs.existsSync(configDir)) {
+    fs.mkdirSync(configDir, { recursive: true })
   }
 }
 
@@ -122,6 +129,7 @@ function handlePatternMatches(data: string): void {
 }
 
 async function main() {
+  ensureConfigDirectory()
   await loadConfig()
   await initializePatterns()
 
