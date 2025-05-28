@@ -14,6 +14,10 @@ import { ResponseQueue } from './response-queue'
 
 interface AppConfig {
   show_notifications?: boolean
+  dangerously_dismiss_edit_file_prompts?: boolean
+  dangerously_dismiss_create_file_prompts?: boolean
+  dangerously_allow_in_dirty_directory?: boolean
+  dangerously_allow_without_version_control?: boolean
 }
 
 let ptyProcess: pty.IPty | undefined
@@ -21,7 +25,13 @@ let childProcess: ChildProcess | undefined
 let isRawMode = false
 let patternMatcher: PatternMatcher
 let responseQueue: ResponseQueue
-let appConfig: AppConfig = { show_notifications: true }
+let appConfig: AppConfig = {
+  show_notifications: true,
+  dangerously_dismiss_edit_file_prompts: false,
+  dangerously_dismiss_create_file_prompts: false,
+  dangerously_allow_in_dirty_directory: false,
+  dangerously_allow_without_version_control: false,
+}
 
 async function loadConfig(configPath?: string): Promise<void> {
   const finalConfigPath =
@@ -160,8 +170,51 @@ async function main() {
   program
     .name('claude-composer')
     .description('A wrapper that enhances the Claude Code CLI')
-    .option('--show-notifications', 'Show notifications (default: true)')
+    .option(
+      '--show-notifications',
+      'Show desktop notifications for file edits, creates, and prompts',
+    )
     .option('--no-show-notifications', 'Disable notifications')
+    .option(
+      '--dangerously-dismiss-edit-file-prompts',
+      'Automatically dismiss edit file prompts',
+    )
+    .option(
+      '--no-dangerously-dismiss-edit-file-prompts',
+      'Do not automatically dismiss edit file prompts',
+    )
+    .option(
+      '--dangerously-dismiss-create-file-prompts',
+      'Automatically dismiss create file prompts',
+    )
+    .option(
+      '--no-dangerously-dismiss-create-file-prompts',
+      'Do not automatically dismiss create file prompts',
+    )
+    .option(
+      '--dangerously-allow-in-dirty-directory',
+      'Allow running in a directory with uncommitted git changes',
+    )
+    .option(
+      '--no-dangerously-allow-in-dirty-directory',
+      'Do not allow running in a directory with uncommitted git changes',
+    )
+    .option(
+      '--dangerously-allow-without-version-control',
+      'Allow running in a directory not under version control',
+    )
+    .option(
+      '--no-dangerously-allow-without-version-control',
+      'Do not allow running in a directory not under version control',
+    )
+    .option(
+      '--toolset <name>',
+      'Use a predefined toolset from ~/.claude-composer/toolsets/ directory',
+    )
+    .option(
+      '--ignore-global-config',
+      'Ignore configuration from ~/.claude-composer/config.yaml',
+    )
     .allowUnknownOption()
     .argument('[args...]', 'Arguments to pass to `claude`')
 
@@ -197,9 +250,25 @@ async function main() {
 
   log('※ Getting ready to launch Claude CLI')
 
-  // CLI flag takes precedence over YAML config, default true
+  // CLI flags take precedence over YAML config
   if (options.showNotifications !== undefined) {
     appConfig.show_notifications = options.showNotifications
+  }
+  if (options.dangerouslyDismissEditFilePrompts !== undefined) {
+    appConfig.dangerously_dismiss_edit_file_prompts =
+      options.dangerouslyDismissEditFilePrompts
+  }
+  if (options.dangerouslyDismissCreateFilePrompts !== undefined) {
+    appConfig.dangerously_dismiss_create_file_prompts =
+      options.dangerouslyDismissCreateFilePrompts
+  }
+  if (options.dangerouslyAllowInDirtyDirectory !== undefined) {
+    appConfig.dangerously_allow_in_dirty_directory =
+      options.dangerouslyAllowInDirtyDirectory
+  }
+  if (options.dangerouslyAllowWithoutVersionControl !== undefined) {
+    appConfig.dangerously_allow_without_version_control =
+      options.dangerouslyAllowWithoutVersionControl
   }
 
   if (appConfig.show_notifications !== false) {
@@ -212,6 +281,13 @@ async function main() {
   program.options.forEach(option => {
     if (option.long) knownOptions.add(option.long)
   })
+
+  // Add negatable options
+  knownOptions.add('--no-show-notifications')
+  knownOptions.add('--no-dangerously-dismiss-edit-file-prompts')
+  knownOptions.add('--no-dangerously-dismiss-create-file-prompts')
+  knownOptions.add('--no-dangerously-allow-in-dirty-directory')
+  knownOptions.add('--no-dangerously-allow-without-version-control')
 
   const childArgs: string[] = []
   for (let i = 2; i < process.argv.length; i++) {

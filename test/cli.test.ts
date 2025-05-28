@@ -482,5 +482,38 @@ describe('CLI Wrapper', () => {
       expect(result.stdout).toContain('Notifications are enabled')
       expect(result.exitCode).toBe(0)
     })
+
+    it('should support dangerous option flags without affecting behavior', async () => {
+      const result = await runCli(
+        [
+          '--dangerously-dismiss-edit-file-prompts',
+          '--dangerously-allow-in-dirty-directory',
+          '--toolset',
+          'test-toolset',
+          '--ignore-global-config',
+        ],
+        {
+          env: { ...process.env, HOME: testHomeDir },
+        },
+      )
+
+      expect(result.exitCode).toBe(0)
+      expect(result.stdout).toContain('Mock child app running')
+    })
+
+    it('should support negatable dangerous options', async () => {
+      const result = await runCli(
+        [
+          '--no-dangerously-dismiss-edit-file-prompts',
+          '--no-dangerously-allow-in-dirty-directory',
+        ],
+        {
+          env: { ...process.env, HOME: testHomeDir },
+        },
+      )
+
+      expect(result.exitCode).toBe(0)
+      expect(result.stdout).toContain('Mock child app running')
+    })
   })
 })
