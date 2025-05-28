@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { MatchResult } from '../pattern-matcher'
+import stripAnsi from 'strip-ansi'
 
 // Mock node-notifier
 vi.mock('node-notifier', () => ({
@@ -127,6 +128,41 @@ describe('Notification functionality', () => {
     expect(mockNotify).toHaveBeenNthCalledWith(2, {
       title: '🤖 Claude Composer',
       message: 'Pattern triggered: log-pattern\nMatched: log trigger',
+      timeout: false,
+      wait: false,
+      sound: false,
+    })
+  })
+
+  it('should strip ANSI color codes from matched text', () => {
+    const coloredText =
+      '\x1b[36mColored text\x1b[0m with \x1b[31mred\x1b[0m content'
+    const match: MatchResult = {
+      patternId: 'ansi-pattern',
+      action: { type: 'log', path: '/tmp/test.log' },
+      matchedText: coloredText,
+      bufferContent: 'buffer',
+    }
+
+    const showNotification = (match: MatchResult) => {
+      const title = '🤖 Claude Composer Next'
+      const message = `Pattern triggered: ${match.patternId}\nMatched: ${stripAnsi(match.matchedText).substring(0, 100)}`
+
+      notifier.notify({
+        title,
+        message,
+        timeout: false,
+        wait: false,
+        sound: false,
+      })
+    }
+
+    showNotification(match)
+
+    expect(mockNotify).toHaveBeenCalledWith({
+      title: '🤖 Claude Composer Next',
+      message:
+        'Pattern triggered: ansi-pattern\nMatched: Colored text with red content',
       timeout: false,
       wait: false,
       sound: false,

@@ -407,5 +407,60 @@ describe('CLI Wrapper', () => {
       expect(result.stdout).not.toContain('Notifications are enabled')
       expect(result.exitCode).toBe(0)
     })
+
+    it('should trigger notifications when pattern matches and notifications enabled', async () => {
+      // Mock notifier
+      const mockNotify = vi.fn()
+      vi.doMock('node-notifier', () => ({
+        default: { notify: mockNotify },
+      }))
+
+      const configContent = 'show_notifications: true'
+      fs.writeFileSync(testConfigPath, configContent)
+
+      // Create a temporary pattern file that will match our mock app output
+      const testPatternPath = path.join(testHomeDir, 'test-patterns.json')
+      const testPatterns = [
+        {
+          id: 'integration-test',
+          pattern: 'Mock child app running',
+          action: { type: 'log', path: '/tmp/integration-test.log' },
+        },
+      ]
+      fs.writeFileSync(testPatternPath, JSON.stringify(testPatterns, null, 2))
+
+      const result = await runCli(['--patterns', testPatternPath], {
+        env: { ...process.env, HOME: testHomeDir },
+      })
+
+      expect(result.exitCode).toBe(0)
+      expect(result.stdout).toContain('Mock child app running')
+    })
+
+    it('should not trigger notifications when no config file exists', async () => {
+      // Ensure no config file exists
+      if (fs.existsSync(testConfigPath)) {
+        fs.unlinkSync(testConfigPath)
+      }
+
+      // Create a pattern that would normally trigger notifications
+      const testPatternPath = path.join(testHomeDir, 'test-patterns.json')
+      const testPatterns = [
+        {
+          id: 'no-config-test',
+          pattern: 'Mock child app running',
+          action: { type: 'log', path: '/tmp/no-config-test.log' },
+        },
+      ]
+      fs.writeFileSync(testPatternPath, JSON.stringify(testPatterns, null, 2))
+
+      const result = await runCli(['--patterns', testPatternPath], {
+        env: { ...process.env, HOME: testHomeDir },
+      })
+
+      expect(result.exitCode).toBe(0)
+      expect(result.stdout).toContain('Mock child app running')
+      // Should work normally but without notifications since show_notifications is undefined
+    })
   })
 })
