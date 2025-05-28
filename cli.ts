@@ -16,8 +16,8 @@ if (process.stdin.isTTY) {
     args,
     {
       name: 'xterm-color',
-      cols: 80,
-      rows: 30,
+      cols: process.stdout.columns || 80,
+      rows: process.stdout.rows || 30,
       env: process.env,
       cwd: process.env.PWD,
     },
