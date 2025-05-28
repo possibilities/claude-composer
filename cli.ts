@@ -10,7 +10,8 @@ const logFile = path.join('/tmp', `claude-log-${Date.now()}.txt`)
 const logStream = fs.createWriteStream(logFile, { flags: 'a' })
 
 if (process.stdin.isTTY) {
-  const ptyProcess = pty.spawn('/home/mike/.claude/local/claude', [], {
+  const args = process.argv.slice(2)
+  const ptyProcess = pty.spawn('/home/mike/.claude/local/claude', args, {
     name: 'xterm-color',
     cols: 80,
     rows: 30,
@@ -46,7 +47,8 @@ if (process.stdin.isTTY) {
     ptyProcess.resize(process.stdout.columns, process.stdout.rows)
   })
 } else {
-  const claudeProcess = spawn('/home/mike/.claude/local/claude', [], {
+  const args = process.argv.slice(2)
+  const claudeProcess = spawn('/home/mike/.claude/local/claude', args, {
     stdio: ['pipe', 'pipe', 'pipe'],
     env: {
       ...process.env,
