@@ -238,6 +238,38 @@ describe('CLI Wrapper', () => {
     })
   })
 
+  describe('Pattern matching integration', () => {
+    it('should trigger pattern response when child outputs "Welcome to"', async () => {
+      const pty = await import('node-pty')
+
+      const ptyProcess = pty.spawn('pnpm', ['tsx', cliPath, '--welcome'], {
+        name: 'xterm-color',
+        cols: 80,
+        rows: 30,
+        env: { ...process.env, CLAUDE_APP_PATH: mockAppPath },
+      })
+
+      let output = ''
+      ptyProcess.onData(data => {
+        output += data
+      })
+
+      // Wait for initial output
+      await new Promise(resolve => setTimeout(resolve, 2000))
+
+      // Check that welcome message was output
+      expect(output).toContain('Welcome to Claude Code!')
+
+      // Check that pattern response was received by mock app
+      expect(output).toContain('Received input: Claude Composer is ready!')
+
+      ptyProcess.write('exit\r')
+      await new Promise(resolve => {
+        ptyProcess.onExit(() => resolve(undefined))
+      })
+    }, 10000)
+  })
+
   describe('Parent CLI options', () => {
     it('should handle --show-notifications flag', async () => {
       const result = await runCli(['--show-notifications'])

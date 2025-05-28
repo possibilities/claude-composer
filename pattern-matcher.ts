@@ -62,12 +62,25 @@ export class PatternMatcher {
     const matches: MatchResult[] = []
     const now = Date.now()
 
+    // // Debug logging
+    // if (process.env.NODE_ENV === 'test' || content.includes('Welcome to')) {
+    //   console.error(`[PatternMatcher] Buffer content (${content.length} chars): ${JSON.stringify(content.substring(0, 200))}...`)
+    //   console.error(`[PatternMatcher] Active patterns: ${this.patterns.size}`)
+    // }
+
     for (const [id, pattern] of this.patterns) {
       if (this.isInCooldown(id, now)) {
         continue
       }
 
-      if (pattern.regex.test(content)) {
+      const testResult = pattern.regex.test(content)
+      // if (process.env.NODE_ENV === 'test' || content.includes('Welcome to')) {
+      //   console.error(
+      //     `[PatternMatcher] Testing pattern ${id} (${pattern.config.pattern}) against buffer: ${testResult}`,
+      //   )
+      // }
+
+      if (testResult) {
         matches.push({
           patternId: id,
           response: pattern.config.response,

@@ -24,7 +24,39 @@ if (args.includes('--color')) {
   process.exit(0)
 }
 
-if (args.includes('--size')) {
+if (args.includes('--welcome')) {
+  console.log('╭───────────────────────────────────────────────────╮')
+  console.log('│ ✻ Welcome to Claude Code!                         │')
+  console.log('│                                                   │')
+  console.log('│   /help for help, /status for your current setup  │')
+  console.log('│                                                   │')
+  console.log('│   cwd: /home/mike/code/claude-composer-next       │')
+  console.log('╰───────────────────────────────────────────────────╯')
+
+  // Flush output to ensure it's sent before we start reading
+  if (process.stdout.isTTY) {
+    process.stdout.write('')
+  }
+
+  // Wait for input and echo it back
+  setTimeout(() => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+      terminal: false, // Don't echo input
+    })
+
+    rl.on('line', (input: string) => {
+      console.log(`Received input: ${input}`)
+      if (input.trim() === 'exit') {
+        rl.close()
+        process.exit(0)
+      }
+    })
+  }, 500) // Delay to ensure pattern matcher processes and responds
+
+  // Don't exit, keep the readline interface running
+} else if (args.includes('--size')) {
   console.log(
     'Terminal size:',
     process.stdout.columns + 'x' + process.stdout.rows,
@@ -91,7 +123,7 @@ if (args.includes('--sleep')) {
     console.log('Input length:', inputData.length)
     process.exit(0)
   })
-} else {
+} else if (!args.includes('--welcome')) {
   console.log('Mock child app running')
   console.log('Environment:', process.env.MOCK_ENV || 'not set')
   process.exit(0)
