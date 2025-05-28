@@ -14,12 +14,12 @@ let ptyProcess: pty.IPty | undefined
 let childProcess: ChildProcess | undefined
 let isRawMode = false
 
-const configManager = new PatternConfigManager()
-const settings = configManager.getSettings()
-const patternMatcher = new PatternMatcher(settings.bufferSize)
+const patternManager = new PatternConfigManager()
+const patternSettings = patternManager.getSettings()
+const patternMatcher = new PatternMatcher(patternSettings.bufferSize)
 const responseQueue = new ResponseQueue()
 
-configManager.getPatterns().forEach(pattern => {
+patternManager.getPatterns().forEach(pattern => {
   patternMatcher.addPattern(pattern)
 })
 
