@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "description": "Claude Composer",
   "scripts": {
-    "format": "prettier --write \"**/*.{js,mjs,jsx,ts,tsx,json,md,mdx,css,yml,yaml}\""
+    "format": "prettier --write \"**/*.{js,mjs,jsx,ts,tsx,json,md,mdx,css,yml,yaml}\"",
+    "test": "vitest",
+    "test:watch": "vitest --watch"
   },
   "type": "module",
   "bin": {
@@ -15,6 +17,8 @@
     "xterm": "^5.3.0"
   },
   "devDependencies": {
-    "prettier": "^3.5.3"
+    "@types/node": "^22.15.23",
+    "prettier": "^3.5.3",
+    "vitest": "^3.1.4"
   }
 }

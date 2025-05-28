@@ -14,7 +14,8 @@ let childProcess: ChildProcess | undefined
 let isRawMode = false
 
 const childAppPath =
-  process.env.CLAUDE_APP_PATH || '/home/mike/.claude/local/claude'
+  process.env.CLAUDE_APP_PATH ||
+  path.join(os.homedir(), '.claude', 'local', 'claude')
 
 function cleanup() {
   if (logStream && !logStream.destroyed) {
