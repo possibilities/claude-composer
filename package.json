@@ -12,7 +12,9 @@
     "claude-composer-next": "./cli.ts"
   },
   "dependencies": {
+    "@types/js-yaml": "^4.0.9",
     "commander": "^14.0.0",
+    "js-yaml": "^4.1.0",
     "node-pty": "^1.0.0",
     "strip-ansi": "^7.1.0",
     "tsx": "^4.7.0",

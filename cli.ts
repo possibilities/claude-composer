@@ -7,14 +7,38 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { Command } from 'commander'
 import stripAnsi from 'strip-ansi'
+import * as yaml from 'js-yaml'
 import { PatternMatcher } from './pattern-matcher'
 import { ResponseQueue } from './response-queue'
+
+interface AppConfig {
+  show_notifications?: boolean
+}
 
 let ptyProcess: pty.IPty | undefined
 let childProcess: ChildProcess | undefined
 let isRawMode = false
 let patternMatcher: PatternMatcher
 let responseQueue: ResponseQueue
+let appConfig: AppConfig = {}
+
+async function loadConfig(configPath?: string): Promise<void> {
+  const finalConfigPath =
+    configPath || path.join(process.cwd(), 'claude-composer.yaml')
+
+  if (fs.existsSync(finalConfigPath)) {
+    try {
+      const configData = fs.readFileSync(finalConfigPath, 'utf8')
+      const parsed = yaml.load(configData) as AppConfig
+      appConfig = { ...appConfig, ...parsed }
+    } catch (error) {
+      console.error('Error loading configuration file:', error)
+    }
+  }
+}
+
+// Export for testing
+export { loadConfig, appConfig }
 
 async function initializePatterns() {
   // Load patterns from specified file or default
@@ -98,6 +122,7 @@ function handlePatternMatches(data: string): void {
 }
 
 async function main() {
+  await loadConfig()
   await initializePatterns()
 
   const program = new Command()
@@ -113,7 +138,11 @@ async function main() {
 
   log('※ Getting ready to launch Claude CLI')
 
-  if (options.showNotifications) {
+  // CLI flag takes precedence over YAML config
+  const showNotifications =
+    options.showNotifications ?? appConfig.show_notifications ?? false
+
+  if (showNotifications) {
     log('※ Notifications are enabled')
   }
 
