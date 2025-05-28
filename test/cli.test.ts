@@ -312,7 +312,7 @@ describe('CLI Wrapper', () => {
   })
 
   describe('YAML Configuration', () => {
-    const testHomeDir = path.join(__dirname, 'tmp-home')
+    const testHomeDir = path.join('/tmp', 'claude-composer-test-home')
     const testConfigDir = path.join(testHomeDir, '.claude-composer')
     const testConfigPath = path.join(testConfigDir, 'config.yaml')
 
