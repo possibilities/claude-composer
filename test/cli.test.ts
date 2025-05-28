@@ -491,6 +491,8 @@ describe('CLI Wrapper', () => {
           '--toolset',
           'test-toolset',
           '--ignore-global-config',
+          '--echo-args',
+          'final-arg',
         ],
         {
           env: { ...process.env, HOME: testHomeDir },
@@ -498,7 +500,17 @@ describe('CLI Wrapper', () => {
       )
 
       expect(result.exitCode).toBe(0)
-      expect(result.stdout).toContain('Mock child app running')
+      // Verify parent flags and their values are filtered out
+      expect(result.stdout).toContain('ARGS: --echo-args final-arg')
+      expect(result.stdout).not.toContain(
+        '--dangerously-dismiss-edit-file-prompts',
+      )
+      expect(result.stdout).not.toContain(
+        '--dangerously-allow-in-dirty-directory',
+      )
+      expect(result.stdout).not.toContain('--toolset')
+      expect(result.stdout).not.toContain('test-toolset')
+      expect(result.stdout).not.toContain('--ignore-global-config')
     })
 
     it('should support negatable dangerous options', async () => {
@@ -514,6 +526,25 @@ describe('CLI Wrapper', () => {
 
       expect(result.exitCode).toBe(0)
       expect(result.stdout).toContain('Mock child app running')
+    })
+
+    it('should support --go-off-yolo-what-could-go-wrong flag without affecting behavior', async () => {
+      const result = await runCli(
+        ['--go-off-yolo-what-could-go-wrong', '--echo-args', 'test'],
+        {
+          env: { ...process.env, HOME: testHomeDir },
+        },
+      )
+
+      expect(result.exitCode).toBe(0)
+      // Verify --go-off-yolo-what-could-go-wrong is filtered out and not passed to child
+      expect(result.stdout).toContain('ARGS: --echo-args test')
+      expect(result.stdout).not.toContain('--go-off-yolo-what-could-go-wrong')
+      // Verify no special behavior is triggered by --go-off-yolo-what-could-go-wrong
+      expect(result.stdout).not.toContain('going off')
+      expect(result.stdout).not.toContain('GO OFF')
+      // Verify notifications still work as normal (default enabled)
+      expect(result.stdout).toContain('Notifications are enabled')
     })
   })
 })

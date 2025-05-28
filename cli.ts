@@ -215,6 +215,10 @@ async function main() {
       '--ignore-global-config',
       'Ignore configuration from ~/.claude-composer/config.yaml',
     )
+    .option(
+      '--go-off-yolo-what-could-go-wrong',
+      'Go off. YOLO. What could go wrong?',
+    )
     .allowUnknownOption()
     .argument('[args...]', 'Arguments to pass to `claude`')
 
@@ -294,6 +298,9 @@ async function main() {
     const arg = process.argv[i]
     if (!knownOptions.has(arg)) {
       childArgs.push(arg)
+    } else if (arg === '--toolset' && i + 1 < process.argv.length) {
+      // Skip the next argument which is the toolset value
+      i++
     }
   }
 
