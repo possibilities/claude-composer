@@ -307,6 +307,26 @@ async function main() {
 
   const options = program.opts()
 
+  // Check for --print option early
+  const hasPrintOption = process.argv.includes('--print')
+
+  if (hasPrintOption) {
+    log(`※ Starting Claude Code in non-interactive mode due to --print option`)
+
+    // Pass all arguments directly to child app
+    const childArgs = process.argv.slice(2)
+    const printProcess = spawn(childAppPath, childArgs, {
+      stdio: 'inherit',
+      env: process.env,
+    })
+
+    printProcess.on('exit', code => {
+      process.exit(code || 0)
+    })
+
+    return
+  }
+
   // Early subcommand detection
   const args = program.args
   let isSubcommand = false
