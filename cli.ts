@@ -307,6 +307,35 @@ async function main() {
 
   const options = program.opts()
 
+  // Early subcommand detection
+  const args = program.args
+  let isSubcommand = false
+  let subcommandName: string | undefined
+
+  if (args.length > 0 && !args[0].includes(' ') && !args[0].startsWith('-')) {
+    // First positional argument with no spaces and not an option is likely a subcommand
+    isSubcommand = true
+    subcommandName = args[0]
+  }
+
+  if (isSubcommand) {
+    log(`※ Bypassing Claude Composer`)
+    log(`※ Running Claude Code subcommand: ${subcommandName}`)
+
+    // Pass all arguments directly to child app
+    const childArgs = process.argv.slice(2)
+    const subcommandProcess = spawn(childAppPath, childArgs, {
+      stdio: 'inherit',
+      env: process.env,
+    })
+
+    subcommandProcess.on('exit', code => {
+      process.exit(code || 0)
+    })
+
+    return
+  }
+
   log('※ Getting ready to launch Claude CLI')
 
   // CLI flags take precedence over YAML config
