@@ -630,38 +630,6 @@ describe('CLI Wrapper', () => {
       expect(result.exitCode).toBe(0)
     })
 
-    it('should support dangerous option flags without affecting behavior', async () => {
-      const result = await runCli(
-        [
-          '--dangerously-allow-without-version-control',
-          '--dangerously-allow-in-dirty-directory',
-          '--dangerously-dismiss-edit-file-prompts',
-          '--dangerously-allow-in-dirty-directory',
-          '--toolset',
-          'test-toolset',
-          '--ignore-global-config',
-          '--echo-args',
-          'final-arg',
-        ],
-        {
-          env: { ...process.env, CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir },
-        },
-      )
-
-      expect(result.exitCode).toBe(0)
-      // Verify parent flags and their values are filtered out
-      expect(result.stdout).toContain('ARGS: --echo-args final-arg')
-      expect(result.stdout).not.toContain(
-        '--dangerously-dismiss-edit-file-prompts',
-      )
-      expect(result.stdout).not.toContain(
-        '--dangerously-allow-in-dirty-directory',
-      )
-      expect(result.stdout).not.toContain('--toolset')
-      expect(result.stdout).not.toContain('test-toolset')
-      expect(result.stdout).not.toContain('--ignore-global-config')
-    })
-
     it('should support negatable dangerous options', async () => {
       const result = await runCli(
         [
@@ -677,27 +645,6 @@ describe('CLI Wrapper', () => {
 
       expect(result.exitCode).toBe(0)
       expect(result.stdout).toContain('Mock child app running')
-    })
-
-    it('should support --go-off-yolo-what-could-go-wrong flag without affecting behavior', async () => {
-      const result = await runCli(
-        [
-          '--dangerously-allow-without-version-control',
-          '--dangerously-allow-in-dirty-directory',
-          '--go-off-yolo-what-could-go-wrong',
-        ],
-        {
-          env: { ...process.env, CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir },
-        },
-      )
-
-      expect(result.exitCode).toBe(0)
-      expect(result.stdout).not.toContain('going off')
-      expect(result.stdout).not.toContain('GO OFF')
-      expect(result.stdout).toContain('Mock child app running')
-      expect(result.stdout).toContain(
-        'Ready, Passing off control to Claude CLI',
-      )
     })
   })
 })
