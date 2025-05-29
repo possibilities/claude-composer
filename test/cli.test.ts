@@ -15,7 +15,6 @@ describe('CLI Wrapper', () => {
   afterEach(() => {
     delete process.env.CLAUDE_APP_PATH
     delete process.env.CLAUDE_PATTERNS_PATH
-    // Clean up test log file
     try {
       fs.unlinkSync('/tmp/test-pattern-match.log')
     } catch {}
@@ -341,11 +340,6 @@ describe('CLI Wrapper', () => {
       // Check that welcome message was output
       expect(output).toContain('Welcome to Claude Code!')
 
-      // Check if the log pattern was triggered (verifies pattern matching works)
-      // Note: This assertion is flaky due to timing issues in the test environment
-      // const logExists = fs.existsSync('/tmp/test-pattern-match.log')
-      // expect(logExists).toBe(true)
-
       // Check that pattern response was received by mock app
       expect(output).toContain('Received input: Test response')
 
@@ -542,8 +536,6 @@ describe('CLI Wrapper', () => {
         },
       )
 
-      // Note: Due to module-level config caching, this test may not work correctly when run with other tests
-      // The test passes in isolation but may fail when run as part of the full suite
       expect(result.exitCode).toBe(0)
       expect(result.stdout).toContain('Mock child app running')
     })
@@ -700,12 +692,9 @@ describe('CLI Wrapper', () => {
       )
 
       expect(result.exitCode).toBe(0)
-      // Verify no special behavior is triggered by --go-off-yolo-what-could-go-wrong
       expect(result.stdout).not.toContain('going off')
       expect(result.stdout).not.toContain('GO OFF')
-      // Verify the app runs normally
       expect(result.stdout).toContain('Mock child app running')
-      // Verify notifications still work as normal (default enabled)
       expect(result.stdout).toContain(
         'Ready, Passing off control to Claude CLI',
       )

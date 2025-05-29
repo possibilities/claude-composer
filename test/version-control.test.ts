@@ -11,12 +11,10 @@ describe('Version Control Check', () => {
   let testDir: string
 
   beforeEach(() => {
-    // Create a temporary directory for testing
     testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'claude-composer-test-'))
   })
 
   afterEach(() => {
-    // Clean up the temporary directory
     fs.rmSync(testDir, { recursive: true, force: true })
   })
 
@@ -36,7 +34,6 @@ describe('Version Control Check', () => {
 
     child.stdout.on('data', data => {
       output += data.toString()
-      // When we see the prompt, respond with 'n'
       if (output.includes('※ Do you want to continue? (y/N):')) {
         child.stdin.write('n\n')
       }
@@ -66,7 +63,6 @@ describe('Version Control Check', () => {
 
     child.stdout.on('data', data => {
       output += data.toString()
-      // When we see the prompt, respond with 'y'
       if (output.includes('※ Do you want to continue? (y/N):')) {
         child.stdin.write('y\n')
       }
@@ -82,7 +78,6 @@ describe('Version Control Check', () => {
       done()
     })
 
-    // Kill the process after a short delay to simulate normal exit
     setTimeout(() => {
       child.kill()
     }, 100)
@@ -120,14 +115,12 @@ describe('Version Control Check', () => {
       done()
     })
 
-    // Kill the process after a short delay to simulate normal exit
     setTimeout(() => {
       child.kill()
     }, 100)
   })
 
   it('should proceed normally when git directory exists', done => {
-    // Create a .git directory in the test directory
     fs.mkdirSync(path.join(testDir, '.git'))
 
     const child = spawn('tsx', [CLI_PATH], {
@@ -157,18 +150,15 @@ describe('Version Control Check', () => {
       done()
     })
 
-    // Kill the process after a short delay to simulate normal exit
     setTimeout(() => {
       child.kill()
     }, 100)
   })
 
   it('should skip prompt when dangerously_allow_without_version_control is set in config', done => {
-    // Create test config directory and file
     const testConfigDir = path.join(testDir, 'test-config')
     const configPath = path.join(testConfigDir, 'config.yaml')
 
-    // Create test config
     if (!fs.existsSync(testConfigDir)) {
       fs.mkdirSync(testConfigDir, { recursive: true })
     }
@@ -205,7 +195,6 @@ describe('Version Control Check', () => {
       done()
     })
 
-    // Kill the process after a short delay to simulate normal exit
     setTimeout(() => {
       child.kill()
     }, 100)

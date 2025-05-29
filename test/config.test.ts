@@ -48,7 +48,6 @@ describe('Configuration Loading', () => {
     const invalidConfig = 'show_notifications: [invalid: yaml'
     fs.writeFileSync(testConfigPath, invalidConfig)
 
-    // Mock console.error to avoid test output pollution
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     await loadConfig(testConfigPath)
@@ -65,7 +64,6 @@ describe('Configuration Loading', () => {
   it('should load multiple configuration options', async () => {
     const configContent = `
 show_notifications: true
-# Future options can be added here
 `
     fs.writeFileSync(testConfigPath, configContent)
 

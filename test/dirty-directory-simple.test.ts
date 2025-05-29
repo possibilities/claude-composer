@@ -28,14 +28,11 @@ describe('Dirty Directory Check (Simple)', () => {
     // Clean up the temporary directory
     try {
       fs.rmSync(testDir, { recursive: true, force: true })
-    } catch (error) {
-      // Ignore cleanup errors - they don't affect test results
-    }
+    } catch (error) {}
   })
 
   it('should proceed normally when git directory is clean', async () => {
     const result = await runCli([], testDir)
-    // Accept both 0 (normal exit) and 143 (SIGTERM) as valid since we kill the process
     expect([0, 143]).toContain(result.exitCode)
     expect(result.output).not.toContain(
       'Running in directory with uncommitted changes',
@@ -51,7 +48,6 @@ describe('Dirty Directory Check (Simple)', () => {
       ['--dangerously-allow-in-dirty-directory'],
       testDir,
     )
-    // Accept both 0 (normal exit) and 143 (SIGTERM) as valid since we kill the process
     expect([0, 143]).toContain(result.exitCode)
     expect(result.output).not.toContain('Do you want to continue?')
     expect(result.output).toContain(
@@ -87,7 +83,6 @@ function runCli(
       resolve({ output, exitCode: code || 0 })
     })
 
-    // Kill the process after a short delay
     setTimeout(() => {
       if (!child.killed) {
         child.kill()

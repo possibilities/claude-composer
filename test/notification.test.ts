@@ -2,14 +2,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { MatchResult } from '../pattern-matcher'
 import stripAnsi from 'strip-ansi'
 
-// Mock node-notifier
 vi.mock('node-notifier', () => ({
   default: {
     notify: vi.fn(),
   },
 }))
 
-// Import after mocking
 import notifier from 'node-notifier'
 const mockNotify = vi.mocked(notifier.notify)
 
@@ -26,7 +24,6 @@ describe('Notification functionality', () => {
       bufferContent: 'Some buffer content with Welcome to Claude Code! in it',
     }
 
-    // Import the function we want to test
     const showNotification = (match: MatchResult) => {
       const title = '🤖 Claude Composer'
       const message = `Pattern triggered: ${match.patternId}\nMatched: ${match.matchedText.substring(0, 100)}`
