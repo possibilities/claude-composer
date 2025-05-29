@@ -100,7 +100,7 @@ describe('Dangerous flags warnings', () => {
     )
   })
 
-  test('shows warning for --dangerously-dismiss-bash-prompts', async () => {
+  test('shows warning for --dangerously-dismiss-bash-command-prompts', async () => {
     const env = {
       ...process.env,
       CLAUDE_COMPOSER_CONFIG_DIR: path.join(tmpDir, '.claude-composer'),
@@ -110,14 +110,14 @@ describe('Dangerous flags warnings', () => {
 
     const output = await runCliWithArgs(
       [
-        '--dangerously-dismiss-bash-prompts',
+        '--dangerously-dismiss-bash-command-prompts',
         '--dangerously-allow-in-dirty-directory',
       ],
       env,
     )
 
     expect(output).toContain(
-      '⚠️  WARNING: --dangerously-dismiss-bash-prompts is enabled',
+      '⚠️  WARNING: --dangerously-dismiss-bash-command-prompts is enabled',
     )
     expect(output).toContain(
       'All bash command prompts will be automatically dismissed!',
@@ -136,7 +136,7 @@ describe('Dangerous flags warnings', () => {
       [
         '--dangerously-dismiss-edit-file-prompts',
         '--dangerously-dismiss-create-file-prompts',
-        '--dangerously-dismiss-bash-prompts',
+        '--dangerously-dismiss-bash-command-prompts',
         '--dangerously-allow-in-dirty-directory',
       ],
       env,
@@ -155,7 +155,7 @@ describe('Dangerous flags warnings', () => {
       'All file creation prompts will be automatically dismissed!',
     )
     expect(output).toContain(
-      '⚠️  WARNING: --dangerously-dismiss-bash-prompts is enabled',
+      '⚠️  WARNING: --dangerously-dismiss-bash-command-prompts is enabled',
     )
     expect(output).toContain(
       'All bash command prompts will be automatically dismissed!',
@@ -166,7 +166,7 @@ describe('Dangerous flags warnings', () => {
     // Write config file with dangerous flags
     const config = `dangerously_dismiss_edit_file_prompts: true
 dangerously_dismiss_create_file_prompts: true
-dangerously_dismiss_bash_prompts: true
+dangerously_dismiss_bash_command_prompts: true
 `
     fs.writeFileSync(configFile, config)
 
@@ -195,7 +195,7 @@ dangerously_dismiss_bash_prompts: true
       'All file creation prompts will be automatically dismissed!',
     )
     expect(output).toContain(
-      '⚠️  WARNING: --dangerously-dismiss-bash-prompts is enabled',
+      '⚠️  WARNING: --dangerously-dismiss-bash-command-prompts is enabled',
     )
     expect(output).toContain(
       'All bash command prompts will be automatically dismissed!',

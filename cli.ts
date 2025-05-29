@@ -18,7 +18,7 @@ interface AppConfig {
   show_notifications?: boolean
   dangerously_dismiss_edit_file_prompts?: boolean
   dangerously_dismiss_create_file_prompts?: boolean
-  dangerously_dismiss_bash_prompts?: boolean
+  dangerously_dismiss_bash_command_prompts?: boolean
   dangerously_allow_in_dirty_directory?: boolean
   dangerously_allow_without_version_control?: boolean
   log_all_prompts?: boolean
@@ -40,7 +40,7 @@ let appConfig: AppConfig = {
   show_notifications: true,
   dangerously_dismiss_edit_file_prompts: false,
   dangerously_dismiss_create_file_prompts: false,
-  dangerously_dismiss_bash_prompts: false,
+  dangerously_dismiss_bash_command_prompts: false,
   dangerously_allow_in_dirty_directory: false,
   dangerously_allow_without_version_control: false,
   log_all_prompts: false,
@@ -229,7 +229,7 @@ async function initializePatterns() {
     }
     if (
       pattern.id === 'bash-command-prompt' &&
-      !appConfig.dangerously_dismiss_bash_prompts
+      !appConfig.dangerously_dismiss_bash_command_prompts
     ) {
       return
     }
@@ -417,12 +417,12 @@ async function main() {
       'Do not automatically dismiss create file prompts',
     )
     .option(
-      '--dangerously-dismiss-bash-prompts',
-      'Automatically dismiss bash prompts',
+      '--dangerously-dismiss-bash-command-prompts',
+      'Automatically dismiss bash command prompts',
     )
     .option(
-      '--no-dangerously-dismiss-bash-prompts',
-      'Do not automatically dismiss bash prompts',
+      '--no-dangerously-dismiss-bash-command-prompts',
+      'Do not automatically dismiss bash command prompts',
     )
     .option(
       '--dangerously-allow-in-dirty-directory',
@@ -450,7 +450,7 @@ async function main() {
     )
     .option(
       '--log-all-prompts',
-      'Log all prompts (edit, create, bash) to files in /tmp',
+      'Log all prompts (edit, create, bash command) to files in /tmp',
     )
     .option('--no-log-all-prompts', 'Do not log prompts')
     .option(
@@ -537,7 +537,7 @@ async function main() {
     if (
       options.dangerouslyDismissEditFilePrompts !== undefined ||
       options.dangerouslyDismissCreateFilePrompts !== undefined ||
-      options.dangerouslyDismissBashPrompts !== undefined
+      options.dangerouslyDismissBashCommandPrompts !== undefined
     ) {
       console.error(
         '\x1b[31m※ Error: Cannot use --go-off-yolo-what-could-go-wrong with individual dangerous prompt flags\x1b[0m',
@@ -608,7 +608,7 @@ async function main() {
 
     appConfig.dangerously_dismiss_edit_file_prompts = true
     appConfig.dangerously_dismiss_create_file_prompts = true
-    appConfig.dangerously_dismiss_bash_prompts = true
+    appConfig.dangerously_dismiss_bash_command_prompts = true
 
     warn('※ YOLO mode activated - All safety prompts disabled!')
   }
@@ -631,11 +631,11 @@ async function main() {
       options.dangerouslyDismissCreateFilePrompts
   }
   if (
-    options.dangerouslyDismissBashPrompts !== undefined &&
+    options.dangerouslyDismissBashCommandPrompts !== undefined &&
     !options.goOffYoloWhatCouldGoWrong
   ) {
-    appConfig.dangerously_dismiss_bash_prompts =
-      options.dangerouslyDismissBashPrompts
+    appConfig.dangerously_dismiss_bash_command_prompts =
+      options.dangerouslyDismissBashCommandPrompts
   }
   if (options.dangerouslyAllowInDirtyDirectory !== undefined) {
     appConfig.dangerously_allow_in_dirty_directory =
@@ -744,9 +744,9 @@ async function main() {
       '\x1b[33m   All file creation prompts will be automatically dismissed!\x1b[0m',
     )
   }
-  if (appConfig.dangerously_dismiss_bash_prompts) {
+  if (appConfig.dangerously_dismiss_bash_command_prompts) {
     console.log(
-      '\x1b[33m⚠️  WARNING: --dangerously-dismiss-bash-prompts is enabled\x1b[0m',
+      '\x1b[33m⚠️  WARNING: --dangerously-dismiss-bash-command-prompts is enabled\x1b[0m',
     )
     console.log(
       '\x1b[33m   All bash command prompts will be automatically dismissed!\x1b[0m',
@@ -788,7 +788,7 @@ async function main() {
   knownOptions.add('--no-show-notifications')
   knownOptions.add('--no-dangerously-dismiss-edit-file-prompts')
   knownOptions.add('--no-dangerously-dismiss-create-file-prompts')
-  knownOptions.add('--no-dangerously-dismiss-bash-prompts')
+  knownOptions.add('--no-dangerously-dismiss-bash-command-prompts')
   knownOptions.add('--no-dangerously-allow-in-dirty-directory')
   knownOptions.add('--no-dangerously-allow-without-version-control')
   knownOptions.add('--no-log-all-prompts')

@@ -25,7 +25,7 @@ describe('--ignore-global-config flag', () => {
 show_notifications: true
 dangerously_dismiss_edit_file_prompts: true
 dangerously_dismiss_create_file_prompts: true
-dangerously_dismiss_bash_prompts: true
+dangerously_dismiss_bash_command_prompts: true
 `
     fs.writeFileSync(configPath, testConfig)
   })
@@ -93,7 +93,7 @@ dangerously_dismiss_bash_prompts: true
       'WARNING: --dangerously-dismiss-create-file-prompts is enabled',
     )
     expect(result.stdout).not.toContain(
-      'WARNING: --dangerously-dismiss-bash-prompts is enabled',
+      'WARNING: --dangerously-dismiss-bash-command-prompts is enabled',
     )
   })
 
@@ -147,7 +147,7 @@ dangerously_dismiss_bash_prompts: true
       'WARNING: --dangerously-dismiss-create-file-prompts is enabled',
     )
     expect(result.stdout).toContain(
-      'WARNING: --dangerously-dismiss-bash-prompts is enabled',
+      'WARNING: --dangerously-dismiss-bash-command-prompts is enabled',
     )
   })
 

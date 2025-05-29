@@ -146,12 +146,12 @@ describe('YOLO Flag functionality', () => {
       expect(result.exitCode).toBe(1)
     })
 
-    it('should conflict with --dangerously-dismiss-bash-prompts', async () => {
+    it('should conflict with --dangerously-dismiss-bash-command-prompts', async () => {
       const result = await runCli([
         '--dangerously-allow-without-version-control',
         '--dangerously-allow-in-dirty-directory',
         '--go-off-yolo-what-could-go-wrong',
-        '--dangerously-dismiss-bash-prompts',
+        '--dangerously-dismiss-bash-command-prompts',
       ])
 
       expect(result.stderr).toContain(

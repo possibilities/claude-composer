@@ -17,7 +17,7 @@ const createFilePattern = [
 ]
 
 const bashCommandPattern = [
-  'Bash command',
+  'bash command',
   'Do you want to proceed?',
   '❯ 1. Yes',
   "2. Yes, and don't ask again for",

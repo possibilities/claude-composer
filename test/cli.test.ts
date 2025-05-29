@@ -637,7 +637,7 @@ describe('CLI Wrapper', () => {
           '--dangerously-allow-in-dirty-directory',
           '--no-dangerously-dismiss-edit-file-prompts',
           '--no-dangerously-dismiss-create-file-prompts',
-          '--no-dangerously-dismiss-bash-prompts',
+          '--no-dangerously-dismiss-bash-command-prompts',
         ],
         {
           env: { ...process.env, CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir },
@@ -648,12 +648,12 @@ describe('CLI Wrapper', () => {
       expect(result.stdout).toContain('Mock child app running')
     })
 
-    it('should handle --dangerously-dismiss-bash-prompts flag', async () => {
+    it('should handle --dangerously-dismiss-bash-command-prompts flag', async () => {
       const result = await runCli(
         [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
-          '--dangerously-dismiss-bash-prompts',
+          '--dangerously-dismiss-bash-command-prompts',
           '--echo-args',
         ],
         {
@@ -667,11 +667,13 @@ describe('CLI Wrapper', () => {
       const argsLine = result.stdout
         .split('\n')
         .find(line => line.includes('ARGS:'))
-      expect(argsLine).not.toContain('--dangerously-dismiss-bash-prompts')
+      expect(argsLine).not.toContain(
+        '--dangerously-dismiss-bash-command-prompts',
+      )
     })
 
-    it('should load dangerously_dismiss_bash_prompts from config', async () => {
-      const configContent = 'dangerously_dismiss_bash_prompts: true'
+    it('should load dangerously_dismiss_bash_command_prompts from config', async () => {
+      const configContent = 'dangerously_dismiss_bash_command_prompts: true'
       fs.writeFileSync(testConfigPath, configContent)
 
       const result = await runCli(
@@ -688,13 +690,13 @@ describe('CLI Wrapper', () => {
       expect(result.stdout).toContain('Mock child app running')
     })
 
-    it('should prioritize CLI flag over config for bash prompts', async () => {
-      const configContent = 'dangerously_dismiss_bash_prompts: true'
+    it('should prioritize CLI flag over config for bash command prompts', async () => {
+      const configContent = 'dangerously_dismiss_bash_command_prompts: true'
       fs.writeFileSync(testConfigPath, configContent)
 
       const result = await runCli(
         [
-          '--no-dangerously-dismiss-bash-prompts',
+          '--no-dangerously-dismiss-bash-command-prompts',
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
         ],
@@ -714,7 +716,7 @@ describe('CLI Wrapper', () => {
           '--dangerously-allow-in-dirty-directory',
           '--dangerously-dismiss-edit-file-prompts',
           '--dangerously-dismiss-create-file-prompts',
-          '--dangerously-dismiss-bash-prompts',
+          '--dangerously-dismiss-bash-command-prompts',
           '--echo-args',
         ],
         {
@@ -732,7 +734,9 @@ describe('CLI Wrapper', () => {
       expect(argsLine).not.toContain(
         '--dangerously-dismiss-create-file-prompts',
       )
-      expect(argsLine).not.toContain('--dangerously-dismiss-bash-prompts')
+      expect(argsLine).not.toContain(
+        '--dangerously-dismiss-bash-command-prompts',
+      )
     })
 
     it('should handle mixed positive and negative dismiss flags', async () => {
@@ -742,7 +746,7 @@ describe('CLI Wrapper', () => {
           '--dangerously-allow-in-dirty-directory',
           '--dangerously-dismiss-edit-file-prompts',
           '--no-dangerously-dismiss-create-file-prompts',
-          '--dangerously-dismiss-bash-prompts',
+          '--dangerously-dismiss-bash-command-prompts',
           '--echo-args',
         ],
         {
