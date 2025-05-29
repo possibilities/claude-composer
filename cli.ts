@@ -20,6 +20,7 @@ interface AppConfig {
   dangerously_dismiss_bash_prompts?: boolean
   dangerously_allow_in_dirty_directory?: boolean
   dangerously_allow_without_version_control?: boolean
+  log_all_prompts?: boolean
 }
 
 let ptyProcess: pty.IPty | undefined
@@ -34,6 +35,7 @@ let appConfig: AppConfig = {
   dangerously_dismiss_bash_prompts: false,
   dangerously_allow_in_dirty_directory: false,
   dangerously_allow_without_version_control: false,
+  log_all_prompts: false,
 }
 
 function getConfigDirectory(): string {
@@ -77,7 +79,7 @@ async function initializePatterns() {
   responseQueue = new ResponseQueue()
 
   PATTERNS.forEach(pattern => {
-    // Only add patterns if their corresponding dangerous flag is set
+    // Handle prompt patterns based on dangerous flags
     if (
       pattern.id === 'edit-file-prompt' &&
       !appConfig.dangerously_dismiss_edit_file_prompts
@@ -94,6 +96,12 @@ async function initializePatterns() {
       pattern.id === 'bash-command-prompt' &&
       !appConfig.dangerously_dismiss_bash_prompts
     ) {
+      return
+    }
+
+    // Handle log patterns based on log_all_prompts flag
+    const isLogPattern = pattern.id.endsWith('-log')
+    if (isLogPattern && !appConfig.log_all_prompts) {
       return
     }
 
@@ -300,6 +308,11 @@ async function main() {
       'Ignore configuration from ~/.claude-composer/config.yaml',
     )
     .option(
+      '--log-all-prompts',
+      'Log all prompts (edit, create, bash) to files in /tmp',
+    )
+    .option('--no-log-all-prompts', 'Do not log prompts')
+    .option(
       '--go-off-yolo-what-could-go-wrong',
       'Go off. YOLO. What could go wrong?',
     )
@@ -505,9 +518,16 @@ async function main() {
     appConfig.dangerously_allow_without_version_control =
       options.dangerouslyAllowWithoutVersionControl
   }
+  if (options.logAllPrompts !== undefined) {
+    appConfig.log_all_prompts = options.logAllPrompts
+  }
 
   if (appConfig.show_notifications !== false) {
     log('※ Notifications are enabled')
+  }
+
+  if (appConfig.log_all_prompts) {
+    log('※ Logging all prompts to /tmp')
   }
 
   // Preflight checks
@@ -632,6 +652,7 @@ async function main() {
   knownOptions.add('--no-dangerously-dismiss-bash-prompts')
   knownOptions.add('--no-dangerously-allow-in-dirty-directory')
   knownOptions.add('--no-dangerously-allow-without-version-control')
+  knownOptions.add('--no-log-all-prompts')
 
   const childArgs: string[] = []
   for (let i = 2; i < process.argv.length; i++) {
