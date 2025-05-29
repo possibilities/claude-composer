@@ -26,9 +26,9 @@ if (args.includes('--color')) {
 
 if (args.includes('--welcome')) {
   console.log('╭───────────────────────────────────────────────────╮')
-  console.log('│ ✻ Welcome to Claude Code!                         │')
+  console.log('│ ✻ TEST_PATTERN_TRIGGER Mock App Test              │')
   console.log('│                                                   │')
-  console.log('│   /help for help, /status for your current setup  │')
+  console.log('│   This is a test pattern for automated testing    │')
   console.log('│                                                   │')
   console.log('│   cwd: /home/mike/code/claude-composer-next       │')
   console.log('╰───────────────────────────────────────────────────╯')

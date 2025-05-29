@@ -337,8 +337,8 @@ describe('CLI Wrapper', () => {
       // Wait for initial output and pattern processing
       await new Promise(resolve => setTimeout(resolve, 3000))
 
-      // Check that welcome message was output
-      expect(output).toContain('Welcome to Claude Code!')
+      // Check that test pattern trigger was output
+      expect(output).toContain('TEST_PATTERN_TRIGGER')
 
       // Check that pattern response was received by mock app
       expect(output).toContain('Received input: Test response')

@@ -77,6 +77,26 @@ async function initializePatterns() {
   responseQueue = new ResponseQueue()
 
   PATTERNS.forEach(pattern => {
+    // Only add patterns if their corresponding dangerous flag is set
+    if (
+      pattern.id === 'edit-file-prompt' &&
+      !appConfig.dangerously_dismiss_edit_file_prompts
+    ) {
+      return
+    }
+    if (
+      pattern.id === 'create-file-prompt' &&
+      !appConfig.dangerously_dismiss_create_file_prompts
+    ) {
+      return
+    }
+    if (
+      pattern.id === 'bash-command-prompt' &&
+      !appConfig.dangerously_dismiss_bash_prompts
+    ) {
+      return
+    }
+
     patternMatcher.addPattern(pattern)
   })
 }
@@ -207,7 +227,6 @@ function handlePatternMatches(data: string): void {
 async function main() {
   ensureConfigDirectory()
   await loadConfig()
-  await initializePatterns()
 
   // Check if --help was requested before parsing
   const helpRequested =
@@ -585,6 +604,9 @@ async function main() {
       '\x1b[33m   All bash command prompts will be automatically dismissed!\x1b[0m',
     )
   }
+
+  // Initialize patterns after all config options have been set
+  await initializePatterns()
 
   log('※ Ready, Passing off control to Claude CLI')
 

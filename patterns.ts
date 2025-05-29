@@ -5,8 +5,8 @@ export const PATTERNS: PatternConfig[] = [
     id: 'edit-file-prompt',
     pattern: 'Do you want to make this edit to',
     action: {
-      type: 'log',
-      path: '/tmp/claude-edit-file-prompt.json',
+      type: 'input',
+      response: '1',
     },
     cooldown: 100,
     caseSensitive: false,
@@ -15,8 +15,8 @@ export const PATTERNS: PatternConfig[] = [
     id: 'create-file-prompt',
     pattern: 'Do you want to create',
     action: {
-      type: 'log',
-      path: '/tmp/claude-create-file-prompt.json',
+      type: 'input',
+      response: '1',
     },
     cooldown: 100,
     caseSensitive: false,
@@ -25,8 +25,8 @@ export const PATTERNS: PatternConfig[] = [
     id: 'bash-command-prompt',
     pattern: 'Do you want to run this command',
     action: {
-      type: 'log',
-      path: '/tmp/claude-bash-command.json',
+      type: 'input',
+      response: '1',
     },
     cooldown: 100,
     caseSensitive: false,
