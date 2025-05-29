@@ -48,7 +48,9 @@ export class CircularBuffer {
 export class PatternMatcher {
   private patterns: Map<string, CompiledPattern> = new Map()
   private lastMatchTimes: Map<string, number> = new Map()
+  private lastMatchContents: Map<string, string> = new Map()
   private buffer: CircularBuffer
+  private bufferChangedSinceLastProcess: boolean = true
 
   constructor(bufferSize: number = 2048) {
     this.buffer = new CircularBuffer(bufferSize)
@@ -62,10 +64,15 @@ export class PatternMatcher {
   removePattern(id: string): void {
     this.patterns.delete(id)
     this.lastMatchTimes.delete(id)
+    this.lastMatchContents.delete(id)
   }
 
   processData(data: string): MatchResult[] {
-    this.buffer.append(data)
+    if (data.length > 0) {
+      this.bufferChangedSinceLastProcess = true
+      this.buffer.append(data)
+    }
+
     const content = this.buffer.getContent()
     const strippedContent = stripAnsi(content)
     const matches: MatchResult[] = []
@@ -90,11 +97,18 @@ export class PatternMatcher {
           pattern.config.caseSensitive,
         )
         if (sequenceMatch) {
-          matchResult = { matched: true, text: sequenceMatch }
+          matchResult = { matched: true, text: sequenceMatch.text }
         }
       }
 
       if (matchResult) {
+        if (!this.bufferChangedSinceLastProcess) {
+          const lastMatchContent = this.lastMatchContents.get(id)
+          if (lastMatchContent === matchResult.text) {
+            continue
+          }
+        }
+
         matches.push({
           patternId: id,
           action: pattern.config.action,
@@ -102,8 +116,11 @@ export class PatternMatcher {
           bufferContent: content,
         })
         this.lastMatchTimes.set(id, now)
+        this.lastMatchContents.set(id, matchResult.text)
       }
     }
+
+    this.bufferChangedSinceLastProcess = false
 
     return matches
   }
@@ -146,7 +163,7 @@ export class PatternMatcher {
     content: string,
     sequence: string[],
     caseSensitive?: boolean,
-  ): string | null {
+  ): { text: string } | null {
     if (sequence.length === 0) {
       return null
     }
@@ -176,8 +193,8 @@ export class PatternMatcher {
         lastMatchLine = i
 
         if (sequenceIndex === sequence.length) {
-          // All sequences found, return the matched section
-          return lines.slice(firstMatchLine, lastMatchLine + 1).join('\n')
+          const text = lines.slice(firstMatchLine, lastMatchLine + 1).join('\n')
+          return { text }
         }
       }
     }

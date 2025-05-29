@@ -1,76 +1,88 @@
 import { PatternConfig } from './pattern-matcher'
 
-// {
-//   id: 'edit-file-prompt',
-//   pattern: [
-//     "Edit file",
-//     "Do you want to make this edit to",
-//     "❯ 1. Yes",
-//     "2. Yes, and don't ask again this session (shift+tab)",
-//     "3. No, and tell Claude what to do differently (esc)"
-//   ],
-//   action: { type: 'input', response: '1' }
-// }
+const editFilePattern = [
+  'Edit file',
+  'Do you want to make this edit to',
+  '❯ 1. Yes',
+  "2. Yes, and don't ask again this session (shift+tab)",
+  '3. No, and tell Claude what to do differently (esc)',
+]
+
+const createFilePattern = [
+  'Create file',
+  'Do you want to create',
+  '❯ 1. Yes',
+  "2. Yes, and don't ask again this session (shift+tab)",
+  '3. No, and tell Claude what to do differently (esc)',
+]
+
+const bashCommandPattern = [
+  'Bash command',
+  'Do you want to proceed?',
+  '❯ 1. Yes',
+  "2. Yes, and don't ask again for",
+  '3. No, and tell Claude what to do differently (esc)',
+]
 
 export const PATTERNS: PatternConfig[] = [
   {
     id: 'edit-file-prompt',
-    pattern: 'Do you want to make this edit to',
+    pattern: editFilePattern,
     action: {
       type: 'input',
       response: '1',
     },
-    cooldown: 100,
+    cooldown: 1000,
     caseSensitive: false,
   },
   {
     id: 'create-file-prompt',
-    pattern: 'Do you want to create',
+    pattern: createFilePattern,
     action: {
       type: 'input',
       response: '1',
     },
-    cooldown: 100,
+    cooldown: 1000,
     caseSensitive: false,
   },
   {
     id: 'bash-command-prompt',
-    pattern: 'Do you want to run this command',
+    pattern: bashCommandPattern,
     action: {
       type: 'input',
       response: '1',
     },
-    cooldown: 100,
+    cooldown: 5000,
     caseSensitive: false,
   },
   {
     id: 'edit-file-log',
-    pattern: 'Do you want to make this edit to',
+    pattern: editFilePattern,
     action: {
       type: 'log',
       path: '/tmp/claude-edit-file-prompts.log',
     },
-    cooldown: 100,
+    cooldown: 1000,
     caseSensitive: false,
   },
   {
     id: 'create-file-log',
-    pattern: 'Do you want to create',
+    pattern: createFilePattern,
     action: {
       type: 'log',
       path: '/tmp/claude-create-file-prompts.log',
     },
-    cooldown: 100,
+    cooldown: 1000,
     caseSensitive: false,
   },
   {
     id: 'bash-command-log',
-    pattern: 'Do you want to run this command',
+    pattern: bashCommandPattern,
     action: {
       type: 'log',
       path: '/tmp/claude-bash-command-prompts.log',
     },
-    cooldown: 100,
+    cooldown: 5000,
     caseSensitive: false,
   },
 ]

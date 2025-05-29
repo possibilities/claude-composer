@@ -217,11 +217,11 @@ describe('PatternMatcher', () => {
       expect(matches1).toHaveLength(1)
 
       vi.advanceTimersByTime(3000)
-      const matches2 = matcher.processData('trigger')
+      const matches2 = matcher.processData(' trigger')
       expect(matches2).toHaveLength(0)
 
       vi.advanceTimersByTime(2001)
-      const matches3 = matcher.processData('trigger')
+      const matches3 = matcher.processData(' trigger')
       expect(matches3).toHaveLength(1)
     })
 
@@ -237,11 +237,11 @@ describe('PatternMatcher', () => {
       expect(matches1).toHaveLength(1)
 
       vi.advanceTimersByTime(999)
-      const matches2 = matcher.processData('trigger')
+      const matches2 = matcher.processData(' trigger')
       expect(matches2).toHaveLength(0)
 
       vi.advanceTimersByTime(2)
-      const matches3 = matcher.processData('trigger')
+      const matches3 = matcher.processData(' trigger')
       expect(matches3).toHaveLength(1)
     })
 
@@ -263,7 +263,7 @@ describe('PatternMatcher', () => {
       expect(matches1).toHaveLength(2)
 
       vi.advanceTimersByTime(2500)
-      const matches2 = matcher.processData('pattern1 pattern2')
+      const matches2 = matcher.processData(' pattern1 pattern2')
       expect(matches2).toHaveLength(1)
       expect(matches2[0].patternId).toBe('test1')
     })
@@ -539,6 +539,48 @@ describe('PatternMatcher', () => {
           'Yes, proceed',
       )
       expect(matches).toHaveLength(1)
+    })
+  })
+
+  describe('Duplicate Match Prevention', () => {
+    it('should prevent duplicate matches when no new data is added', () => {
+      const config: PatternConfig = {
+        id: 'test1',
+        pattern: 'prompt>',
+        action: { type: 'input', response: 'ok' },
+        cooldown: 0,
+      }
+      matcher.addPattern(config)
+
+      const matches1 = matcher.processData('prompt>')
+      expect(matches1).toHaveLength(1)
+
+      expect(matcher.processData('')).toHaveLength(0)
+      expect(matcher.processData('')).toHaveLength(0)
+      expect(matcher.processData('')).toHaveLength(0)
+    })
+
+    it('should work with cooldown and duplicate prevention together', () => {
+      const config: PatternConfig = {
+        id: 'test1',
+        pattern: 'alert',
+        action: { type: 'input', response: 'ack' },
+        cooldown: 1000,
+      }
+      matcher.addPattern(config)
+
+      const matches1 = matcher.processData('alert: something')
+      expect(matches1).toHaveLength(1)
+
+      const matches2 = matcher.processData(' more')
+      expect(matches2).toHaveLength(0)
+
+      vi.advanceTimersByTime(1001)
+      const matches3 = matcher.processData('')
+      expect(matches3).toHaveLength(0)
+
+      const matches4 = matcher.processData(' ')
+      expect(matches4).toHaveLength(1)
     })
   })
 })
