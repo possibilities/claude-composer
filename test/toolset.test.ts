@@ -5,7 +5,8 @@ import fs from 'fs'
 import os from 'os'
 
 const CLI_PATH = path.join(__dirname, '..', 'cli.ts')
-const CONFIG_DIR = path.join(__dirname, 'tmp-home', '.claude-composer')
+const TEST_ID = `test-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
+const CONFIG_DIR = path.join(os.tmpdir(), TEST_ID, '.claude-composer')
 const TOOLSETS_DIR = path.join(CONFIG_DIR, 'toolsets')
 
 describe('Toolset functionality', () => {
@@ -14,7 +15,10 @@ describe('Toolset functionality', () => {
   })
 
   afterEach(async () => {
-    await fs.promises.rm(CONFIG_DIR, { recursive: true, force: true })
+    await fs.promises.rm(path.join(os.tmpdir(), TEST_ID), {
+      recursive: true,
+      force: true,
+    })
   })
 
   it('should load toolset and pass allowed tools to child app', async () => {

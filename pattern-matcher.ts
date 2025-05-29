@@ -18,6 +18,7 @@ export interface MatchResult {
   action: PatternAction
   matchedText: string
   bufferContent: string
+  strippedBufferContent: string
 }
 
 export class CircularBuffer {
@@ -114,6 +115,7 @@ export class PatternMatcher {
           action: pattern.config.action,
           matchedText: matchResult.text,
           bufferContent: content,
+          strippedBufferContent: strippedContent,
         })
         this.lastMatchTimes.set(id, now)
         this.lastMatchContents.set(id, matchResult.text)

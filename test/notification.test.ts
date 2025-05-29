@@ -22,6 +22,8 @@ describe('Notification functionality', () => {
       action: { type: 'log', path: '/tmp/test.log' },
       matchedText: 'Welcome to Claude Code!',
       bufferContent: 'Some buffer content with Welcome to Claude Code! in it',
+      strippedBufferContent:
+        'Some buffer content with Welcome to Claude Code! in it',
     }
 
     const showNotification = (match: MatchResult) => {
@@ -57,6 +59,7 @@ describe('Notification functionality', () => {
       action: { type: 'input', response: 'test' },
       matchedText: longText,
       bufferContent: 'buffer content',
+      strippedBufferContent: 'buffer content',
     }
 
     const showNotification = (match: MatchResult) => {
@@ -89,6 +92,7 @@ describe('Notification functionality', () => {
       action: { type: 'input', response: ['response1', 'response2'] },
       matchedText: 'trigger text',
       bufferContent: 'buffer',
+      strippedBufferContent: 'buffer',
     }
 
     const logMatch: MatchResult = {
@@ -96,6 +100,7 @@ describe('Notification functionality', () => {
       action: { type: 'log', path: '/tmp/log.json' },
       matchedText: 'log trigger',
       bufferContent: 'buffer',
+      strippedBufferContent: 'buffer',
     }
 
     const showNotification = (match: MatchResult) => {
@@ -139,6 +144,7 @@ describe('Notification functionality', () => {
       action: { type: 'log', path: '/tmp/test.log' },
       matchedText: coloredText,
       bufferContent: 'buffer',
+      strippedBufferContent: 'buffer',
     }
 
     const showNotification = (match: MatchResult) => {

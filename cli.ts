@@ -364,8 +364,8 @@ function handlePatternMatches(data: string): void {
       const logEntry = {
         timestamp: new Date().toISOString(),
         patternId: match.patternId,
-        matchedText: stripAnsi(match.matchedText),
-        bufferContent: stripAnsi(match.bufferContent),
+        matchedText: match.matchedText,
+        bufferContent: match.strippedBufferContent,
       }
       fs.appendFileSync(match.action.path, JSON.stringify(logEntry) + '\n')
     }
