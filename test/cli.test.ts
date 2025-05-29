@@ -702,5 +702,53 @@ describe('CLI Wrapper', () => {
       expect(result.exitCode).toBe(0)
       expect(result.stdout).toContain('Mock child app running')
     })
+
+    it('should handle all dismiss prompts flags together', async () => {
+      const result = await runCli(
+        [
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+          '--dangerously-dismiss-edit-file-prompts',
+          '--dangerously-dismiss-create-file-prompts',
+          '--dangerously-dismiss-bash-prompts',
+          '--echo-args',
+        ],
+        {
+          env: { ...process.env, CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir },
+        },
+      )
+
+      expect(result.exitCode).toBe(0)
+      expect(result.stdout).toContain('ARGS: --echo-args')
+      // Ensure none of the parent flags are passed through
+      expect(result.stdout).not.toContain(
+        '--dangerously-dismiss-edit-file-prompts',
+      )
+      expect(result.stdout).not.toContain(
+        '--dangerously-dismiss-create-file-prompts',
+      )
+      expect(result.stdout).not.toContain('--dangerously-dismiss-bash-prompts')
+    })
+
+    it('should handle mixed positive and negative dismiss flags', async () => {
+      const result = await runCli(
+        [
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+          '--dangerously-dismiss-edit-file-prompts',
+          '--no-dangerously-dismiss-create-file-prompts',
+          '--dangerously-dismiss-bash-prompts',
+          '--echo-args',
+        ],
+        {
+          env: { ...process.env, CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir },
+        },
+      )
+
+      expect(result.exitCode).toBe(0)
+      expect(result.stdout).toContain('ARGS: --echo-args')
+      // Ensure none of the flags are passed through
+      expect(result.stdout).not.toContain('dismiss')
+    })
   })
 })
