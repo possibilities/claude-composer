@@ -63,6 +63,10 @@ export class PatternMatcher {
     this.lastMatchTimes.delete(id)
   }
 
+  getBufferContent(): string {
+    return this.buffer.getContent()
+  }
+
   processData(data: string): MatchResult[] {
     if (data.length > 0) {
       this.buffer.append(data)

@@ -22,6 +22,7 @@ interface AppConfig {
   dangerously_allow_in_dirty_directory?: boolean
   dangerously_allow_without_version_control?: boolean
   log_all_prompts?: boolean
+  log_latest_buffer?: boolean
 }
 
 interface ToolsetConfig {
@@ -44,7 +45,9 @@ let appConfig: AppConfig = {
   dangerously_allow_in_dirty_directory: false,
   dangerously_allow_without_version_control: false,
   log_all_prompts: false,
+  log_latest_buffer: false,
 }
+let bufferLogInterval: NodeJS.Timeout | undefined
 
 function getConfigDirectory(): string {
   return (
@@ -205,6 +208,38 @@ function buildToolsetArgs(toolsetConfig: ToolsetConfig): string[] {
   return args
 }
 
+function startBufferLogging() {
+  if (!appConfig.log_latest_buffer || !patternMatcher) return
+
+  const logPath = '/tmp/claude-composer-buffer.log'
+
+  bufferLogInterval = setInterval(() => {
+    try {
+      if (
+        patternMatcher &&
+        typeof patternMatcher.getBufferContent === 'function'
+      ) {
+        const content = patternMatcher.getBufferContent()
+        const logEntry = {
+          timestamp: new Date().toISOString(),
+          bufferSize: content.length,
+          content: content,
+        }
+        fs.writeFileSync(logPath, JSON.stringify(logEntry, null, 2))
+      }
+    } catch (error) {
+      // Silently ignore errors to avoid disrupting the main process
+    }
+  }, 5000)
+}
+
+function stopBufferLogging() {
+  if (bufferLogInterval) {
+    clearInterval(bufferLogInterval)
+    bufferLogInterval = undefined
+  }
+}
+
 export { loadConfig, appConfig, getConfigDirectory }
 
 async function initializePatterns() {
@@ -241,6 +276,9 @@ async function initializePatterns() {
 
     patternMatcher.addPattern(pattern)
   })
+
+  // Start buffer logging after pattern matcher is initialized
+  startBufferLogging()
 }
 
 const defaultChildAppPath = path.join(
@@ -275,6 +313,8 @@ function cleanup() {
       fs.unlinkSync(tempMcpConfigPath)
     } catch (e) {}
   }
+
+  stopBufferLogging()
 }
 
 process.on('SIGINT', () => {
@@ -453,6 +493,11 @@ async function main() {
       'Log all prompts (edit, create, bash command) to files in /tmp',
     )
     .option('--no-log-all-prompts', 'Do not log prompts')
+    .option(
+      '--log-latest-buffer',
+      'Log the current buffer to /tmp/claude-composer-buffer.log every 5 seconds',
+    )
+    .option('--no-log-latest-buffer', 'Do not log the buffer')
     .option('--go-off', 'Go off. YOLO. What could go wrong?')
     .allowUnknownOption()
     .argument('[args...]', 'Arguments to pass to `claude`')
@@ -497,6 +542,7 @@ async function main() {
   knownOptions.add('--no-dangerously-allow-in-dirty-directory')
   knownOptions.add('--no-dangerously-allow-without-version-control')
   knownOptions.add('--no-log-all-prompts')
+  knownOptions.add('--no-log-latest-buffer')
   knownOptions.add('--toolset')
 
   // Process toolset early so we can use it in both print and interactive modes
@@ -706,13 +752,24 @@ async function main() {
   if (options.logAllPrompts !== undefined) {
     appConfig.log_all_prompts = options.logAllPrompts
   }
+  if (options.logLatestBuffer !== undefined) {
+    appConfig.log_latest_buffer = options.logLatestBuffer
+  }
 
   if (appConfig.show_notifications !== false) {
     log('※ Notifications are enabled')
   }
 
   if (appConfig.log_all_prompts) {
-    log('※ Logging all prompts to /tmp')
+    const configPath = path.join(getConfigDirectory(), 'config.yaml')
+    log(`※ Logging all prompts to /tmp (config: ${configPath})`)
+  }
+
+  if (appConfig.log_latest_buffer) {
+    const configPath = path.join(getConfigDirectory(), 'config.yaml')
+    log(
+      `※ Logging latest buffer to /tmp/claude-composer-buffer.log every 5 seconds (config: ${configPath})`,
+    )
   }
 
   try {
