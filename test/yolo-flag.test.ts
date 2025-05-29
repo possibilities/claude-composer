@@ -55,21 +55,19 @@ describe('YOLO Flag functionality', () => {
     })
   }
 
-  describe('--go-off-yolo-what-could-go-wrong flag', () => {
+  describe('--go-off flag', () => {
     it('should show danger zone warning', async () => {
       const result = await runCli(
         [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
-          '--go-off-yolo-what-could-go-wrong',
+          '--go-off',
         ],
         { respondToPrompt: 'n' },
       )
 
       expect(result.stdout).toContain('🚨 DANGER ZONE 🚨')
-      expect(result.stdout).toContain(
-        'You have enabled --go-off-yolo-what-could-go-wrong',
-      )
+      expect(result.stdout).toContain('You have enabled --go-off')
       expect(result.stdout).toContain(
         'Automatically dismiss ALL file edit prompts',
       )
@@ -90,7 +88,7 @@ describe('YOLO Flag functionality', () => {
         [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
-          '--go-off-yolo-what-could-go-wrong',
+          '--go-off',
         ],
         { respondToPrompt: 'n' },
       )
@@ -104,7 +102,7 @@ describe('YOLO Flag functionality', () => {
         [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
-          '--go-off-yolo-what-could-go-wrong',
+          '--go-off',
         ],
         { respondToPrompt: 'y' },
       )
@@ -119,12 +117,12 @@ describe('YOLO Flag functionality', () => {
       const result = await runCli([
         '--dangerously-allow-without-version-control',
         '--dangerously-allow-in-dirty-directory',
-        '--go-off-yolo-what-could-go-wrong',
+        '--go-off',
         '--dangerously-dismiss-edit-file-prompts',
       ])
 
       expect(result.stderr).toContain(
-        'Error: Cannot use --go-off-yolo-what-could-go-wrong with individual dangerous prompt flags',
+        'Error: Cannot use --go-off with individual dangerous prompt flags',
       )
       expect(result.stderr).toContain(
         'The YOLO flag already sets all dangerous prompt dismissals',
@@ -136,12 +134,12 @@ describe('YOLO Flag functionality', () => {
       const result = await runCli([
         '--dangerously-allow-without-version-control',
         '--dangerously-allow-in-dirty-directory',
-        '--go-off-yolo-what-could-go-wrong',
+        '--go-off',
         '--dangerously-dismiss-create-file-prompts',
       ])
 
       expect(result.stderr).toContain(
-        'Error: Cannot use --go-off-yolo-what-could-go-wrong with individual dangerous prompt flags',
+        'Error: Cannot use --go-off with individual dangerous prompt flags',
       )
       expect(result.exitCode).toBe(1)
     })
@@ -150,12 +148,12 @@ describe('YOLO Flag functionality', () => {
       const result = await runCli([
         '--dangerously-allow-without-version-control',
         '--dangerously-allow-in-dirty-directory',
-        '--go-off-yolo-what-could-go-wrong',
+        '--go-off',
         '--dangerously-dismiss-bash-command-prompts',
       ])
 
       expect(result.stderr).toContain(
-        'Error: Cannot use --go-off-yolo-what-could-go-wrong with individual dangerous prompt flags',
+        'Error: Cannot use --go-off with individual dangerous prompt flags',
       )
       expect(result.exitCode).toBe(1)
     })
@@ -164,13 +162,13 @@ describe('YOLO Flag functionality', () => {
       const result = await runCli([
         '--dangerously-allow-without-version-control',
         '--dangerously-allow-in-dirty-directory',
-        '--go-off-yolo-what-could-go-wrong',
+        '--go-off',
         '--dangerously-dismiss-edit-file-prompts',
         '--dangerously-dismiss-create-file-prompts',
       ])
 
       expect(result.stderr).toContain(
-        'Error: Cannot use --go-off-yolo-what-could-go-wrong with individual dangerous prompt flags',
+        'Error: Cannot use --go-off with individual dangerous prompt flags',
       )
       expect(result.exitCode).toBe(1)
     })
@@ -180,7 +178,7 @@ describe('YOLO Flag functionality', () => {
         [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
-          '--go-off-yolo-what-could-go-wrong',
+          '--go-off',
           '--no-show-notifications',
         ],
         { respondToPrompt: 'y' },

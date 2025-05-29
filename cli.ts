@@ -453,10 +453,7 @@ async function main() {
       'Log all prompts (edit, create, bash command) to files in /tmp',
     )
     .option('--no-log-all-prompts', 'Do not log prompts')
-    .option(
-      '--go-off-yolo-what-could-go-wrong',
-      'Go off. YOLO. What could go wrong?',
-    )
+    .option('--go-off', 'Go off. YOLO. What could go wrong?')
     .allowUnknownOption()
     .argument('[args...]', 'Arguments to pass to `claude`')
 
@@ -533,14 +530,14 @@ async function main() {
 
   log('※ Getting ready to launch Claude CLI')
 
-  if (options.goOffYoloWhatCouldGoWrong) {
+  if (options.goOff) {
     if (
       options.dangerouslyDismissEditFilePrompts !== undefined ||
       options.dangerouslyDismissCreateFilePrompts !== undefined ||
       options.dangerouslyDismissBashCommandPrompts !== undefined
     ) {
       console.error(
-        '\x1b[31m※ Error: Cannot use --go-off-yolo-what-could-go-wrong with individual dangerous prompt flags\x1b[0m',
+        '\x1b[31m※ Error: Cannot use --go-off with individual dangerous prompt flags\x1b[0m',
       )
       console.error(
         '\x1b[31m※ The YOLO flag already sets all dangerous prompt dismissals\x1b[0m',
@@ -558,7 +555,7 @@ async function main() {
       '\x1b[31m╠════════════════════════════════════════════════════════════════╣\x1b[0m',
     )
     console.log(
-      '\x1b[31m║ You have enabled --go-off-yolo-what-could-go-wrong             ║\x1b[0m',
+      '\x1b[31m║ You have enabled --go-off                                      ║\x1b[0m',
     )
     console.log(
       '\x1b[31m║                                                                ║\x1b[0m',
@@ -618,21 +615,21 @@ async function main() {
   }
   if (
     options.dangerouslyDismissEditFilePrompts !== undefined &&
-    !options.goOffYoloWhatCouldGoWrong
+    !options.goOff
   ) {
     appConfig.dangerously_dismiss_edit_file_prompts =
       options.dangerouslyDismissEditFilePrompts
   }
   if (
     options.dangerouslyDismissCreateFilePrompts !== undefined &&
-    !options.goOffYoloWhatCouldGoWrong
+    !options.goOff
   ) {
     appConfig.dangerously_dismiss_create_file_prompts =
       options.dangerouslyDismissCreateFilePrompts
   }
   if (
     options.dangerouslyDismissBashCommandPrompts !== undefined &&
-    !options.goOffYoloWhatCouldGoWrong
+    !options.goOff
   ) {
     appConfig.dangerously_dismiss_bash_command_prompts =
       options.dangerouslyDismissBashCommandPrompts

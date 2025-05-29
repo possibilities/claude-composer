@@ -32,7 +32,7 @@ async function runCliWithArgs(args: string[], env: any): Promise<string> {
     // Give it a moment to show warnings then kill it
     setTimeout(() => {
       proc.kill()
-    }, 500)
+    }, 2000)
   })
 }
 
