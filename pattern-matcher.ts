@@ -156,6 +156,18 @@ export class PatternMatcher {
       return null
     }
 
+    // Optimization: First check if the last line of the sequence exists
+    const lastPatternLine = sequence[sequence.length - 1]
+    const quickCheck = caseSensitive
+      ? content.includes(lastPatternLine)
+      : content.toLowerCase().includes(lastPatternLine.toLowerCase())
+
+    if (!quickCheck) {
+      // Last line not found, no need to do full sequence matching
+      return null
+    }
+
+    // Proceed with full sequence matching
     const lines = content.split('\n')
     let sequenceIndex = 0
     let firstMatchLine = -1

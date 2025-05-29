@@ -540,6 +540,57 @@ describe('PatternMatcher', () => {
       )
       expect(matches).toHaveLength(1)
     })
+
+    it('should optimize sequence matching by checking last line first', () => {
+      // Create a fresh matcher for this test to avoid buffer contamination
+      const testMatcher = new PatternMatcher(500)
+
+      const config: PatternConfig = {
+        id: 'optimized',
+        pattern: ['Start of sequence', 'Middle part', 'Final line'],
+        action: { type: 'input', response: 'Found' },
+      }
+      testMatcher.addPattern(config)
+
+      // Last line not present - should not match (optimization prevents full scan)
+      const matches1 = testMatcher.processData(
+        'Start of sequence\nMiddle part\nNot the final',
+      )
+      expect(matches1).toHaveLength(0)
+
+      // Complete sequence - should match
+      const matches2 = testMatcher.processData(
+        'Start of sequence\nMiddle part\nFinal line',
+      )
+      expect(matches2).toHaveLength(1)
+    })
+
+    it('should handle very long sequences efficiently', () => {
+      // Create a matcher with larger buffer for this test
+      const largeMatcher = new PatternMatcher(2000)
+
+      // Create a long sequence pattern with unique lines
+      const longSequence = Array.from(
+        { length: 20 },
+        (_, i) => `Unique pattern line number ${i + 1}`,
+      )
+      const config: PatternConfig = {
+        id: 'long-seq',
+        pattern: longSequence,
+        action: { type: 'input', response: 'Long sequence found' },
+      }
+      largeMatcher.addPattern(config)
+
+      // Build data without the last line - should not perform full match
+      const incompleteData = longSequence.slice(0, -1).join('\n')
+      const matches1 = largeMatcher.processData(incompleteData)
+      expect(matches1).toHaveLength(0)
+
+      // Add the last line - now it should match
+      const completeData = longSequence.join('\n')
+      const matches2 = largeMatcher.processData(completeData)
+      expect(matches2).toHaveLength(1)
+    })
   })
 
   describe('Pattern Matching Without Duplicate Prevention', () => {

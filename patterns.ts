@@ -32,7 +32,7 @@ export const PATTERNS: PatternConfig[] = [
       type: 'input',
       response: '1',
     },
-    cooldown: 1000,
+    cooldown: 30000,
     caseSensitive: false,
   },
   {
@@ -42,7 +42,7 @@ export const PATTERNS: PatternConfig[] = [
       type: 'input',
       response: '1',
     },
-    cooldown: 1000,
+    cooldown: 30000,
     caseSensitive: false,
   },
   {
@@ -52,7 +52,7 @@ export const PATTERNS: PatternConfig[] = [
       type: 'input',
       response: '1',
     },
-    cooldown: 5000,
+    cooldown: 30000,
     caseSensitive: false,
   },
   {
@@ -62,7 +62,7 @@ export const PATTERNS: PatternConfig[] = [
       type: 'log',
       path: '/tmp/claude-edit-file-prompts.log',
     },
-    cooldown: 1000,
+    cooldown: 30000,
     caseSensitive: false,
   },
   {
@@ -72,7 +72,7 @@ export const PATTERNS: PatternConfig[] = [
       type: 'log',
       path: '/tmp/claude-create-file-prompts.log',
     },
-    cooldown: 1000,
+    cooldown: 30000,
     caseSensitive: false,
   },
   {
@@ -82,7 +82,7 @@ export const PATTERNS: PatternConfig[] = [
       type: 'log',
       path: '/tmp/claude-bash-command-prompts.log',
     },
-    cooldown: 5000,
+    cooldown: 30000,
     caseSensitive: false,
   },
 ]
