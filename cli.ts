@@ -189,8 +189,9 @@ async function askYesNo(
 }
 
 function showNotification(match: MatchResult): void {
+  const projectName = path.basename(process.cwd())
   const title = '🤖 Claude Composer Next'
-  const message = `Pattern triggered: ${match.patternId}\nMatched: ${stripAnsi(match.matchedText).substring(0, 100)}`
+  const message = `Project: ${projectName}\nPattern triggered: ${match.patternId}`
 
   notifier.notify({
     title,
