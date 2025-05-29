@@ -479,9 +479,30 @@ describe('CLI Wrapper', () => {
         },
       )
 
-      // Should still work despite invalid config
-      expect(result.exitCode).toBe(0)
-      expect(result.stdout).toContain('Mock child app running')
+      // Should exit with error code due to invalid YAML
+      expect(result.exitCode).toBe(1)
+      expect(result.stderr).toContain('Error loading configuration file:')
+    })
+
+    it('should reject config with unknown fields', async () => {
+      const configContent = `show_notifications: true
+foo: true`
+      fs.writeFileSync(testConfigPath, configContent)
+
+      const result = await runCli(
+        [
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+        ],
+        {
+          env: { ...process.env, CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir },
+        },
+      )
+
+      // Should exit with error code due to validation failure
+      expect(result.exitCode).toBe(1)
+      expect(result.stderr).toContain('Invalid configuration file:')
+      expect(result.stderr).toContain("Unrecognized key(s) in object: 'foo'")
     })
 
     it('should show notifications by default when no config exists', async () => {

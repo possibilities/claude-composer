@@ -49,8 +49,13 @@ describe('Configuration Loading', () => {
     fs.writeFileSync(testConfigPath, invalidConfig)
 
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
+      throw new Error('process.exit called')
+    })
 
-    await loadConfig(testConfigPath)
+    await expect(loadConfig(testConfigPath)).rejects.toThrow(
+      'process.exit called',
+    )
 
     expect(consoleSpy).toHaveBeenCalledWith(
       'Error loading configuration file:',
@@ -59,6 +64,7 @@ describe('Configuration Loading', () => {
     expect(appConfig.show_notifications).toBeUndefined()
 
     consoleSpy.mockRestore()
+    exitSpy.mockRestore()
   })
 
   it('should handle false value correctly', async () => {

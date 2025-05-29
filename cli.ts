@@ -13,23 +13,12 @@ import notifier from 'node-notifier'
 import * as readline from 'readline'
 import { PatternMatcher, MatchResult } from './pattern-matcher'
 import { ResponseQueue } from './response-queue'
-
-interface AppConfig {
-  show_notifications?: boolean
-  dangerously_dismiss_edit_file_prompts?: boolean
-  dangerously_dismiss_create_file_prompts?: boolean
-  dangerously_dismiss_bash_command_prompts?: boolean
-  dangerously_allow_in_dirty_directory?: boolean
-  dangerously_allow_without_version_control?: boolean
-  log_all_prompts?: boolean
-  log_latest_buffer?: boolean
-}
-
-interface ToolsetConfig {
-  allowed?: string[]
-  disallowed?: string[]
-  mcp?: Record<string, any>
-}
+import {
+  validateAppConfig,
+  validateToolsetConfig,
+  type AppConfig,
+  type ToolsetConfig,
+} from './config-schemas.js'
 
 let ptyProcess: pty.IPty | undefined
 let childProcess: ChildProcess | undefined
@@ -137,10 +126,22 @@ async function loadConfig(configPath?: string): Promise<void> {
   if (fs.existsSync(finalConfigPath)) {
     try {
       const configData = fs.readFileSync(finalConfigPath, 'utf8')
-      const parsed = yaml.load(configData) as AppConfig
-      appConfig = { ...appConfig, ...parsed }
+      const parsed = yaml.load(configData)
+      const result = validateAppConfig(parsed)
+
+      if (!result.success) {
+        console.error('Invalid configuration file:', finalConfigPath)
+        console.error('Validation errors:')
+        result.error.issues.forEach(issue => {
+          console.error(`  - ${issue.path.join('.')}: ${issue.message}`)
+        })
+        process.exit(1)
+      }
+
+      appConfig = { ...appConfig, ...result.data }
     } catch (error) {
       console.error('Error loading configuration file:', error)
+      process.exit(1)
     }
   }
 }
@@ -165,8 +166,19 @@ async function loadToolset(toolsetName: string): Promise<ToolsetConfig> {
 
   try {
     const toolsetData = fs.readFileSync(toolsetPath, 'utf8')
-    const parsed = yaml.load(toolsetData) as ToolsetConfig
-    return parsed
+    const parsed = yaml.load(toolsetData)
+    const result = validateToolsetConfig(parsed)
+
+    if (!result.success) {
+      console.error('Invalid toolset file:', toolsetPath)
+      console.error('Validation errors:')
+      result.error.issues.forEach(issue => {
+        console.error(`  - ${issue.path.join('.')}: ${issue.message}`)
+      })
+      throw new Error('Toolset validation failed')
+    }
+
+    return result.data
   } catch (error) {
     throw new Error(`Error loading toolset file: ${error}`)
   }

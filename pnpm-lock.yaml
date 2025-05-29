@@ -32,6 +32,9 @@ importers:
       xterm:
         specifier: ^5.3.0
         version: 5.3.0
+      zod:
+        specifier: ^3.25.39
+        version: 3.25.39
     devDependencies:
       '@types/node':
         specifier: ^22.15.23
@@ -626,6 +629,9 @@ packages:
     resolution: {integrity: sha512-8QqjlekLUFTrU6x7xck1MsPzPA571K5zNqWm0M0oroYEWVOptZ0+ubQSkQ3uxIEhcIHRujJy6emDWX4A7qyFzg==}
     deprecated: This package is now deprecated. Move to @xterm/xterm instead.
 
+  zod@3.25.39:
+    resolution: {integrity: sha512-yrva2T2x4R+FMFTPBVD/YPS7ct8njqjnV93zNx/MlwqLAxcnxwRGbXWyWF63/nErl3rdRd8KARObon7BiWzabQ==}
+
 snapshots:
 
   '@esbuild/aix-ppc64@0.25.5':
@@ -1094,3 +1100,5 @@ snapshots:
       stackback: 0.0.2
 
   xterm@5.3.0: {}
+
+  zod@3.25.39: {}
