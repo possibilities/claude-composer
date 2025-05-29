@@ -318,4 +318,143 @@ disallowed:
 
     expect(output).toContain('Error: Error loading toolset file')
   })
+
+  it('should create MCP config file and pass --mcp-config to child app', async () => {
+    const toolsetContent = `mcp:
+  commit-composer:
+    type: stdio
+    command: commit-composer-mcp
+  another-server:
+    type: http
+    url: http://localhost:3000
+`
+    await fs.promises.writeFile(
+      path.join(TOOLSETS_DIR, 'test-mcp.yaml'),
+      toolsetContent,
+    )
+
+    const child = spawn(
+      'tsx',
+      [
+        CLI_PATH,
+        '--dangerously-allow-without-version-control',
+        '--dangerously-allow-in-dirty-directory',
+        '--toolset',
+        'test-mcp',
+        '--echo-args',
+      ],
+      {
+        cwd: path.join(__dirname, '..'),
+        env: {
+          ...process.env,
+          CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
+          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
+          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+        },
+      },
+    )
+
+    const output = await new Promise<string>(resolve => {
+      let data = ''
+      child.stdout.on('data', chunk => {
+        data += chunk.toString()
+      })
+      child.stderr.on('data', chunk => {
+        data += chunk.toString()
+      })
+      child.on('close', () => {
+        resolve(data)
+      })
+    })
+
+    expect(output).toContain('※ Loaded toolset: test-mcp')
+    expect(output).toContain('※ Toolset test-mcp configured 2 MCP servers')
+    expect(output).toContain('ARGS:')
+    expect(output).toContain('--echo-args')
+
+    // Check that the output contains the MCP config argument
+    const argsMatch = output.match(/ARGS: (.+)/)
+    expect(argsMatch).toBeTruthy()
+
+    if (argsMatch) {
+      const args = argsMatch[1]
+      expect(args).toContain('--mcp-config')
+      expect(args).toContain('/tmp/claude-composer-mcp-')
+
+      // Extract the MCP config path
+      const mcpConfigMatch = args.match(
+        /--mcp-config (\/tmp\/claude-composer-mcp-[^\s]+\.json)/,
+      )
+      expect(mcpConfigMatch).toBeTruthy()
+
+      if (mcpConfigMatch) {
+        const mcpConfigPath = mcpConfigMatch[1]
+        // The file might have been cleaned up already, so we just verify the path format
+        expect(mcpConfigPath).toMatch(
+          /^\/tmp\/claude-composer-mcp-\d+-\w+\.json$/,
+        )
+      }
+    }
+  })
+
+  it('should handle toolset with all features combined', async () => {
+    const toolsetContent = `allowed:
+  - tool1
+  - tool2
+disallowed:
+  - badtool
+mcp:
+  my-mcp:
+    type: stdio
+    command: my-mcp-server
+`
+    await fs.promises.writeFile(
+      path.join(TOOLSETS_DIR, 'test-combined.yaml'),
+      toolsetContent,
+    )
+
+    const child = spawn(
+      'tsx',
+      [
+        CLI_PATH,
+        '--dangerously-allow-without-version-control',
+        '--dangerously-allow-in-dirty-directory',
+        '--toolset',
+        'test-combined',
+        '--echo-args',
+      ],
+      {
+        cwd: path.join(__dirname, '..'),
+        env: {
+          ...process.env,
+          CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
+          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
+          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+        },
+      },
+    )
+
+    const output = await new Promise<string>(resolve => {
+      let data = ''
+      child.stdout.on('data', chunk => {
+        data += chunk.toString()
+      })
+      child.stderr.on('data', chunk => {
+        data += chunk.toString()
+      })
+      child.on('close', () => {
+        resolve(data)
+      })
+    })
+
+    expect(output).toContain('※ Loaded toolset: test-combined')
+    expect(output).toContain('※ Toolset test-combined allowed 2 tools')
+    expect(output).toContain('※ Toolset test-combined disallowed 1 tool')
+    expect(output).toContain('※ Toolset test-combined configured 1 MCP server')
+    expect(output).toContain('ARGS:')
+    expect(output).toContain('--allowedTools tool1')
+    expect(output).toContain('--allowedTools tool2')
+    expect(output).toContain('--disallowedTools badtool')
+    expect(output).toContain('--mcp-config /tmp/claude-composer-mcp-')
+  })
 })

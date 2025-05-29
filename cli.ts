@@ -5,6 +5,7 @@ import * as pty from 'node-pty'
 import { spawn, ChildProcess, execSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
+import * as crypto from 'crypto'
 import { Command } from 'commander'
 import stripAnsi from 'strip-ansi'
 import * as yaml from 'js-yaml'
@@ -26,6 +27,7 @@ interface AppConfig {
 interface ToolsetConfig {
   allowed?: string[]
   disallowed?: string[]
+  mcp?: Record<string, any>
 }
 
 let ptyProcess: pty.IPty | undefined
@@ -33,6 +35,7 @@ let childProcess: ChildProcess | undefined
 let isRawMode = false
 let patternMatcher: PatternMatcher
 let responseQueue: ResponseQueue
+let tempMcpConfigPath: string | undefined
 let appConfig: AppConfig = {
   show_notifications: true,
   dangerously_dismiss_edit_file_prompts: false,
@@ -48,6 +51,80 @@ function getConfigDirectory(): string {
     process.env.CLAUDE_COMPOSER_CONFIG_DIR ||
     path.join(os.homedir(), '.claude-composer')
   )
+}
+
+function getBackupDirectory(): string {
+  return path.join(getConfigDirectory(), 'backups')
+}
+
+function calculateMd5(filePath: string): string {
+  const content = fs.readFileSync(filePath)
+  return crypto.createHash('md5').update(content).digest('hex')
+}
+
+function copyDirectory(src: string, dest: string): void {
+  if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true })
+  }
+
+  const entries = fs.readdirSync(src, { withFileTypes: true })
+
+  for (const entry of entries) {
+    const srcPath = path.join(src, entry.name)
+    const destPath = path.join(dest, entry.name)
+
+    if (entry.isDirectory()) {
+      copyDirectory(srcPath, destPath)
+    } else {
+      fs.copyFileSync(srcPath, destPath)
+    }
+  }
+}
+
+function getBackupDirs(): { dir: string; mtime: number }[] {
+  const backupDir = getBackupDirectory()
+  if (!fs.existsSync(backupDir)) {
+    return []
+  }
+
+  return fs
+    .readdirSync(backupDir, { withFileTypes: true })
+    .filter(entry => entry.isDirectory())
+    .map(entry => {
+      const dirPath = path.join(backupDir, entry.name)
+      const stats = fs.statSync(dirPath)
+      return { dir: entry.name, mtime: stats.mtimeMs }
+    })
+    .sort((a, b) => a.mtime - b.mtime)
+}
+
+function ensureBackupDirectory(): void {
+  const backupDir = getBackupDirectory()
+  if (!fs.existsSync(backupDir)) {
+    fs.mkdirSync(backupDir, { recursive: true })
+  }
+}
+
+function createBackup(md5: string): void {
+  const sourceDir = path.join(os.homedir(), '.claude', 'local')
+  const backupDir = path.join(getBackupDirectory(), md5)
+
+  if (fs.existsSync(backupDir)) {
+    return
+  }
+
+  log(`※ Creating backup of current claude app`)
+
+  const existingBackups = getBackupDirs()
+  if (existingBackups.length >= 5) {
+    const oldestBackup = existingBackups[0]
+    const oldestBackupPath = path.join(getBackupDirectory(), oldestBackup.dir)
+    log(`※ Removing oldest backup: ${oldestBackup.dir}`)
+    fs.rmSync(oldestBackupPath, { recursive: true, force: true })
+  }
+
+  copyDirectory(sourceDir, backupDir)
+  log(`※ Backup created successfully`)
 }
 
 async function loadConfig(configPath?: string): Promise<void> {
@@ -92,6 +169,19 @@ async function loadToolset(toolsetName: string): Promise<ToolsetConfig> {
   }
 }
 
+function createTempMcpConfig(mcp: Record<string, any>): string {
+  const tempFileName = `claude-composer-mcp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}.json`
+  const tempFilePath = path.join(os.tmpdir(), tempFileName)
+
+  const mcpConfig = {
+    mcpServers: mcp,
+  }
+
+  fs.writeFileSync(tempFilePath, JSON.stringify(mcpConfig, null, 2))
+
+  return tempFilePath
+}
+
 function buildToolsetArgs(toolsetConfig: ToolsetConfig): string[] {
   const args: string[] = []
 
@@ -105,6 +195,11 @@ function buildToolsetArgs(toolsetConfig: ToolsetConfig): string[] {
     for (const tool of toolsetConfig.disallowed) {
       args.push('--disallowedTools', tool)
     }
+  }
+
+  if (toolsetConfig.mcp) {
+    tempMcpConfigPath = createTempMcpConfig(toolsetConfig.mcp)
+    args.push('--mcp-config', tempMcpConfigPath)
   }
 
   return args
@@ -148,9 +243,14 @@ async function initializePatterns() {
   })
 }
 
-const childAppPath =
-  process.env.CLAUDE_APP_PATH ||
-  path.join(os.homedir(), '.claude', 'local', 'claude')
+const defaultChildAppPath = path.join(
+  os.homedir(),
+  '.claude',
+  'local',
+  'claude',
+)
+
+const childAppPath = process.env.CLAUDE_APP_PATH || defaultChildAppPath
 
 function cleanup() {
   if (isRawMode && process.stdin.isTTY) {
@@ -167,6 +267,12 @@ function cleanup() {
   if (childProcess) {
     try {
       childProcess.kill()
+    } catch (e) {}
+  }
+
+  if (tempMcpConfigPath && fs.existsSync(tempMcpConfigPath)) {
+    try {
+      fs.unlinkSync(tempMcpConfigPath)
     } catch (e) {}
   }
 }
@@ -272,6 +378,7 @@ function handlePatternMatches(data: string): void {
 
 async function main() {
   ensureConfigDirectory()
+  ensureBackupDirectory()
 
   const ignoreGlobalConfig = process.argv.includes('--ignore-global-config')
 
@@ -646,6 +753,29 @@ async function main() {
     )
   }
 
+  if (childAppPath === defaultChildAppPath) {
+    try {
+      const childCliPath = path.join(
+        os.homedir(),
+        '.claude',
+        'local',
+        'node_modules',
+        '@anthropic-ai',
+        'claude-code',
+        'cli.js',
+      )
+
+      if (fs.existsSync(childCliPath)) {
+        const md5 = calculateMd5(childCliPath)
+        createBackup(md5)
+      } else {
+        warn(`※ Child CLI not found at expected location: ${childCliPath}`)
+      }
+    } catch (error) {
+      warn(`※ Failed to create backup: ${error}`)
+    }
+  }
+
   await initializePatterns()
 
   log('※ Ready, Passing off control to Claude CLI')
@@ -681,6 +811,13 @@ async function main() {
       if (toolsetConfig.disallowed && toolsetConfig.disallowed.length > 0) {
         log(
           `※ Toolset ${options.toolset} disallowed ${toolsetConfig.disallowed.length} tool${toolsetConfig.disallowed.length === 1 ? '' : 's'}`,
+        )
+      }
+
+      if (toolsetConfig.mcp) {
+        const mcpCount = Object.keys(toolsetConfig.mcp).length
+        log(
+          `※ Toolset ${options.toolset} configured ${mcpCount} MCP server${mcpCount === 1 ? '' : 's'}`,
         )
       }
     } catch (error: any) {
