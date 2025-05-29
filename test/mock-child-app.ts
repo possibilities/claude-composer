@@ -33,17 +33,15 @@ if (args.includes('--welcome')) {
   console.log('│   cwd: /home/mike/code/claude-composer-next       │')
   console.log('╰───────────────────────────────────────────────────╯')
 
-  // Flush output to ensure it's sent before we start reading
   if (process.stdout.isTTY) {
     process.stdout.write('')
   }
 
-  // Wait for input and echo it back
   setTimeout(() => {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
-      terminal: false, // Don't echo input
+      terminal: false,
     })
 
     rl.on('line', (input: string) => {
@@ -53,9 +51,7 @@ if (args.includes('--welcome')) {
         process.exit(0)
       }
     })
-  }, 500) // Delay to ensure pattern matcher processes and responds
-
-  // Don't exit, keep the readline interface running
+  }, 500)
 } else if (args.includes('--size')) {
   console.log(
     'Terminal size:',

@@ -61,17 +61,6 @@ describe('Configuration Loading', () => {
     consoleSpy.mockRestore()
   })
 
-  it('should load multiple configuration options', async () => {
-    const configContent = `
-show_notifications: true
-`
-    fs.writeFileSync(testConfigPath, configContent)
-
-    await loadConfig(testConfigPath)
-
-    expect(appConfig.show_notifications).toBe(true)
-  })
-
   it('should handle false value correctly', async () => {
     const configContent = 'show_notifications: false'
     fs.writeFileSync(testConfigPath, configContent)

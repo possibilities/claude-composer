@@ -204,7 +204,6 @@ describe('ResponseQueue', () => {
         writeCallTimes.push(Date.now())
       })
 
-      const startTime = Date.now()
       queue.enqueue(['first', 'second', 'third'])
 
       await vi.runAllTimersAsync()
