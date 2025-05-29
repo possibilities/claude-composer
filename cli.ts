@@ -100,7 +100,7 @@ async function initializePatterns() {
     }
 
     // Handle log patterns based on log_all_prompts flag
-    const isLogPattern = pattern.id.endsWith('-log')
+    const isLogPattern = pattern.action.type === 'log'
     if (isLogPattern && !appConfig.log_all_prompts) {
       return
     }
