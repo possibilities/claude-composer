@@ -57,6 +57,46 @@ describe('Config Validation', () => {
         expect(result.data).toEqual({})
       }
     })
+
+    it('should accept config with toolsets array', () => {
+      const result = validateAppConfig({
+        toolsets: ['core', 'extra'],
+        show_notifications: true,
+      })
+
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data).toEqual({
+          toolsets: ['core', 'extra'],
+          show_notifications: true,
+        })
+      }
+    })
+
+    it('should reject config with invalid toolsets type', () => {
+      const result = validateAppConfig({
+        toolsets: 'core', // should be array
+      })
+
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error.issues[0].path).toEqual(['toolsets'])
+        expect(result.error.issues[0].message).toContain('array')
+      }
+    })
+
+    it('should reject config with non-string toolset names', () => {
+      const result = validateAppConfig({
+        toolsets: ['core', 123, true], // should be string array
+      })
+
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(
+          result.error.issues.some(issue => issue.path[0] === 'toolsets'),
+        ).toBe(true)
+      }
+    })
   })
 
   describe('ToolsetConfig validation', () => {

@@ -10,6 +10,7 @@ export const appConfigSchema = z
     dangerously_allow_without_version_control: z.boolean().optional(),
     log_all_prompts: z.boolean().optional(),
     log_latest_buffer: z.boolean().optional(),
+    toolsets: z.array(z.string()).optional(),
   })
   .strict()
 

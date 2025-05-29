@@ -26,6 +26,8 @@ let isRawMode = false
 let patternMatcher: PatternMatcher
 let responseQueue: ResponseQueue
 let tempMcpConfigPath: string | undefined
+let patternMatchTimeout: NodeJS.Timeout | undefined
+const PATTERN_MATCH_DEBOUNCE_MS = 100
 let appConfig: AppConfig = {
   show_notifications: true,
   dangerously_dismiss_edit_file_prompts: false,
@@ -331,6 +333,10 @@ function cleanup() {
     } catch (e) {}
   }
 
+  if (patternMatchTimeout) {
+    clearTimeout(patternMatchTimeout)
+  }
+
   stopBufferLogging()
 }
 
@@ -412,7 +418,23 @@ function showNotification(match: MatchResult): void {
 }
 
 function handlePatternMatches(data: string): void {
-  const matches = patternMatcher.processData(data)
+  // Add data to buffer immediately
+  patternMatcher.processData(data)
+
+  // Clear existing timeout
+  if (patternMatchTimeout) {
+    clearTimeout(patternMatchTimeout)
+  }
+
+  // Set new timeout to check patterns after debounce period
+  patternMatchTimeout = setTimeout(() => {
+    checkPatterns()
+  }, PATTERN_MATCH_DEBOUNCE_MS)
+}
+
+function checkPatterns(): void {
+  // Process with empty string to just check existing buffer
+  const matches = patternMatcher.processData('')
 
   for (const match of matches) {
     if (match.action.type === 'input') {
@@ -564,34 +586,77 @@ async function main() {
 
   // Process toolset early so we can use it in both print and interactive modes
   let toolsetArgs: string[] = []
+
+  // Determine which toolsets to load
+  let toolsetsToLoad: string[] = []
   if (options.toolset) {
+    // If --toolset is provided, only use that toolset
+    toolsetsToLoad = [options.toolset]
+  } else if (appConfig.toolsets && appConfig.toolsets.length > 0) {
+    // Otherwise, use default toolsets from config
+    toolsetsToLoad = appConfig.toolsets
+  }
+
+  // Load and merge all toolsets
+  let mergedToolsetConfig: ToolsetConfig = {
+    allowed: [],
+    disallowed: [],
+    mcp: {},
+  }
+
+  for (const toolsetName of toolsetsToLoad) {
     try {
-      const toolsetConfig = await loadToolset(options.toolset)
-      toolsetArgs = buildToolsetArgs(toolsetConfig)
-      log(`※ Loaded toolset: ${options.toolset}`)
+      const toolsetConfig = await loadToolset(toolsetName)
+
+      // Merge allowed tools
+      if (toolsetConfig.allowed) {
+        mergedToolsetConfig.allowed = mergedToolsetConfig.allowed || []
+        mergedToolsetConfig.allowed.push(...toolsetConfig.allowed)
+      }
+
+      // Merge disallowed tools
+      if (toolsetConfig.disallowed) {
+        mergedToolsetConfig.disallowed = mergedToolsetConfig.disallowed || []
+        mergedToolsetConfig.disallowed.push(...toolsetConfig.disallowed)
+      }
+
+      // Merge MCP configs
+      if (toolsetConfig.mcp) {
+        mergedToolsetConfig.mcp = {
+          ...mergedToolsetConfig.mcp,
+          ...toolsetConfig.mcp,
+        }
+      }
+
+      log(`※ Loaded toolset: ${toolsetName}`)
 
       if (toolsetConfig.allowed && toolsetConfig.allowed.length > 0) {
         log(
-          `※ Toolset ${options.toolset} allowed ${toolsetConfig.allowed.length} tool${toolsetConfig.allowed.length === 1 ? '' : 's'}`,
+          `※ Toolset ${toolsetName} allowed ${toolsetConfig.allowed.length} tool${toolsetConfig.allowed.length === 1 ? '' : 's'}`,
         )
       }
 
       if (toolsetConfig.disallowed && toolsetConfig.disallowed.length > 0) {
         log(
-          `※ Toolset ${options.toolset} disallowed ${toolsetConfig.disallowed.length} tool${toolsetConfig.disallowed.length === 1 ? '' : 's'}`,
+          `※ Toolset ${toolsetName} disallowed ${toolsetConfig.disallowed.length} tool${toolsetConfig.disallowed.length === 1 ? '' : 's'}`,
         )
       }
 
       if (toolsetConfig.mcp) {
         const mcpCount = Object.keys(toolsetConfig.mcp).length
         log(
-          `※ Toolset ${options.toolset} configured ${mcpCount} MCP server${mcpCount === 1 ? '' : 's'}`,
+          `※ Toolset ${toolsetName} configured ${mcpCount} MCP server${mcpCount === 1 ? '' : 's'}`,
         )
       }
     } catch (error: any) {
       console.error(`\x1b[31m※ Error: ${error.message}\x1b[0m`)
       process.exit(1)
     }
+  }
+
+  // Build args from merged config
+  if (toolsetsToLoad.length > 0) {
+    toolsetArgs = buildToolsetArgs(mergedToolsetConfig)
   }
 
   const hasPrintOption = process.argv.includes('--print')
