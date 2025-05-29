@@ -2,7 +2,7 @@
 
 import * as os from 'node:os'
 import * as pty from 'node-pty'
-import { spawn, ChildProcess } from 'child_process'
+import { spawn, ChildProcess, execSync } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 import { Command } from 'commander'
@@ -34,9 +34,16 @@ let appConfig: AppConfig = {
   dangerously_allow_without_version_control: false,
 }
 
+function getConfigDirectory(): string {
+  return (
+    process.env.CLAUDE_COMPOSER_CONFIG_DIR ||
+    path.join(os.homedir(), '.claude-composer')
+  )
+}
+
 async function loadConfig(configPath?: string): Promise<void> {
   const finalConfigPath =
-    configPath || path.join(os.homedir(), '.claude-composer', 'config.yaml')
+    configPath || path.join(getConfigDirectory(), 'config.yaml')
 
   if (fs.existsSync(finalConfigPath)) {
     try {
@@ -50,14 +57,14 @@ async function loadConfig(configPath?: string): Promise<void> {
 }
 
 function ensureConfigDirectory(): void {
-  const configDir = path.join(os.homedir(), '.claude-composer')
+  const configDir = getConfigDirectory()
   if (!fs.existsSync(configDir)) {
     fs.mkdirSync(configDir, { recursive: true })
   }
 }
 
 // Export for testing
-export { loadConfig, appConfig }
+export { loadConfig, appConfig, getConfigDirectory }
 
 async function initializePatterns() {
   // Load patterns from specified file or default
@@ -317,6 +324,33 @@ async function main() {
     log('※ Notifications are enabled')
   }
 
+  // Preflight checks
+  // Check if git is installed
+  try {
+    execSync('git --version', { stdio: 'ignore' })
+  } catch (error) {
+    console.error('※ Git is not installed or not in PATH')
+    console.error('※ Please install git to use this tool')
+    process.exit(1)
+  }
+
+  // Check if child app exists and is executable
+  if (!fs.existsSync(childAppPath)) {
+    console.error(`※ Claude CLI not found at: ${childAppPath}`)
+    console.error(
+      '※ Please install Claude CLI or set CLAUDE_APP_PATH environment variable',
+    )
+    process.exit(1)
+  }
+
+  try {
+    fs.accessSync(childAppPath, fs.constants.X_OK)
+  } catch (error) {
+    console.error(`※ Claude CLI is not executable: ${childAppPath}`)
+    console.error('※ Please check file permissions')
+    process.exit(1)
+  }
+
   // Check for version control
   const gitDir = path.join(process.cwd(), '.git')
   if (!fs.existsSync(gitDir)) {
@@ -329,6 +363,44 @@ async function main() {
       }
     }
     warn('※ Dangerously running in project without version control')
+  } else {
+    // Check if repository is dirty
+    if (!appConfig.dangerously_allow_in_dirty_directory) {
+      try {
+        const gitStatus = execSync('git status --porcelain', {
+          encoding: 'utf8',
+          cwd: process.cwd(),
+        }).trim()
+
+        if (gitStatus !== '') {
+          console.error('※ Running in directory with uncommitted changes')
+          const proceed = await askYesNo('※ Do you want to continue?', true)
+          if (!proceed) {
+            console.error('※ Exiting: Clean working directory required')
+            process.exit(1)
+          }
+          warn('※ Dangerously running in directory with uncommitted changes')
+        }
+      } catch (error) {
+        // If git status fails, we'll just continue
+        warn('※ Could not check git status')
+      }
+    } else {
+      // Check if dirty but skip prompt
+      try {
+        const gitStatus = execSync('git status --porcelain', {
+          encoding: 'utf8',
+          cwd: process.cwd(),
+        }).trim()
+
+        if (gitStatus !== '') {
+          warn('※ Dangerously running in directory with uncommitted changes')
+        }
+      } catch (error) {
+        // If git status fails, we'll just continue
+        warn('※ Could not check git status')
+      }
+    }
   }
 
   log('※ Ready, Passing off control to Claude CLI')

@@ -4,27 +4,25 @@ import * as path from 'path'
 import { loadConfig, appConfig } from '../cli'
 
 describe('Configuration Loading', () => {
-  const testConfigDir = path.join(__dirname, 'tmp')
-  const testConfigPath = path.join(testConfigDir, 'test-config.yaml')
+  let testConfigDir: string
+  let testConfigPath: string
 
   beforeEach(() => {
     // Reset appConfig
     Object.keys(appConfig).forEach(key => delete appConfig[key])
 
-    // Ensure test directory exists
-    if (!fs.existsSync(testConfigDir)) {
-      fs.mkdirSync(testConfigDir, { recursive: true })
-    }
+    // Create unique test directory
+    testConfigDir = fs.mkdtempSync(
+      path.join(require('os').tmpdir(), 'claude-composer-config-test-'),
+    )
+    testConfigPath = path.join(testConfigDir, 'test-config.yaml')
   })
 
   afterEach(() => {
     // Clean up test config files
     try {
-      if (fs.existsSync(testConfigPath)) {
-        fs.unlinkSync(testConfigPath)
-      }
       if (fs.existsSync(testConfigDir)) {
-        fs.rmdirSync(testConfigDir)
+        fs.rmSync(testConfigDir, { recursive: true, force: true })
       }
     } catch {}
   })

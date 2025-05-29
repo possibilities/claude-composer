@@ -164,19 +164,13 @@ describe('Version Control Check', () => {
   })
 
   it('should skip prompt when dangerously_allow_without_version_control is set in config', done => {
-    // Create config directory and file
-    const configDir = path.join(os.homedir(), '.claude-composer')
-    const configPath = path.join(configDir, 'config.yaml')
-
-    // Save original config if it exists
-    let originalConfig: string | null = null
-    if (fs.existsSync(configPath)) {
-      originalConfig = fs.readFileSync(configPath, 'utf8')
-    }
+    // Create test config directory and file
+    const testConfigDir = path.join(testDir, 'test-config')
+    const configPath = path.join(testConfigDir, 'config.yaml')
 
     // Create test config
-    if (!fs.existsSync(configDir)) {
-      fs.mkdirSync(configDir, { recursive: true })
+    if (!fs.existsSync(testConfigDir)) {
+      fs.mkdirSync(testConfigDir, { recursive: true })
     }
     fs.writeFileSync(
       configPath,
@@ -188,6 +182,7 @@ describe('Version Control Check', () => {
       env: {
         ...process.env,
         CLAUDE_APP_PATH: MOCK_APP_PATH,
+        CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir,
       },
     })
 
@@ -201,13 +196,6 @@ describe('Version Control Check', () => {
     })
 
     child.on('exit', code => {
-      // Restore original config
-      if (originalConfig !== null) {
-        fs.writeFileSync(configPath, originalConfig)
-      } else {
-        fs.unlinkSync(configPath)
-      }
-
       expect(code).toBe(0)
       expect(output).not.toContain('※ Do you want to continue?')
       expect(output).toContain(
