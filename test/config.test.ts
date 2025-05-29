@@ -69,4 +69,33 @@ describe('Configuration Loading', () => {
 
     expect(appConfig.show_notifications).toBe(false)
   })
+
+  it('should load dangerously_dismiss_bash_prompts setting', async () => {
+    const configContent = 'dangerously_dismiss_bash_prompts: true'
+    fs.writeFileSync(testConfigPath, configContent)
+
+    await loadConfig(testConfigPath)
+
+    expect(appConfig.dangerously_dismiss_bash_prompts).toBe(true)
+  })
+
+  it('should load all dangerous dismiss options from config', async () => {
+    const configContent = `
+show_notifications: false
+dangerously_dismiss_edit_file_prompts: true
+dangerously_dismiss_create_file_prompts: true
+dangerously_dismiss_bash_prompts: true
+dangerously_allow_in_dirty_directory: true
+dangerously_allow_without_version_control: true`
+    fs.writeFileSync(testConfigPath, configContent)
+
+    await loadConfig(testConfigPath)
+
+    expect(appConfig.show_notifications).toBe(false)
+    expect(appConfig.dangerously_dismiss_edit_file_prompts).toBe(true)
+    expect(appConfig.dangerously_dismiss_create_file_prompts).toBe(true)
+    expect(appConfig.dangerously_dismiss_bash_prompts).toBe(true)
+    expect(appConfig.dangerously_allow_in_dirty_directory).toBe(true)
+    expect(appConfig.dangerously_allow_without_version_control).toBe(true)
+  })
 })

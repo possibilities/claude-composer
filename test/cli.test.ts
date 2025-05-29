@@ -637,6 +637,62 @@ describe('CLI Wrapper', () => {
           '--dangerously-allow-in-dirty-directory',
           '--no-dangerously-dismiss-edit-file-prompts',
           '--no-dangerously-dismiss-create-file-prompts',
+          '--no-dangerously-dismiss-bash-prompts',
+        ],
+        {
+          env: { ...process.env, CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir },
+        },
+      )
+
+      expect(result.exitCode).toBe(0)
+      expect(result.stdout).toContain('Mock child app running')
+    })
+
+    it('should handle --dangerously-dismiss-bash-prompts flag', async () => {
+      const result = await runCli(
+        [
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+          '--dangerously-dismiss-bash-prompts',
+          '--echo-args',
+        ],
+        {
+          env: { ...process.env, CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir },
+        },
+      )
+
+      expect(result.exitCode).toBe(0)
+      expect(result.stdout).toContain('ARGS: --echo-args')
+      expect(result.stdout).not.toContain('--dangerously-dismiss-bash-prompts')
+    })
+
+    it('should load dangerously_dismiss_bash_prompts from config', async () => {
+      const configContent = 'dangerously_dismiss_bash_prompts: true'
+      fs.writeFileSync(testConfigPath, configContent)
+
+      const result = await runCli(
+        [
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+        ],
+        {
+          env: { ...process.env, CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir },
+        },
+      )
+
+      expect(result.exitCode).toBe(0)
+      expect(result.stdout).toContain('Mock child app running')
+    })
+
+    it('should prioritize CLI flag over config for bash prompts', async () => {
+      const configContent = 'dangerously_dismiss_bash_prompts: true'
+      fs.writeFileSync(testConfigPath, configContent)
+
+      const result = await runCli(
+        [
+          '--no-dangerously-dismiss-bash-prompts',
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
         ],
         {
           env: { ...process.env, CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir },

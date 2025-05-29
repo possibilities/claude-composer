@@ -17,6 +17,7 @@ interface AppConfig {
   show_notifications?: boolean
   dangerously_dismiss_edit_file_prompts?: boolean
   dangerously_dismiss_create_file_prompts?: boolean
+  dangerously_dismiss_bash_prompts?: boolean
   dangerously_allow_in_dirty_directory?: boolean
   dangerously_allow_without_version_control?: boolean
 }
@@ -30,6 +31,7 @@ let appConfig: AppConfig = {
   show_notifications: true,
   dangerously_dismiss_edit_file_prompts: false,
   dangerously_dismiss_create_file_prompts: false,
+  dangerously_dismiss_bash_prompts: false,
   dangerously_allow_in_dirty_directory: false,
   dangerously_allow_without_version_control: false,
 }
@@ -237,6 +239,14 @@ async function main() {
       'Do not automatically dismiss create file prompts',
     )
     .option(
+      '--dangerously-dismiss-bash-prompts',
+      'Automatically dismiss bash prompts',
+    )
+    .option(
+      '--no-dangerously-dismiss-bash-prompts',
+      'Do not automatically dismiss bash prompts',
+    )
+    .option(
       '--dangerously-allow-in-dirty-directory',
       'Allow running in a directory with uncommitted git changes',
     )
@@ -310,6 +320,10 @@ async function main() {
   if (options.dangerouslyDismissCreateFilePrompts !== undefined) {
     appConfig.dangerously_dismiss_create_file_prompts =
       options.dangerouslyDismissCreateFilePrompts
+  }
+  if (options.dangerouslyDismissBashPrompts !== undefined) {
+    appConfig.dangerously_dismiss_bash_prompts =
+      options.dangerouslyDismissBashPrompts
   }
   if (options.dangerouslyAllowInDirtyDirectory !== undefined) {
     appConfig.dangerously_allow_in_dirty_directory =
@@ -414,6 +428,7 @@ async function main() {
   knownOptions.add('--no-show-notifications')
   knownOptions.add('--no-dangerously-dismiss-edit-file-prompts')
   knownOptions.add('--no-dangerously-dismiss-create-file-prompts')
+  knownOptions.add('--no-dangerously-dismiss-bash-prompts')
   knownOptions.add('--no-dangerously-allow-in-dirty-directory')
   knownOptions.add('--no-dangerously-allow-without-version-control')
 
