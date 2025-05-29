@@ -227,7 +227,16 @@ function handlePatternMatches(data: string): void {
 
 async function main() {
   ensureConfigDirectory()
-  await loadConfig()
+
+  // Check for --ignore-global-config flag early
+  const ignoreGlobalConfig = process.argv.includes('--ignore-global-config')
+
+  // Load configuration unless --ignore-global-config is set
+  if (!ignoreGlobalConfig) {
+    await loadConfig()
+  } else {
+    log('※ Ignoring global configuration file')
+  }
 
   // Check if --help was requested before parsing
   const helpRequested =
