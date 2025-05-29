@@ -1,5 +1,17 @@
 import { PatternConfig } from './pattern-matcher'
 
+// {
+//   id: 'edit-file-prompt',
+//   pattern: [
+//     "Edit file",
+//     "Do you want to make this edit to",
+//     "❯ 1. Yes",
+//     "2. Yes, and don't ask again this session (shift+tab)",
+//     "3. No, and tell Claude what to do differently (esc)"
+//   ],
+//   action: { type: 'input', response: '1' }
+// }
+
 export const PATTERNS: PatternConfig[] = [
   {
     id: 'edit-file-prompt',
@@ -64,6 +76,6 @@ export const PATTERNS: PatternConfig[] = [
 ]
 
 export const SETTINGS = {
-  bufferSize: 2048,
+  bufferSize: 8192,
   defaultCooldown: 1000,
 }

@@ -6,7 +6,7 @@ export type PatternAction =
 
 export interface PatternConfig {
   id: string
-  pattern: string | RegExp
+  pattern: string | RegExp | string[]
   action: PatternAction
   cooldown?: number
   multiline?: boolean
@@ -76,13 +76,29 @@ export class PatternMatcher {
         continue
       }
 
-      const matchResult = pattern.regex.exec(strippedContent)
+      let matchResult: { matched: boolean; text: string } | null = null
+
+      if (pattern.regex) {
+        const regexMatch = pattern.regex.exec(strippedContent)
+        if (regexMatch) {
+          matchResult = { matched: true, text: regexMatch[0] }
+        }
+      } else if (pattern.sequence) {
+        const sequenceMatch = this.matchSequence(
+          strippedContent,
+          pattern.sequence,
+          pattern.config.caseSensitive,
+        )
+        if (sequenceMatch) {
+          matchResult = { matched: true, text: sequenceMatch }
+        }
+      }
 
       if (matchResult) {
         matches.push({
           patternId: id,
           action: pattern.config.action,
-          matchedText: matchResult[0],
+          matchedText: matchResult.text,
           bufferContent: content,
         })
         this.lastMatchTimes.set(id, now)
@@ -93,22 +109,26 @@ export class PatternMatcher {
   }
 
   private compilePattern(config: PatternConfig): CompiledPattern {
-    let regex: RegExp
-
-    if (config.pattern instanceof RegExp) {
-      regex = config.pattern
+    if (Array.isArray(config.pattern)) {
+      return {
+        sequence: config.pattern,
+        config,
+      }
+    } else if (config.pattern instanceof RegExp) {
+      return {
+        regex: config.pattern,
+        config,
+      }
     } else {
       const flags = []
       if (!config.caseSensitive) flags.push('i')
       if (config.multiline) flags.push('m')
 
       const escaped = config.pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      regex = new RegExp(escaped, flags.join(''))
-    }
-
-    return {
-      regex,
-      config,
+      return {
+        regex: new RegExp(escaped, flags.join('')),
+        config,
+      }
     }
   }
 
@@ -121,9 +141,53 @@ export class PatternMatcher {
 
     return now - lastMatch < cooldown
   }
+
+  private matchSequence(
+    content: string,
+    sequence: string[],
+    caseSensitive?: boolean,
+  ): string | null {
+    if (sequence.length === 0) {
+      return null
+    }
+
+    const lines = content.split('\n')
+    let sequenceIndex = 0
+    let firstMatchLine = -1
+    let lastMatchLine = -1
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]
+      const searchString = sequence[sequenceIndex]
+
+      if (!searchString) {
+        return null
+      }
+
+      const matches = caseSensitive
+        ? line.includes(searchString)
+        : line.toLowerCase().includes(searchString.toLowerCase())
+
+      if (matches) {
+        if (sequenceIndex === 0) {
+          firstMatchLine = i
+        }
+        sequenceIndex++
+        lastMatchLine = i
+
+        if (sequenceIndex === sequence.length) {
+          // All sequences found, return the matched section
+          return lines.slice(firstMatchLine, lastMatchLine + 1).join('\n')
+        }
+      }
+    }
+
+    return null
+  }
 }
 
 interface CompiledPattern {
-  regex: RegExp
+  regex?: RegExp
+  sequence?: string[]
   config: PatternConfig
 }
