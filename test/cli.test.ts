@@ -501,7 +501,7 @@ foo: true`
 
       // Should exit with error code due to validation failure
       expect(result.exitCode).toBe(1)
-      expect(result.stderr).toContain('Invalid configuration file:')
+      expect(result.stderr).toContain('Error: Invalid configuration in')
       expect(result.stderr).toContain("Unrecognized key(s) in object: 'foo'")
     })
 

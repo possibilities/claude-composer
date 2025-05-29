@@ -130,11 +130,14 @@ async function loadConfig(configPath?: string): Promise<void> {
       const result = validateAppConfig(parsed)
 
       if (!result.success) {
-        console.error('Invalid configuration file:', finalConfigPath)
-        console.error('Validation errors:')
+        console.error(`\nError: Invalid configuration in ${finalConfigPath}`)
+        console.error('\nValidation errors:')
         result.error.issues.forEach(issue => {
-          console.error(`  - ${issue.path.join('.')}: ${issue.message}`)
+          const fieldPath =
+            issue.path.length > 0 ? issue.path.join('.') : 'root'
+          console.error(`  • ${fieldPath}: ${issue.message}`)
         })
+        console.error('')
         process.exit(1)
       }
 
@@ -170,11 +173,13 @@ async function loadToolset(toolsetName: string): Promise<ToolsetConfig> {
     const result = validateToolsetConfig(parsed)
 
     if (!result.success) {
-      console.error('Invalid toolset file:', toolsetPath)
-      console.error('Validation errors:')
+      console.error(`\nError: Invalid toolset configuration in ${toolsetPath}`)
+      console.error('\nValidation errors:')
       result.error.issues.forEach(issue => {
-        console.error(`  - ${issue.path.join('.')}: ${issue.message}`)
+        const fieldPath = issue.path.length > 0 ? issue.path.join('.') : 'root'
+        console.error(`  • ${fieldPath}: ${issue.message}`)
       })
+      console.error('')
       throw new Error('Toolset validation failed')
     }
 
