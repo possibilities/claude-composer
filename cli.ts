@@ -338,19 +338,113 @@ async function main() {
 
   log('※ Getting ready to launch Claude CLI')
 
+  // Check for go-off-yolo-what-could-go-wrong flag first
+  if (options.goOffYoloWhatCouldGoWrong) {
+    // Check for conflicts with individual dangerous flags
+    if (
+      options.dangerouslyDismissEditFilePrompts !== undefined ||
+      options.dangerouslyDismissCreateFilePrompts !== undefined ||
+      options.dangerouslyDismissBashPrompts !== undefined
+    ) {
+      console.error(
+        '\x1b[31m※ Error: Cannot use --go-off-yolo-what-could-go-wrong with individual dangerous prompt flags\x1b[0m',
+      )
+      console.error(
+        '\x1b[31m※ The YOLO flag already sets all dangerous prompt dismissals\x1b[0m',
+      )
+      process.exit(1)
+    }
+
+    // Show loud warning
+    console.log(
+      '\x1b[31m╔════════════════════════════════════════════════════════════════╗\x1b[0m',
+    )
+    console.log(
+      '\x1b[31m║                       🚨 DANGER ZONE 🚨                        ║\x1b[0m',
+    )
+    console.log(
+      '\x1b[31m╠════════════════════════════════════════════════════════════════╣\x1b[0m',
+    )
+    console.log(
+      '\x1b[31m║ You have enabled --go-off-yolo-what-could-go-wrong             ║\x1b[0m',
+    )
+    console.log(
+      '\x1b[31m║                                                                ║\x1b[0m',
+    )
+    console.log(
+      '\x1b[31m║ This will:                                                     ║\x1b[0m',
+    )
+    console.log(
+      '\x1b[31m║ • Automatically dismiss ALL file edit prompts                  ║\x1b[0m',
+    )
+    console.log(
+      '\x1b[31m║ • Automatically dismiss ALL file creation prompts              ║\x1b[0m',
+    )
+    console.log(
+      '\x1b[31m║ • Automatically dismiss ALL bash command prompts               ║\x1b[0m',
+    )
+    console.log(
+      '\x1b[31m║                                                                ║\x1b[0m',
+    )
+    console.log(
+      '\x1b[31m║ Claude will have FULL CONTROL to modify files and run commands ║\x1b[0m',
+    )
+    console.log(
+      '\x1b[31m║ without ANY confirmation!                                      ║\x1b[0m',
+    )
+    console.log(
+      '\x1b[31m║                                                                ║\x1b[0m',
+    )
+    console.log(
+      '\x1b[31m║ ⚠️  This is EXTREMELY DANGEROUS and should only be used when    ║\x1b[0m',
+    )
+    console.log(
+      '\x1b[31m║    you fully trust the AI and understand the risks!            ║\x1b[0m',
+    )
+    console.log(
+      '\x1b[31m╚════════════════════════════════════════════════════════════════╝\x1b[0m',
+    )
+
+    // Prompt for confirmation
+    const proceed = await askYesNo(
+      'Are you ABSOLUTELY SURE you want to continue?',
+      true,
+    )
+    if (!proceed) {
+      console.log('※ Good choice. Exiting safely.')
+      process.exit(0)
+    }
+
+    // Set all the dangerous flags
+    appConfig.dangerously_dismiss_edit_file_prompts = true
+    appConfig.dangerously_dismiss_create_file_prompts = true
+    appConfig.dangerously_dismiss_bash_prompts = true
+
+    warn('※ YOLO mode activated - All safety prompts disabled!')
+  }
+
   // CLI flags take precedence over YAML config
   if (options.showNotifications !== undefined) {
     appConfig.show_notifications = options.showNotifications
   }
-  if (options.dangerouslyDismissEditFilePrompts !== undefined) {
+  if (
+    options.dangerouslyDismissEditFilePrompts !== undefined &&
+    !options.goOffYoloWhatCouldGoWrong
+  ) {
     appConfig.dangerously_dismiss_edit_file_prompts =
       options.dangerouslyDismissEditFilePrompts
   }
-  if (options.dangerouslyDismissCreateFilePrompts !== undefined) {
+  if (
+    options.dangerouslyDismissCreateFilePrompts !== undefined &&
+    !options.goOffYoloWhatCouldGoWrong
+  ) {
     appConfig.dangerously_dismiss_create_file_prompts =
       options.dangerouslyDismissCreateFilePrompts
   }
-  if (options.dangerouslyDismissBashPrompts !== undefined) {
+  if (
+    options.dangerouslyDismissBashPrompts !== undefined &&
+    !options.goOffYoloWhatCouldGoWrong
+  ) {
     appConfig.dangerously_dismiss_bash_prompts =
       options.dangerouslyDismissBashPrompts
   }
