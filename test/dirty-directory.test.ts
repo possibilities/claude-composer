@@ -8,7 +8,7 @@ import { execSync } from 'child_process'
 const CLI_PATH = path.join(process.cwd(), 'cli.ts')
 const MOCK_APP_PATH = path.join(process.cwd(), 'test', 'mock-child-app.ts')
 
-describe('Dirty Directory Check (Simple)', () => {
+describe('Dirty Directory Check', () => {
   let testDir: string
 
   beforeEach(() => {
