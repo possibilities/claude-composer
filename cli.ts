@@ -67,11 +67,9 @@ function ensureConfigDirectory(): void {
   }
 }
 
-// Export for testing
 export { loadConfig, appConfig, getConfigDirectory }
 
 async function initializePatterns() {
-  // Load patterns from specified file or default
   const patternsPath = process.env.CLAUDE_PATTERNS_PATH || './patterns'
   const { PATTERNS, SETTINGS } = await import(patternsPath)
 
@@ -79,7 +77,6 @@ async function initializePatterns() {
   responseQueue = new ResponseQueue()
 
   PATTERNS.forEach(pattern => {
-    // Handle prompt patterns based on dangerous flags
     if (
       pattern.id === 'edit-file-prompt' &&
       !appConfig.dangerously_dismiss_edit_file_prompts
@@ -99,7 +96,6 @@ async function initializePatterns() {
       return
     }
 
-    // Handle log patterns based on log_all_prompts flag
     const isLogPattern = pattern.action.type === 'log'
     if (isLogPattern && !appConfig.log_all_prompts) {
       return
@@ -180,7 +176,6 @@ async function askYesNo(
     rl.question(prompt, answer => {
       rl.close()
 
-      // Ensure stdin is resumed after readline
       if (process.stdin.isPaused()) {
         process.stdin.resume()
       }
@@ -226,7 +221,6 @@ function handlePatternMatches(data: string): void {
       fs.appendFileSync(match.action.path, JSON.stringify(logEntry) + '\n')
     }
 
-    // Show notification if enabled (default true)
     if (appConfig.show_notifications !== false) {
       showNotification(match)
     }
@@ -236,17 +230,14 @@ function handlePatternMatches(data: string): void {
 async function main() {
   ensureConfigDirectory()
 
-  // Check for --ignore-global-config flag early
   const ignoreGlobalConfig = process.argv.includes('--ignore-global-config')
 
-  // Load configuration unless --ignore-global-config is set
   if (!ignoreGlobalConfig) {
     await loadConfig()
   } else {
     log('※ Ignoring global configuration file')
   }
 
-  // Check if --help was requested before parsing
   const helpRequested =
     process.argv.includes('--help') || process.argv.includes('-h')
 
@@ -320,14 +311,11 @@ async function main() {
     .argument('[args...]', 'Arguments to pass to `claude`')
 
   if (helpRequested) {
-    // Configure commander to not exit on help
     program.exitOverride()
     try {
       program.parse(process.argv)
     } catch (err: any) {
-      // Commander throws an error with exitCode 0 for help
       if (err.exitCode === 0) {
-        // Now show the child app's help
         console.log('\n--- Claude CLI Help ---\n')
 
         const helpProcess = spawn(childAppPath, ['--help'], {
@@ -349,13 +337,11 @@ async function main() {
 
   const options = program.opts()
 
-  // Check for --print option early
   const hasPrintOption = process.argv.includes('--print')
 
   if (hasPrintOption) {
     log(`※ Starting Claude Code in non-interactive mode due to --print option`)
 
-    // Pass all arguments directly to child app
     const childArgs = process.argv.slice(2)
     const printProcess = spawn(childAppPath, childArgs, {
       stdio: 'inherit',
@@ -369,13 +355,11 @@ async function main() {
     return
   }
 
-  // Early subcommand detection
   const args = program.args
   let isSubcommand = false
   let subcommandName: string | undefined
 
   if (args.length > 0 && !args[0].includes(' ') && !args[0].startsWith('-')) {
-    // First positional argument with no spaces and not an option is likely a subcommand
     isSubcommand = true
     subcommandName = args[0]
   }
@@ -384,7 +368,6 @@ async function main() {
     log(`※ Bypassing Claude Composer`)
     log(`※ Running Claude Code subcommand: ${subcommandName}`)
 
-    // Pass all arguments directly to child app
     const childArgs = process.argv.slice(2)
     const subcommandProcess = spawn(childAppPath, childArgs, {
       stdio: 'inherit',
@@ -400,9 +383,7 @@ async function main() {
 
   log('※ Getting ready to launch Claude CLI')
 
-  // Check for go-off-yolo-what-could-go-wrong flag first
   if (options.goOffYoloWhatCouldGoWrong) {
-    // Check for conflicts with individual dangerous flags
     if (
       options.dangerouslyDismissEditFilePrompts !== undefined ||
       options.dangerouslyDismissCreateFilePrompts !== undefined ||
@@ -417,7 +398,6 @@ async function main() {
       process.exit(1)
     }
 
-    // Show loud warning
     console.log(
       '\x1b[31m╔════════════════════════════════════════════════════════════════╗\x1b[0m',
     )
@@ -467,7 +447,6 @@ async function main() {
       '\x1b[31m╚════════════════════════════════════════════════════════════════╝\x1b[0m',
     )
 
-    // Prompt for confirmation
     const proceed = await askYesNo(
       'Are you ABSOLUTELY SURE you want to continue?',
       true,
@@ -477,7 +456,6 @@ async function main() {
       process.exit(0)
     }
 
-    // Set all the dangerous flags
     appConfig.dangerously_dismiss_edit_file_prompts = true
     appConfig.dangerously_dismiss_create_file_prompts = true
     appConfig.dangerously_dismiss_bash_prompts = true
@@ -485,7 +463,6 @@ async function main() {
     warn('※ YOLO mode activated - All safety prompts disabled!')
   }
 
-  // CLI flags take precedence over YAML config
   if (options.showNotifications !== undefined) {
     appConfig.show_notifications = options.showNotifications
   }
@@ -530,8 +507,6 @@ async function main() {
     log('※ Logging all prompts to /tmp')
   }
 
-  // Preflight checks
-  // Check if git is installed
   try {
     execSync('git --version', { stdio: 'ignore' })
   } catch (error) {
@@ -540,7 +515,6 @@ async function main() {
     process.exit(1)
   }
 
-  // Check if child app exists and is executable
   if (!fs.existsSync(childAppPath)) {
     console.error(`※ Claude CLI not found at: ${childAppPath}`)
     console.error(
@@ -557,7 +531,6 @@ async function main() {
     process.exit(1)
   }
 
-  // Check for version control
   const gitDir = path.join(process.cwd(), '.git')
   if (!fs.existsSync(gitDir)) {
     if (!appConfig.dangerously_allow_without_version_control) {
@@ -570,7 +543,6 @@ async function main() {
     }
     warn('※ Dangerously running in project without version control')
   } else {
-    // Check if repository is dirty
     if (!appConfig.dangerously_allow_in_dirty_directory) {
       try {
         const gitStatus = execSync('git status --porcelain', {
@@ -588,11 +560,9 @@ async function main() {
           warn('※ Dangerously running in directory with uncommitted changes')
         }
       } catch (error) {
-        // If git status fails, we'll just continue
         warn('※ Could not check git status')
       }
     } else {
-      // Check if dirty but skip prompt
       try {
         const gitStatus = execSync('git status --porcelain', {
           encoding: 'utf8',
@@ -603,13 +573,11 @@ async function main() {
           warn('※ Dangerously running in directory with uncommitted changes')
         }
       } catch (error) {
-        // If git status fails, we'll just continue
         warn('※ Could not check git status')
       }
     }
   }
 
-  // Show warnings for dangerous flags
   if (appConfig.dangerously_dismiss_edit_file_prompts) {
     console.log(
       '\x1b[33m⚠️  WARNING: --dangerously-dismiss-edit-file-prompts is enabled\x1b[0m',
@@ -635,7 +603,6 @@ async function main() {
     )
   }
 
-  // Initialize patterns after all config options have been set
   await initializePatterns()
 
   log('※ Ready, Passing off control to Claude CLI')
@@ -645,7 +612,6 @@ async function main() {
     if (option.long) knownOptions.add(option.long)
   })
 
-  // Add negatable options
   knownOptions.add('--no-show-notifications')
   knownOptions.add('--no-dangerously-dismiss-edit-file-prompts')
   knownOptions.add('--no-dangerously-dismiss-create-file-prompts')
@@ -660,7 +626,6 @@ async function main() {
     if (!knownOptions.has(arg)) {
       childArgs.push(arg)
     } else if (arg === '--toolset' && i + 1 < process.argv.length) {
-      // Skip the next argument which is the toolset value
       i++
     }
   }
@@ -681,7 +646,6 @@ async function main() {
       handlePatternMatches(data)
     })
 
-    // Remove any existing data listeners that might have been added by readline
     process.stdin.removeAllListeners('data')
 
     process.stdin.setRawMode(true)
