@@ -52,117 +52,42 @@ describe('PatternMatcher', () => {
     it('should add pattern', () => {
       const config: PatternConfig = {
         id: 'test1',
-        pattern: 'hello',
-        action: { type: 'input', response: 'world' },
+        pattern: ['hello', 'world'],
+        action: { type: 'input', response: 'matched' },
       }
       matcher.addPattern(config)
-      const matches = matcher.processData('hello')
+      const matches = matcher.processData('hello\nworld')
       expect(matches).toHaveLength(1)
       expect(matches[0].action.type).toBe('input')
-      expect((matches[0].action as any).response).toBe('world')
+      expect((matches[0].action as any).response).toBe('matched')
     })
 
     it('should remove pattern', () => {
       const config: PatternConfig = {
         id: 'test1',
-        pattern: 'hello',
-        action: { type: 'input', response: 'world' },
+        pattern: ['hello', 'world'],
+        action: { type: 'input', response: 'matched' },
       }
       matcher.addPattern(config)
       matcher.removePattern('test1')
-      const matches = matcher.processData('hello')
+      const matches = matcher.processData('hello\nworld')
       expect(matches).toHaveLength(0)
     })
   })
 
   describe('Pattern Matching', () => {
-    it('should match simple string pattern', () => {
-      const config: PatternConfig = {
-        id: 'test1',
-        pattern: 'error',
-        action: { type: 'input', response: 'Error detected!' },
-      }
-      matcher.addPattern(config)
-      const matches = matcher.processData('An error occurred')
-      expect(matches).toHaveLength(1)
-      expect(matches[0].patternId).toBe('test1')
-      expect(matches[0].action.type).toBe('input')
-      expect((matches[0].action as any).response).toBe('Error detected!')
-      expect(matches[0].matchedText).toBe('error')
-    })
-
-    it('should match regex pattern', () => {
-      const config: PatternConfig = {
-        id: 'test1',
-        pattern: /\d{3}-\d{3}-\d{4}/,
-        action: { type: 'input', response: 'Phone number found' },
-      }
-      matcher.addPattern(config)
-      const matches = matcher.processData('Call me at 123-456-7890')
-      expect(matches).toHaveLength(1)
-      expect((matches[0].action as any).response).toBe('Phone number found')
-      expect(matches[0].matchedText).toBe('123-456-7890')
-    })
-
-    it('should handle case-insensitive matching', () => {
-      const config: PatternConfig = {
-        id: 'test1',
-        pattern: 'ERROR',
-        action: { type: 'input', response: 'Found error' },
-        caseSensitive: false,
-      }
-      matcher.addPattern(config)
-      const matches = matcher.processData('error in system')
-      expect(matches).toHaveLength(1)
-    })
-
-    it('should handle case-sensitive matching', () => {
-      const config: PatternConfig = {
-        id: 'test1',
-        pattern: 'ERROR',
-        action: { type: 'input', response: 'Found error' },
-        caseSensitive: true,
-      }
-      matcher.addPattern(config)
-      const matches = matcher.processData('error in system')
-      expect(matches).toHaveLength(0)
-    })
-
-    it('should handle multiline pattern', () => {
-      const config: PatternConfig = {
-        id: 'test1',
-        pattern: /^ERROR/m,
-        action: { type: 'input', response: 'Line starts with ERROR' },
-        multiline: true,
-      }
-      matcher.addPattern(config)
-      const matches = matcher.processData('Some text\nERROR: failed')
-      expect(matches).toHaveLength(1)
-    })
-
-    it('should escape special regex characters in string patterns', () => {
-      const config: PatternConfig = {
-        id: 'test1',
-        pattern: 'What?',
-        action: { type: 'input', response: 'Question found' },
-      }
-      matcher.addPattern(config)
-      const matches = matcher.processData('What? is happening')
-      expect(matches).toHaveLength(1)
-    })
-
     it('should return multiple matches for multiple patterns', () => {
       matcher.addPattern({
         id: 'test1',
-        pattern: 'error',
+        pattern: ['error', 'occurred'],
         action: { type: 'input', response: 'Error found' },
       })
       matcher.addPattern({
         id: 'test2',
-        pattern: 'warning',
+        pattern: ['warning', 'issued'],
         action: { type: 'input', response: 'Warning found' },
       })
-      const matches = matcher.processData('error and warning')
+      const matches = matcher.processData('error\noccurred\nwarning\nissued')
       expect(matches).toHaveLength(2)
       expect(matches.map(m => (m.action as any).response)).toContain(
         'Error found',
@@ -175,11 +100,11 @@ describe('PatternMatcher', () => {
     it('should handle array responses', () => {
       const config: PatternConfig = {
         id: 'test1',
-        pattern: 'help',
+        pattern: ['help', 'needed'],
         action: { type: 'input', response: ['Sure!', 'How can I help?'] },
       }
       matcher.addPattern(config)
-      const matches = matcher.processData('I need help')
+      const matches = matcher.processData('I need help\nHelp needed')
       expect(matches).toHaveLength(1)
       expect((matches[0].action as any).response).toEqual([
         'Sure!',
@@ -190,16 +115,16 @@ describe('PatternMatcher', () => {
     it('should handle log action type', () => {
       const config: PatternConfig = {
         id: 'test1',
-        pattern: 'ERROR',
+        pattern: ['ERROR', 'went wrong'],
         action: { type: 'log', path: '/tmp/test.log' },
       }
       matcher.addPattern(config)
-      const matches = matcher.processData('ERROR: something went wrong')
+      const matches = matcher.processData('ERROR\nsomething went wrong')
       expect(matches).toHaveLength(1)
       expect(matches[0].action.type).toBe('log')
       expect((matches[0].action as any).path).toBe('/tmp/test.log')
-      expect(matches[0].matchedText).toBe('ERROR')
-      expect(matches[0].bufferContent).toContain('ERROR: something went wrong')
+      expect(matches[0].matchedText).toBe('ERROR\nsomething went wrong')
+      expect(matches[0].bufferContent).toContain('ERROR\nsomething went wrong')
     })
   })
 
@@ -207,63 +132,63 @@ describe('PatternMatcher', () => {
     it('should respect cooldown period', () => {
       const config: PatternConfig = {
         id: 'test1',
-        pattern: 'trigger',
+        pattern: ['trigger', 'response'],
         action: { type: 'input', response: 'Response' },
         cooldown: 5000,
       }
       matcher.addPattern(config)
 
-      const matches1 = matcher.processData('trigger')
+      const matches1 = matcher.processData('trigger\nresponse')
       expect(matches1).toHaveLength(1)
 
       vi.advanceTimersByTime(3000)
-      const matches2 = matcher.processData(' trigger')
+      const matches2 = matcher.processData(' trigger\nresponse')
       expect(matches2).toHaveLength(0)
 
       vi.advanceTimersByTime(2001)
-      const matches3 = matcher.processData(' trigger')
+      const matches3 = matcher.processData(' trigger\nresponse')
       expect(matches3).toHaveLength(1)
     })
 
     it('should use default cooldown of 1000ms when not specified', () => {
       const config: PatternConfig = {
         id: 'test1',
-        pattern: 'trigger',
+        pattern: ['trigger', 'now'],
         action: { type: 'input', response: 'Response' },
       }
       matcher.addPattern(config)
 
-      const matches1 = matcher.processData('trigger')
+      const matches1 = matcher.processData('trigger\nnow')
       expect(matches1).toHaveLength(1)
 
       vi.advanceTimersByTime(999)
-      const matches2 = matcher.processData(' trigger')
+      const matches2 = matcher.processData(' trigger\nnow')
       expect(matches2).toHaveLength(0)
 
       vi.advanceTimersByTime(2)
-      const matches3 = matcher.processData(' trigger')
+      const matches3 = matcher.processData(' trigger\nnow')
       expect(matches3).toHaveLength(1)
     })
 
     it('should track cooldowns separately for different patterns', () => {
       matcher.addPattern({
         id: 'test1',
-        pattern: 'pattern1',
+        pattern: ['pattern1', 'first'],
         action: { type: 'input', response: 'Response1' },
         cooldown: 2000,
       })
       matcher.addPattern({
         id: 'test2',
-        pattern: 'pattern2',
+        pattern: ['pattern2', 'second'],
         action: { type: 'input', response: 'Response2' },
         cooldown: 3000,
       })
 
-      const matches1 = matcher.processData('pattern1 pattern2')
+      const matches1 = matcher.processData('pattern1\nfirst\npattern2\nsecond')
       expect(matches1).toHaveLength(2)
 
       vi.advanceTimersByTime(2500)
-      const matches2 = matcher.processData(' pattern1 pattern2')
+      const matches2 = matcher.processData(' pattern1\nfirst\npattern2\nsecond')
       expect(matches2).toHaveLength(1)
       expect(matches2[0].patternId).toBe('test1')
     })
@@ -273,13 +198,13 @@ describe('PatternMatcher', () => {
     it('should match patterns across multiple data chunks', () => {
       const config: PatternConfig = {
         id: 'test1',
-        pattern: 'complete message',
+        pattern: ['complete', 'message'],
         action: { type: 'input', response: 'Found it!' },
       }
       matcher.addPattern(config)
 
       matcher.processData('This is a comp')
-      const matches = matcher.processData('lete message')
+      const matches = matcher.processData('lete\nmessage')
       expect(matches).toHaveLength(1)
       expect((matches[0].action as any).response).toBe('Found it!')
     })
@@ -288,7 +213,7 @@ describe('PatternMatcher', () => {
       const smallMatcher = new PatternMatcher(10)
       const config: PatternConfig = {
         id: 'test1',
-        pattern: 'old',
+        pattern: ['old', 'data'],
         action: { type: 'input', response: 'Found old' },
       }
       smallMatcher.addPattern(config)
@@ -304,16 +229,18 @@ describe('PatternMatcher', () => {
       const matcher = new PatternMatcher()
       matcher.addPattern({
         id: 'test-ansi',
-        pattern: 'Edit file',
+        pattern: ['Edit', 'file'],
         action: { type: 'input', response: 'yes' },
       })
 
       // Text with ANSI color codes (red)
-      const matches = matcher.processData('\x1b[31mEdit file\x1b[0m')
+      const matches = matcher.processData(
+        '\x1b[31mEdit\x1b[0m\n\x1b[32mfile\x1b[0m',
+      )
 
       expect(matches).toHaveLength(1)
       expect(matches[0].patternId).toBe('test-ansi')
-      expect(matches[0].matchedText).toBe('Edit file')
+      expect(matches[0].matchedText).toBe('Edit\nfile')
       // bufferContent should still contain the original ANSI codes
       expect(matches[0].bufferContent).toContain('\x1b[31m')
     })
@@ -322,18 +249,18 @@ describe('PatternMatcher', () => {
       const matcher = new PatternMatcher()
       matcher.addPattern({
         id: 'bash-pattern',
-        pattern: 'Bash',
+        pattern: ['Bash', 'command'],
         action: { type: 'log', path: '/tmp/test.log' },
       })
 
       // Text with multiple ANSI codes (bold, underline, color)
       const matches = matcher.processData(
-        '\x1b[1m\x1b[4m\x1b[32mBash\x1b[0m\x1b[0m\x1b[0m command',
+        '\x1b[1m\x1b[4m\x1b[32mBash\x1b[0m\x1b[0m\x1b[0m\ncommand',
       )
 
       expect(matches).toHaveLength(1)
       expect(matches[0].patternId).toBe('bash-pattern')
-      expect(matches[0].matchedText).toBe('Bash')
+      expect(matches[0].matchedText).toBe('Bash\ncommand')
     })
   })
 
@@ -394,30 +321,16 @@ describe('PatternMatcher', () => {
       expect(matches).toHaveLength(0)
     })
 
-    it('should match sequence case-insensitively when configured', () => {
+    it('should match sequence case-insensitively by default', () => {
       const config: PatternConfig = {
         id: 'seq1',
         pattern: ['HELLO', 'WORLD'],
         action: { type: 'input', response: 'Hi!' },
-        caseSensitive: false,
       }
       matcher.addPattern(config)
 
       const matches = matcher.processData('hello there\nworld')
       expect(matches).toHaveLength(1)
-    })
-
-    it('should not match sequence case-insensitively when case sensitive', () => {
-      const config: PatternConfig = {
-        id: 'seq1',
-        pattern: ['HELLO', 'WORLD'],
-        action: { type: 'input', response: 'Hi!' },
-        caseSensitive: true,
-      }
-      matcher.addPattern(config)
-
-      const matches = matcher.processData('hello\nworld')
-      expect(matches).toHaveLength(0)
     })
 
     it('should match sequence with ANSI codes stripped', () => {
@@ -597,13 +510,13 @@ describe('PatternMatcher', () => {
     it('should match patterns repeatedly when cooldown expires', () => {
       const config: PatternConfig = {
         id: 'test1',
-        pattern: 'prompt>',
+        pattern: ['prompt', '>'],
         action: { type: 'input', response: 'ok' },
         cooldown: 100, // Short cooldown for testing
       }
       matcher.addPattern(config)
 
-      const matches1 = matcher.processData('prompt>')
+      const matches1 = matcher.processData('prompt\n>')
       expect(matches1).toHaveLength(1)
 
       // Still in cooldown
@@ -624,21 +537,21 @@ describe('PatternMatcher', () => {
     it('should allow continuous matching when buffer changes', () => {
       const config: PatternConfig = {
         id: 'test1',
-        pattern: 'test',
+        pattern: ['test', 'data'],
         action: { type: 'input', response: 'found' },
         cooldown: 50,
       }
       matcher.addPattern(config)
 
       // First match
-      const matches1 = matcher.processData('test data')
+      const matches1 = matcher.processData('test\ndata')
       expect(matches1).toHaveLength(1)
 
       // Wait for cooldown
       vi.advanceTimersByTime(51)
 
       // Add more data - pattern still matches
-      const matches2 = matcher.processData(' more test data')
+      const matches2 = matcher.processData(' more test\ndata')
       expect(matches2).toHaveLength(1)
 
       // Wait and match again
