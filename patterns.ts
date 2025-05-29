@@ -31,6 +31,36 @@ export const PATTERNS: PatternConfig[] = [
     cooldown: 100,
     caseSensitive: false,
   },
+  {
+    id: 'edit-file-log',
+    pattern: 'Do you want to make this edit to',
+    action: {
+      type: 'log',
+      path: '/tmp/claude-edit-file-prompts.log',
+    },
+    cooldown: 100,
+    caseSensitive: false,
+  },
+  {
+    id: 'create-file-log',
+    pattern: 'Do you want to create',
+    action: {
+      type: 'log',
+      path: '/tmp/claude-create-file-prompts.log',
+    },
+    cooldown: 100,
+    caseSensitive: false,
+  },
+  {
+    id: 'bash-command-log',
+    pattern: 'Do you want to run this command',
+    action: {
+      type: 'log',
+      path: '/tmp/claude-bash-command-prompts.log',
+    },
+    cooldown: 100,
+    caseSensitive: false,
+  },
 ]
 
 export const SETTINGS = {
