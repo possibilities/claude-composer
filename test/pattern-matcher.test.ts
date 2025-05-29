@@ -297,4 +297,42 @@ describe('PatternMatcher', () => {
       expect(matches).toHaveLength(0)
     })
   })
+
+  describe('ANSI Code Handling', () => {
+    it('should strip ANSI codes before matching patterns', () => {
+      const matcher = new PatternMatcher()
+      matcher.addPattern({
+        id: 'test-ansi',
+        pattern: 'Edit file',
+        action: { type: 'input', response: 'yes' },
+      })
+
+      // Text with ANSI color codes (red)
+      const matches = matcher.processData('\x1b[31mEdit file\x1b[0m')
+
+      expect(matches).toHaveLength(1)
+      expect(matches[0].patternId).toBe('test-ansi')
+      expect(matches[0].matchedText).toBe('Edit file')
+      // bufferContent should still contain the original ANSI codes
+      expect(matches[0].bufferContent).toContain('\x1b[31m')
+    })
+
+    it('should match patterns with complex ANSI sequences', () => {
+      const matcher = new PatternMatcher()
+      matcher.addPattern({
+        id: 'bash-pattern',
+        pattern: 'Bash',
+        action: { type: 'log', path: '/tmp/test.log' },
+      })
+
+      // Text with multiple ANSI codes (bold, underline, color)
+      const matches = matcher.processData(
+        '\x1b[1m\x1b[4m\x1b[32mBash\x1b[0m\x1b[0m\x1b[0m command',
+      )
+
+      expect(matches).toHaveLength(1)
+      expect(matches[0].patternId).toBe('bash-pattern')
+      expect(matches[0].matchedText).toBe('Bash')
+    })
+  })
 })

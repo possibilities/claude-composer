@@ -1,3 +1,5 @@
+import stripAnsi from 'strip-ansi'
+
 export type PatternAction =
   | { type: 'input'; response: string | string[] }
   | { type: 'log'; path: string }
@@ -65,6 +67,7 @@ export class PatternMatcher {
   processData(data: string): MatchResult[] {
     this.buffer.append(data)
     const content = this.buffer.getContent()
+    const strippedContent = stripAnsi(content)
     const matches: MatchResult[] = []
     const now = Date.now()
 
@@ -73,7 +76,7 @@ export class PatternMatcher {
         continue
       }
 
-      const matchResult = pattern.regex.exec(content)
+      const matchResult = pattern.regex.exec(strippedContent)
 
       if (matchResult) {
         matches.push({

@@ -175,9 +175,9 @@ function showNotification(match: MatchResult): void {
   notifier.notify({
     title,
     message,
-    timeout: false, // Stay forever until dismissed
     wait: false,
     sound: false,
+    timeout: 22222,
   })
 }
 
