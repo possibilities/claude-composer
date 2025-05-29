@@ -49,9 +49,7 @@ export class CircularBuffer {
 export class PatternMatcher {
   private patterns: Map<string, CompiledPattern> = new Map()
   private lastMatchTimes: Map<string, number> = new Map()
-  private lastMatchContents: Map<string, string> = new Map()
   private buffer: CircularBuffer
-  private bufferChangedSinceLastProcess: boolean = true
 
   constructor(bufferSize: number = 2048) {
     this.buffer = new CircularBuffer(bufferSize)
@@ -65,12 +63,10 @@ export class PatternMatcher {
   removePattern(id: string): void {
     this.patterns.delete(id)
     this.lastMatchTimes.delete(id)
-    this.lastMatchContents.delete(id)
   }
 
   processData(data: string): MatchResult[] {
     if (data.length > 0) {
-      this.bufferChangedSinceLastProcess = true
       this.buffer.append(data)
     }
 
@@ -103,13 +99,6 @@ export class PatternMatcher {
       }
 
       if (matchResult) {
-        if (!this.bufferChangedSinceLastProcess) {
-          const lastMatchContent = this.lastMatchContents.get(id)
-          if (lastMatchContent === matchResult.text) {
-            continue
-          }
-        }
-
         matches.push({
           patternId: id,
           action: pattern.config.action,
@@ -118,11 +107,8 @@ export class PatternMatcher {
           strippedBufferContent: strippedContent,
         })
         this.lastMatchTimes.set(id, now)
-        this.lastMatchContents.set(id, matchResult.text)
       }
     }
-
-    this.bufferChangedSinceLastProcess = false
 
     return matches
   }

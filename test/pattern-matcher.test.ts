@@ -542,45 +542,58 @@ describe('PatternMatcher', () => {
     })
   })
 
-  describe('Duplicate Match Prevention', () => {
-    it('should prevent duplicate matches when no new data is added', () => {
+  describe('Pattern Matching Without Duplicate Prevention', () => {
+    it('should match patterns repeatedly when cooldown expires', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: 'prompt>',
         action: { type: 'input', response: 'ok' },
-        cooldown: 0,
+        cooldown: 100, // Short cooldown for testing
       }
       matcher.addPattern(config)
 
       const matches1 = matcher.processData('prompt>')
       expect(matches1).toHaveLength(1)
 
-      expect(matcher.processData('')).toHaveLength(0)
-      expect(matcher.processData('')).toHaveLength(0)
-      expect(matcher.processData('')).toHaveLength(0)
+      // Still in cooldown
+      const matches2 = matcher.processData('')
+      expect(matches2).toHaveLength(0)
+
+      // After cooldown expires, pattern matches again
+      vi.advanceTimersByTime(101)
+      const matches3 = matcher.processData('')
+      expect(matches3).toHaveLength(1)
+
+      // And again after another cooldown
+      vi.advanceTimersByTime(101)
+      const matches4 = matcher.processData('')
+      expect(matches4).toHaveLength(1)
     })
 
-    it('should work with cooldown and duplicate prevention together', () => {
+    it('should allow continuous matching when buffer changes', () => {
       const config: PatternConfig = {
         id: 'test1',
-        pattern: 'alert',
-        action: { type: 'input', response: 'ack' },
-        cooldown: 1000,
+        pattern: 'test',
+        action: { type: 'input', response: 'found' },
+        cooldown: 50,
       }
       matcher.addPattern(config)
 
-      const matches1 = matcher.processData('alert: something')
+      // First match
+      const matches1 = matcher.processData('test data')
       expect(matches1).toHaveLength(1)
 
-      const matches2 = matcher.processData(' more')
-      expect(matches2).toHaveLength(0)
+      // Wait for cooldown
+      vi.advanceTimersByTime(51)
 
-      vi.advanceTimersByTime(1001)
+      // Add more data - pattern still matches
+      const matches2 = matcher.processData(' more test data')
+      expect(matches2).toHaveLength(1)
+
+      // Wait and match again
+      vi.advanceTimersByTime(51)
       const matches3 = matcher.processData('')
-      expect(matches3).toHaveLength(0)
-
-      const matches4 = matcher.processData(' ')
-      expect(matches4).toHaveLength(1)
+      expect(matches3).toHaveLength(1)
     })
   })
 })
