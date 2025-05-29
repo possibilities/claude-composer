@@ -88,6 +88,6 @@ export const PATTERNS: PatternConfig[] = [
 ]
 
 export const SETTINGS = {
-  bufferSize: 16384,
+  bufferSize: 131072,
   defaultCooldown: 1000,
 }
