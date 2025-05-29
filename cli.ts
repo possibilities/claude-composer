@@ -359,7 +359,9 @@ function handlePatternMatches(data: string): void {
 
   for (const match of matches) {
     if (match.action.type === 'input') {
-      responseQueue.enqueue(match.action.response)
+      // Add a small delay before sending the response
+      const delay = 500 // 500ms delay
+      responseQueue.enqueue(match.action.response, delay)
     } else if (match.action.type === 'log') {
       const logEntry = {
         timestamp: new Date().toISOString(),
