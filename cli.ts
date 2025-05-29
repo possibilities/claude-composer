@@ -23,6 +23,11 @@ interface AppConfig {
   log_all_prompts?: boolean
 }
 
+interface ToolsetConfig {
+  allowed?: string[]
+  disallowed?: string[]
+}
+
 let ptyProcess: pty.IPty | undefined
 let childProcess: ChildProcess | undefined
 let isRawMode = false
@@ -65,6 +70,44 @@ function ensureConfigDirectory(): void {
   if (!fs.existsSync(configDir)) {
     fs.mkdirSync(configDir, { recursive: true })
   }
+}
+
+async function loadToolset(toolsetName: string): Promise<ToolsetConfig> {
+  const toolsetPath = path.join(
+    getConfigDirectory(),
+    'toolsets',
+    `${toolsetName}.yaml`,
+  )
+
+  if (!fs.existsSync(toolsetPath)) {
+    throw new Error(`Toolset file not found: ${toolsetPath}`)
+  }
+
+  try {
+    const toolsetData = fs.readFileSync(toolsetPath, 'utf8')
+    const parsed = yaml.load(toolsetData) as ToolsetConfig
+    return parsed
+  } catch (error) {
+    throw new Error(`Error loading toolset file: ${error}`)
+  }
+}
+
+function buildToolsetArgs(toolsetConfig: ToolsetConfig): string[] {
+  const args: string[] = []
+
+  if (toolsetConfig.allowed) {
+    for (const tool of toolsetConfig.allowed) {
+      args.push('--allowedTools', tool)
+    }
+  }
+
+  if (toolsetConfig.disallowed) {
+    for (const tool of toolsetConfig.disallowed) {
+      args.push('--disallowedTools', tool)
+    }
+  }
+
+  return args
 }
 
 export { loadConfig, appConfig, getConfigDirectory }
@@ -621,6 +664,31 @@ async function main() {
   knownOptions.add('--no-log-all-prompts')
 
   const childArgs: string[] = []
+  let toolsetArgs: string[] = []
+
+  if (options.toolset) {
+    try {
+      const toolsetConfig = await loadToolset(options.toolset)
+      toolsetArgs = buildToolsetArgs(toolsetConfig)
+      log(`※ Loaded toolset: ${options.toolset}`)
+
+      if (toolsetConfig.allowed && toolsetConfig.allowed.length > 0) {
+        log(
+          `※ Toolset ${options.toolset} allowed ${toolsetConfig.allowed.length} tool${toolsetConfig.allowed.length === 1 ? '' : 's'}`,
+        )
+      }
+
+      if (toolsetConfig.disallowed && toolsetConfig.disallowed.length > 0) {
+        log(
+          `※ Toolset ${options.toolset} disallowed ${toolsetConfig.disallowed.length} tool${toolsetConfig.disallowed.length === 1 ? '' : 's'}`,
+        )
+      }
+    } catch (error: any) {
+      console.error(`\x1b[31m※ Error: ${error.message}\x1b[0m`)
+      process.exit(1)
+    }
+  }
+
   for (let i = 2; i < process.argv.length; i++) {
     const arg = process.argv[i]
     if (!knownOptions.has(arg)) {
@@ -629,6 +697,8 @@ async function main() {
       i++
     }
   }
+
+  childArgs.push(...toolsetArgs)
 
   if (process.stdin.isTTY) {
     ptyProcess = pty.spawn(childAppPath, childArgs, {
