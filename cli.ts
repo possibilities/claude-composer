@@ -486,12 +486,73 @@ async function main() {
 
   const options = program.opts()
 
+  // Build the known options set early so we can use it for filtering
+  const knownOptions = new Set<string>()
+  program.options.forEach(option => {
+    if (option.long) knownOptions.add(option.long)
+  })
+
+  knownOptions.add('--no-show-notifications')
+  knownOptions.add('--no-dangerously-dismiss-edit-file-prompts')
+  knownOptions.add('--no-dangerously-dismiss-create-file-prompts')
+  knownOptions.add('--no-dangerously-dismiss-bash-command-prompts')
+  knownOptions.add('--no-dangerously-allow-in-dirty-directory')
+  knownOptions.add('--no-dangerously-allow-without-version-control')
+  knownOptions.add('--no-log-all-prompts')
+  knownOptions.add('--toolset')
+
+  // Process toolset early so we can use it in both print and interactive modes
+  let toolsetArgs: string[] = []
+  if (options.toolset) {
+    try {
+      const toolsetConfig = await loadToolset(options.toolset)
+      toolsetArgs = buildToolsetArgs(toolsetConfig)
+      log(`※ Loaded toolset: ${options.toolset}`)
+
+      if (toolsetConfig.allowed && toolsetConfig.allowed.length > 0) {
+        log(
+          `※ Toolset ${options.toolset} allowed ${toolsetConfig.allowed.length} tool${toolsetConfig.allowed.length === 1 ? '' : 's'}`,
+        )
+      }
+
+      if (toolsetConfig.disallowed && toolsetConfig.disallowed.length > 0) {
+        log(
+          `※ Toolset ${options.toolset} disallowed ${toolsetConfig.disallowed.length} tool${toolsetConfig.disallowed.length === 1 ? '' : 's'}`,
+        )
+      }
+
+      if (toolsetConfig.mcp) {
+        const mcpCount = Object.keys(toolsetConfig.mcp).length
+        log(
+          `※ Toolset ${options.toolset} configured ${mcpCount} MCP server${mcpCount === 1 ? '' : 's'}`,
+        )
+      }
+    } catch (error: any) {
+      console.error(`\x1b[31m※ Error: ${error.message}\x1b[0m`)
+      process.exit(1)
+    }
+  }
+
   const hasPrintOption = process.argv.includes('--print')
 
   if (hasPrintOption) {
     log(`※ Starting Claude Code in non-interactive mode due to --print option`)
 
-    const childArgs = process.argv.slice(2)
+    // Filter out known options when passing to child app
+    const childArgs: string[] = []
+    for (let i = 2; i < process.argv.length; i++) {
+      const arg = process.argv[i]
+      if (!knownOptions.has(arg)) {
+        childArgs.push(arg)
+      } else if (arg === '--toolset' && i + 1 < process.argv.length) {
+        // Skip the toolset value as well
+        i++
+      }
+    }
+
+    // Add the generated toolset args
+    childArgs.push(...toolsetArgs)
+
     const printProcess = spawn(childAppPath, childArgs, {
       stdio: 'inherit',
       env: process.env,
@@ -779,51 +840,7 @@ async function main() {
 
   log('※ Ready, Passing off control to Claude CLI')
 
-  const knownOptions = new Set<string>()
-  program.options.forEach(option => {
-    if (option.long) knownOptions.add(option.long)
-  })
-
-  knownOptions.add('--no-show-notifications')
-  knownOptions.add('--no-dangerously-dismiss-edit-file-prompts')
-  knownOptions.add('--no-dangerously-dismiss-create-file-prompts')
-  knownOptions.add('--no-dangerously-dismiss-bash-command-prompts')
-  knownOptions.add('--no-dangerously-allow-in-dirty-directory')
-  knownOptions.add('--no-dangerously-allow-without-version-control')
-  knownOptions.add('--no-log-all-prompts')
-
   const childArgs: string[] = []
-  let toolsetArgs: string[] = []
-
-  if (options.toolset) {
-    try {
-      const toolsetConfig = await loadToolset(options.toolset)
-      toolsetArgs = buildToolsetArgs(toolsetConfig)
-      log(`※ Loaded toolset: ${options.toolset}`)
-
-      if (toolsetConfig.allowed && toolsetConfig.allowed.length > 0) {
-        log(
-          `※ Toolset ${options.toolset} allowed ${toolsetConfig.allowed.length} tool${toolsetConfig.allowed.length === 1 ? '' : 's'}`,
-        )
-      }
-
-      if (toolsetConfig.disallowed && toolsetConfig.disallowed.length > 0) {
-        log(
-          `※ Toolset ${options.toolset} disallowed ${toolsetConfig.disallowed.length} tool${toolsetConfig.disallowed.length === 1 ? '' : 's'}`,
-        )
-      }
-
-      if (toolsetConfig.mcp) {
-        const mcpCount = Object.keys(toolsetConfig.mcp).length
-        log(
-          `※ Toolset ${options.toolset} configured ${mcpCount} MCP server${mcpCount === 1 ? '' : 's'}`,
-        )
-      }
-    } catch (error: any) {
-      console.error(`\x1b[31m※ Error: ${error.message}\x1b[0m`)
-      process.exit(1)
-    }
-  }
 
   for (let i = 2; i < process.argv.length; i++) {
     const arg = process.argv[i]

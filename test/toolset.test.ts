@@ -461,4 +461,55 @@ mcp:
     expect(output).toContain('--disallowedTools badtool')
     expect(output).toContain('--mcp-config /tmp/claude-composer-mcp-')
   })
+
+  it('should not pass --toolset option to child app', async () => {
+    const toolsetContent = `allowed:
+  - sometool
+`
+    await fs.promises.writeFile(
+      path.join(TOOLSETS_DIR, 'test-not-passed.yaml'),
+      toolsetContent,
+    )
+
+    const child = spawn(
+      'tsx',
+      [
+        CLI_PATH,
+        '--dangerously-allow-without-version-control',
+        '--dangerously-allow-in-dirty-directory',
+        '--toolset',
+        'test-not-passed',
+        '--echo-args',
+      ],
+      {
+        cwd: path.join(__dirname, '..'),
+        env: {
+          ...process.env,
+          CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
+          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
+          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+        },
+      },
+    )
+
+    const output = await new Promise<string>(resolve => {
+      let data = ''
+      child.stdout.on('data', chunk => {
+        data += chunk.toString()
+      })
+      child.stderr.on('data', chunk => {
+        data += chunk.toString()
+      })
+      child.on('close', () => {
+        resolve(data)
+      })
+    })
+
+    expect(output).toContain('※ Loaded toolset: test-not-passed')
+    expect(output).toContain('ARGS:')
+    // Should not contain --toolset in the arguments passed to child
+    expect(output).not.toMatch(/ARGS:.*--toolset/s)
+    // Should still contain the expanded toolset args
+    expect(output).toContain('--allowedTools sometool')
+  })
 })
