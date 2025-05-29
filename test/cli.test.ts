@@ -663,7 +663,11 @@ describe('CLI Wrapper', () => {
 
       expect(result.exitCode).toBe(0)
       expect(result.stdout).toContain('ARGS: --echo-args')
-      expect(result.stdout).not.toContain('--dangerously-dismiss-bash-prompts')
+      // Check that the flag is not passed to child app (should not appear after ARGS:)
+      const argsLine = result.stdout
+        .split('\n')
+        .find(line => line.includes('ARGS:'))
+      expect(argsLine).not.toContain('--dangerously-dismiss-bash-prompts')
     })
 
     it('should load dangerously_dismiss_bash_prompts from config', async () => {
@@ -720,14 +724,15 @@ describe('CLI Wrapper', () => {
 
       expect(result.exitCode).toBe(0)
       expect(result.stdout).toContain('ARGS: --echo-args')
-      // Ensure none of the parent flags are passed through
-      expect(result.stdout).not.toContain(
-        '--dangerously-dismiss-edit-file-prompts',
-      )
-      expect(result.stdout).not.toContain(
+      // Ensure none of the parent flags are passed through to child app
+      const argsLine = result.stdout
+        .split('\n')
+        .find(line => line.includes('ARGS:'))
+      expect(argsLine).not.toContain('--dangerously-dismiss-edit-file-prompts')
+      expect(argsLine).not.toContain(
         '--dangerously-dismiss-create-file-prompts',
       )
-      expect(result.stdout).not.toContain('--dangerously-dismiss-bash-prompts')
+      expect(argsLine).not.toContain('--dangerously-dismiss-bash-prompts')
     })
 
     it('should handle mixed positive and negative dismiss flags', async () => {
@@ -747,8 +752,11 @@ describe('CLI Wrapper', () => {
 
       expect(result.exitCode).toBe(0)
       expect(result.stdout).toContain('ARGS: --echo-args')
-      // Ensure none of the flags are passed through
-      expect(result.stdout).not.toContain('dismiss')
+      // Ensure none of the flags are passed through to child app
+      const argsLine = result.stdout
+        .split('\n')
+        .find(line => line.includes('ARGS:'))
+      expect(argsLine).toBe('ARGS: --echo-args')
     })
   })
 })

@@ -540,6 +540,32 @@ async function main() {
     }
   }
 
+  // Show warnings for dangerous flags
+  if (appConfig.dangerously_dismiss_edit_file_prompts) {
+    console.log(
+      '\x1b[33m⚠️  WARNING: --dangerously-dismiss-edit-file-prompts is enabled\x1b[0m',
+    )
+    console.log(
+      '\x1b[33m   All file edit prompts will be automatically dismissed!\x1b[0m',
+    )
+  }
+  if (appConfig.dangerously_dismiss_create_file_prompts) {
+    console.log(
+      '\x1b[33m⚠️  WARNING: --dangerously-dismiss-create-file-prompts is enabled\x1b[0m',
+    )
+    console.log(
+      '\x1b[33m   All file creation prompts will be automatically dismissed!\x1b[0m',
+    )
+  }
+  if (appConfig.dangerously_dismiss_bash_prompts) {
+    console.log(
+      '\x1b[33m⚠️  WARNING: --dangerously-dismiss-bash-prompts is enabled\x1b[0m',
+    )
+    console.log(
+      '\x1b[33m   All bash command prompts will be automatically dismissed!\x1b[0m',
+    )
+  }
+
   log('※ Ready, Passing off control to Claude CLI')
 
   const knownOptions = new Set<string>()
