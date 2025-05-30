@@ -334,13 +334,10 @@ describe('CLI Wrapper', () => {
         output += data
       })
 
-      // Wait for initial output and pattern processing
       await new Promise(resolve => setTimeout(resolve, 3000))
 
-      // Check that test pattern trigger was output
       expect(output).toContain('TEST_PATTERN_TRIGGER')
 
-      // Check that pattern response was received by mock app
       expect(output).toContain('Received input: Test response')
 
       ptyProcess.write('exit\r')
@@ -405,7 +402,6 @@ describe('CLI Wrapper', () => {
     })
 
     afterEach(() => {
-      // Clean up test config directory
       try {
         if (fs.existsSync(testConfigDir)) {
           fs.rmSync(testConfigDir, { recursive: true, force: true })
@@ -479,7 +475,6 @@ describe('CLI Wrapper', () => {
         },
       )
 
-      // Should exit with error code due to invalid YAML
       expect(result.exitCode).toBe(1)
       expect(result.stderr).toContain('Error loading configuration file:')
     })
@@ -499,14 +494,12 @@ foo: true`
         },
       )
 
-      // Should exit with error code due to validation failure
       expect(result.exitCode).toBe(1)
       expect(result.stderr).toContain('Error: Invalid configuration in')
       expect(result.stderr).toContain("Unrecognized key(s) in object: 'foo'")
     })
 
     it('should show notifications by default when no config exists', async () => {
-      // Ensure no config file exists
       if (fs.existsSync(testConfigPath)) {
         fs.unlinkSync(testConfigPath)
       }
@@ -571,7 +564,6 @@ foo: true`
       const configContent = 'show_notifications: true'
       fs.writeFileSync(testConfigPath, configContent)
 
-      // Create a temporary pattern file that will match our mock app output
       const testPatternPath = path.join(testConfigDir, 'test-patterns.json')
       const testPatterns = [
         {
@@ -631,11 +623,9 @@ foo: true`
     })
 
     it('should prioritize CLI flag over config file', async () => {
-      // Set config to disable notifications
       const configContent = 'show_notifications: false'
       fs.writeFileSync(testConfigPath, configContent)
 
-      // But enable via CLI flag
       const result = await runCli(
         [
           '--show-notifications',
@@ -684,7 +674,6 @@ foo: true`
 
       expect(result.exitCode).toBe(0)
       expect(result.stdout).toContain('ARGS: --echo-args')
-      // Check that the flag is not passed to child app (should not appear after ARGS:)
       const argsLine = result.stdout
         .split('\n')
         .find(line => line.includes('ARGS:'))

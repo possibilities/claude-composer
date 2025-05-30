@@ -27,8 +27,6 @@ let appConfig: AppConfig | undefined
 let stdinBuffer: PassThrough | undefined
 let isStdinPaused = false
 
-// Create a debug logger that only outputs when NODE_DEBUG=claude-composer is set
-// This ensures logs only appear in inspector/debug mode and not in the terminal
 const debugLog = util.debuglog('claude-composer')
 
 function getBackupDirectory(): string {
@@ -235,19 +233,16 @@ function handlePatternMatches(data: string): void {
 async function main() {
   ensureBackupDirectory()
 
-  // If stdin is being piped, start buffering it immediately
   if (!process.stdin.isTTY) {
     stdinBuffer = new PassThrough()
     process.stdin.pipe(stdinBuffer)
-    process.stdin.pause() // Pause to prevent data loss during prompts
+    process.stdin.pause()
     isStdinPaused = true
   }
 
-  // Run preflight checks and get configuration
   const preflightResult = await runPreflight(process.argv)
 
   if (preflightResult.shouldExit) {
-    // Handle help display
     if (preflightResult.exitCode === 0 && process.argv.includes('--help')) {
       console.log('\n--- Claude CLI Help ---\n')
 
@@ -271,7 +266,6 @@ async function main() {
       return
     }
 
-    // Handle print option
     if (process.argv.includes('--print')) {
       const defaultChildAppPath = path.join(
         os.homedir(),
@@ -293,7 +287,6 @@ async function main() {
       return
     }
 
-    // Handle subcommands
     const args = preflightResult.childArgs
     if (args.length > 0 && !args[0].includes(' ') && !args[0].startsWith('-')) {
       const defaultChildAppPath = path.join(
@@ -316,11 +309,9 @@ async function main() {
       return
     }
 
-    // Other exit cases
     process.exit(preflightResult.exitCode || 0)
   }
 
-  // Store config and temp path
   appConfig = preflightResult.appConfig
   tempMcpConfigPath = preflightResult.tempMcpConfigPath
 
@@ -375,11 +366,9 @@ async function main() {
 
     responseQueue.setTargets(ptyProcess, undefined)
 
-    // Dynamically import xterm modules
     const { Terminal } = await import('@xterm/xterm')
     const { SerializeAddon } = await import('@xterm/addon-serialize')
 
-    // Initialize xterm terminal
     terminal = new Terminal({
       cols: cols,
       rows: rows,
@@ -389,13 +378,11 @@ async function main() {
     serializeAddon = new SerializeAddon()
     terminal.loadAddon(serializeAddon)
 
-    // Write PTY output to both stdout and xterm
     ptyProcess.onData((data: string) => {
       process.stdout.write(data)
       terminal.write(data)
     })
 
-    // Start screen reading interval
     let lastScreenContent = ''
     screenReadInterval = setInterval(() => {
       if (terminal && serializeAddon) {
@@ -441,11 +428,9 @@ async function main() {
 
     responseQueue.setTargets(undefined, childProcess)
 
-    // Dynamically import xterm modules
     const { Terminal } = await import('@xterm/xterm')
     const { SerializeAddon } = await import('@xterm/addon-serialize')
 
-    // Initialize xterm terminal for non-TTY mode
     terminal = new Terminal({
       cols: 80,
       rows: 30,
@@ -455,9 +440,7 @@ async function main() {
     serializeAddon = new SerializeAddon()
     terminal.loadAddon(serializeAddon)
 
-    // Use buffered stdin if available, otherwise pipe directly
     if (stdinBuffer) {
-      // Resume the paused stdin stream if needed
       if (isStdinPaused) {
         process.stdin.resume()
         isStdinPaused = false
@@ -473,7 +456,6 @@ async function main() {
       terminal.write(dataStr)
     })
 
-    // Start screen reading interval for non-TTY mode
     let lastScreenContent = ''
     screenReadInterval = setInterval(() => {
       if (terminal && serializeAddon) {

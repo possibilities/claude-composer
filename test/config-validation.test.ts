@@ -20,8 +20,8 @@ describe('Config Validation', () => {
 
     it('should reject config with invalid field types', () => {
       const result = validateAppConfig({
-        show_notifications: 'yes', // should be boolean
-        dangerously_dismiss_edit_file_prompts: 123, // should be boolean
+        show_notifications: 'yes',
+        dangerously_dismiss_edit_file_prompts: 123,
       })
 
       expect(result.success).toBe(false)
@@ -37,8 +37,8 @@ describe('Config Validation', () => {
     it('should reject config with unknown fields', () => {
       const result = validateAppConfig({
         show_notifications: true,
-        foo: true, // unknown field
-        bar: 'baz', // unknown field
+        foo: true,
+        bar: 'baz',
       })
 
       expect(result.success).toBe(false)
@@ -75,7 +75,7 @@ describe('Config Validation', () => {
 
     it('should reject config with invalid toolsets type', () => {
       const result = validateAppConfig({
-        toolsets: 'core', // should be array
+        toolsets: 'core',
       })
 
       expect(result.success).toBe(false)
@@ -87,7 +87,7 @@ describe('Config Validation', () => {
 
     it('should reject config with non-string toolset names', () => {
       const result = validateAppConfig({
-        toolsets: ['core', 123, true], // should be string array
+        toolsets: ['core', 123, true],
       })
 
       expect(result.success).toBe(false)
@@ -123,8 +123,8 @@ describe('Config Validation', () => {
 
     it('should reject toolset with invalid field types', () => {
       const result = validateToolsetConfig({
-        allowed: 'tool1', // should be array
-        disallowed: [123, 456], // should be string array
+        allowed: 'tool1',
+        disallowed: [123, 456],
       })
 
       expect(result.success).toBe(false)

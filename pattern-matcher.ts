@@ -80,10 +80,9 @@ export class PatternMatcher {
       )
 
       if (sequenceMatch) {
-        // Check if this exact match was the last match for this pattern
         const lastMatch = this.lastMatches.get(id)
         if (lastMatch === sequenceMatch.text) {
-          continue // Skip duplicate match
+          continue
         }
 
         matches.push({

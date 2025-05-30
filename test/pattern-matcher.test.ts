@@ -125,11 +125,9 @@ describe('PatternMatcher', () => {
       const matches1 = matcher.processData('trigger\nresponse')
       expect(matches1).toHaveLength(1)
 
-      // Same match should be prevented
       const matches2 = matcher.processData('')
       expect(matches2).toHaveLength(0)
 
-      // Even with more data, same match text is prevented
       const matches3 = matcher.processData('\nextra')
       expect(matches3).toHaveLength(0)
     })
@@ -149,11 +147,9 @@ describe('PatternMatcher', () => {
       const matches1 = matcher.processData('pattern1\nfirst\npattern2\nsecond')
       expect(matches1).toHaveLength(2)
 
-      // Both patterns should be prevented from matching again
       const matches2 = matcher.processData('')
       expect(matches2).toHaveLength(0)
 
-      // Clear buffer to test with fresh content
       matcher = new PatternMatcher(2048)
       matcher.addPattern({
         id: 'test1',
@@ -166,7 +162,6 @@ describe('PatternMatcher', () => {
         action: { type: 'input', response: 'Response2' },
       })
 
-      // Fresh patterns match
       const matches3 = matcher.processData('pattern1\nfirst')
       expect(matches3).toHaveLength(1)
       expect(matches3[0].patternId).toBe('test1')
@@ -180,16 +175,13 @@ describe('PatternMatcher', () => {
       }
       matcher.addPattern(config)
 
-      // First match
       const matches1 = matcher.processData('start\nmiddle\nend')
       expect(matches1).toHaveLength(1)
       expect(matches1[0].matchedText).toBe('start\nmiddle\nend')
 
-      // Same match prevented
       const matches2 = matcher.processData('')
       expect(matches2).toHaveLength(0)
 
-      // Clear buffer and try different content
       matcher = new PatternMatcher(2048)
       matcher.addPattern(config)
 
@@ -238,7 +230,6 @@ describe('PatternMatcher', () => {
         action: { type: 'input', response: 'yes' },
       })
 
-      // Text with ANSI color codes (red)
       const matches = matcher.processData(
         '\x1b[31mEdit\x1b[0m\n\x1b[32mfile\x1b[0m',
       )
@@ -246,7 +237,6 @@ describe('PatternMatcher', () => {
       expect(matches).toHaveLength(1)
       expect(matches[0].patternId).toBe('test-ansi')
       expect(matches[0].matchedText).toBe('Edit\nfile')
-      // bufferContent should still contain the original ANSI codes
       expect(matches[0].bufferContent).toContain('\x1b[31m')
     })
 
@@ -258,7 +248,6 @@ describe('PatternMatcher', () => {
         action: { type: 'log', path: '/tmp/test.log' },
       })
 
-      // Text with multiple ANSI codes (bold, underline, color)
       const matches = matcher.processData(
         '\x1b[1m\x1b[4m\x1b[32mBash\x1b[0m\x1b[0m\x1b[0m\ncommand',
       )
@@ -421,11 +410,9 @@ describe('PatternMatcher', () => {
       const matches1 = matcher.processData('A\nB')
       expect(matches1).toHaveLength(1)
 
-      // Same sequence should not match again
       const matches2 = matcher.processData('')
       expect(matches2).toHaveLength(0)
 
-      // Clear buffer and try different sequence
       matcher = new PatternMatcher(2048)
       matcher.addPattern(config)
 
@@ -473,13 +460,11 @@ describe('PatternMatcher', () => {
       }
       testMatcher.addPattern(config)
 
-      // Last line not present - should not match (optimization prevents full scan)
       const matches1 = testMatcher.processData(
         'Start of sequence\nMiddle part\nNot the final',
       )
       expect(matches1).toHaveLength(0)
 
-      // Complete sequence - should match
       const matches2 = testMatcher.processData(
         'Start of sequence\nMiddle part\nFinal line',
       )
@@ -551,15 +536,12 @@ describe('PatternMatcher', () => {
       }
       matcher.addPattern(config)
 
-      // First match
       const matches1 = matcher.processData('test\ndata')
       expect(matches1).toHaveLength(1)
 
-      // Same match prevented
       const matches2 = matcher.processData('')
       expect(matches2).toHaveLength(0)
 
-      // Clear and test with different content
       matcher = new PatternMatcher(2048)
       matcher.addPattern(config)
 
@@ -567,7 +549,6 @@ describe('PatternMatcher', () => {
       expect(matches3).toHaveLength(1)
       expect(matches3[0].matchedText).toBe('test\nmiddle\ndata')
 
-      // Same match prevented again
       const matches4 = matcher.processData('')
       expect(matches4).toHaveLength(0)
     })

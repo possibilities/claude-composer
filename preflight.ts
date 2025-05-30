@@ -43,8 +43,6 @@ export interface ParsedOptions {
   goOff?: boolean
 }
 
-// Create a debug logger that only outputs when NODE_DEBUG=claude-composer is set
-// This ensures logs only appear in inspector/debug mode and not in the terminal
 const debugLog = util.debuglog('claude-composer')
 
 export function getConfigDirectory(): string {
@@ -287,7 +285,6 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
     if (option.long) knownOptions.add(option.long)
   })
 
-  // Add negation options
   knownOptions.add('--no-show-notifications')
   knownOptions.add('--no-dangerously-dismiss-edit-file-prompts')
   knownOptions.add('--no-dangerously-dismiss-create-file-prompts')
@@ -313,7 +310,6 @@ export async function askYesNo(
   const input = stdin || process.stdin
   const output = stdout || process.stdout
 
-  // If stdin is being piped, we need to use a different approach
   if (!input.isTTY) {
     // In production, we want to read from /dev/tty to avoid consuming piped data
     // In tests, /dev/tty might not be available, so we fall back to stdin
@@ -328,7 +324,6 @@ export async function askYesNo(
         fs.existsSync('/dev/tty')
       ) {
         tty = fs.createReadStream('/dev/tty')
-        // Test if we can actually use it
         await new Promise((resolve, reject) => {
           tty!.once('error', reject)
           tty!.once('open', resolve)
@@ -336,7 +331,6 @@ export async function askYesNo(
         ttyInput = tty
       }
     } catch (error) {
-      // Fall back to stdin if /dev/tty fails
       if (tty) {
         tty.close()
       }
@@ -364,7 +358,6 @@ export async function askYesNo(
       })
     })
   } else {
-    // Normal TTY mode
     const rl = readline.createInterface({
       input,
       output,
@@ -438,10 +431,10 @@ export async function checkVersionControl(
         throw new Error('Version control is required')
       }
     }
-    return false // No version control
+    return false
   }
 
-  return true // Has version control
+  return true
 }
 
 export async function checkDirtyDirectory(
@@ -468,13 +461,13 @@ export async function checkDirtyDirectory(
           throw new Error('Clean working directory required')
         }
       }
-      return true // Is dirty
+      return true
     }
 
-    return false // Is clean
+    return false
   } catch (error) {
     console.warn('※ Could not check git status')
-    return false // Assume clean if we can't check
+    return false
   }
 }
 
@@ -609,19 +602,16 @@ export async function mergeToolsets(
   for (const toolsetName of toolsetsToLoad) {
     const toolsetConfig = await loadToolsetFile(toolsetName)
 
-    // Merge allowed tools
     if (toolsetConfig.allowed) {
       mergedConfig.allowed = mergedConfig.allowed || []
       mergedConfig.allowed.push(...toolsetConfig.allowed)
     }
 
-    // Merge disallowed tools
     if (toolsetConfig.disallowed) {
       mergedConfig.disallowed = mergedConfig.disallowed || []
       mergedConfig.disallowed.push(...toolsetConfig.disallowed)
     }
 
-    // Merge MCP configs
     if (toolsetConfig.mcp) {
       mergedConfig.mcp = {
         ...mergedConfig.mcp,
@@ -658,7 +648,6 @@ export async function runPreflight(
   argv: string[],
   options?: PreflightOptions,
 ): Promise<PreflightResult> {
-  // Default config
   let appConfig: AppConfig = {
     show_notifications: true,
     dangerously_dismiss_edit_file_prompts: false,
@@ -668,10 +657,8 @@ export async function runPreflight(
     dangerously_allow_without_version_control: false,
   }
 
-  // Ensure config directory exists
   ensureConfigDirectory()
 
-  // Parse command line arguments
   const {
     program,
     options: parsedOptions,
@@ -680,16 +667,13 @@ export async function runPreflight(
     hasPrintOption,
   } = parseCommandLineArgs(argv)
 
-  // Build known options set
   const knownOptions = buildKnownOptionsSet(program)
 
-  // Check if we're in a special mode that needs early exit
   const isHelp = helpRequested
   const isPrint = hasPrintOption
   const isSubcommand =
     args.length > 0 && !args[0].includes(' ') && !args[0].startsWith('-')
 
-  // Load config file
   const ignoreGlobalConfig =
     parsedOptions.ignoreGlobalConfig ||
     options?.ignoreGlobalConfig ||
@@ -714,7 +698,6 @@ export async function runPreflight(
     log('※ Ignoring global configuration file')
   }
 
-  // Apply command-line options to config
   if (parsedOptions.showNotifications !== undefined) {
     appConfig.show_notifications = parsedOptions.showNotifications
   }
@@ -739,38 +722,31 @@ export async function runPreflight(
       parsedOptions.dangerouslyAllowWithoutVersionControl
   }
 
-  // Handle toolsets (needed for print option)
   let toolsetArgs: string[] = []
   let tempMcpConfigPath: string | undefined
 
-  // Determine which toolsets to load
   let toolsetsToLoad: string[] = []
   if (parsedOptions.toolset) {
-    // If --toolset is provided, only use that toolset
     toolsetsToLoad = [parsedOptions.toolset]
   } else if (
     appConfig.toolsets &&
     appConfig.toolsets.length > 0 &&
     parsedOptions.defaultToolsets !== false
   ) {
-    // Otherwise, use default toolsets from config unless --no-default-toolsets is specified
     toolsetsToLoad = appConfig.toolsets
   } else if (
     appConfig.toolsets &&
     appConfig.toolsets.length > 0 &&
     parsedOptions.defaultToolsets === false
   ) {
-    // Log message when ignoring default toolsets
     log('※ Ignoring default toolsets from configuration')
   }
 
-  // Load and merge all toolsets
   if (toolsetsToLoad.length > 0) {
     try {
       const mergedConfig = await mergeToolsets(toolsetsToLoad)
       toolsetArgs = buildToolsetArgs(mergedConfig)
 
-      // Create temp MCP config if needed
       if (mergedConfig.mcp && Object.keys(mergedConfig.mcp).length > 0) {
         tempMcpConfigPath = createTempMcpConfig(mergedConfig.mcp)
         toolsetArgs.push('--mcp-config', tempMcpConfigPath)
@@ -790,21 +766,18 @@ export async function runPreflight(
     }
   }
 
-  // Build child args
   const childArgs: string[] = []
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i]
     if (!knownOptions.has(arg)) {
       childArgs.push(arg)
     } else if (arg === '--toolset' && i + 1 < argv.length) {
-      // Skip the toolset value as well
       i++
     }
   }
 
   childArgs.push(...toolsetArgs)
 
-  // Handle early exits with proper toolset args
   if (isHelp) {
     return {
       appConfig,
@@ -841,9 +814,6 @@ export async function runPreflight(
     }
   }
 
-  // Continue with normal processing for interactive mode
-
-  // Handle --go-off mode
   try {
     const goOffAccepted = await handleGoOffMode(parsedOptions, options)
     if (parsedOptions.goOff && !goOffAccepted) {
@@ -875,7 +845,6 @@ export async function runPreflight(
     }
   }
 
-  // Check git installation
   try {
     checkGitInstalled()
   } catch (error) {
@@ -890,7 +859,6 @@ export async function runPreflight(
     }
   }
 
-  // Check child app path
   const defaultChildAppPath = path.join(
     os.homedir(),
     '.claude',
@@ -913,7 +881,6 @@ export async function runPreflight(
     }
   }
 
-  // Check version control and dirty directory
   try {
     const hasVersionControl = await checkVersionControl(
       process.cwd(),
@@ -948,12 +915,10 @@ export async function runPreflight(
     }
   }
 
-  // Display status messages
   if (appConfig.show_notifications !== false) {
     log('※ Notifications are enabled')
   }
 
-  // Display dangerous warnings
   displayDangerousWarnings(appConfig)
 
   log('※ Getting ready to launch Claude CLI')

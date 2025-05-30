@@ -8,7 +8,6 @@ describe('Configuration Loading', () => {
   let testConfigPath: string
 
   beforeEach(() => {
-    // Create unique test directory
     testConfigDir = fs.mkdtempSync(
       path.join(require('os').tmpdir(), 'claude-composer-config-test-'),
     )
@@ -16,7 +15,6 @@ describe('Configuration Loading', () => {
   })
 
   afterEach(() => {
-    // Clean up test config files
     try {
       if (fs.existsSync(testConfigDir)) {
         fs.rmSync(testConfigDir, { recursive: true, force: true })

@@ -25,7 +25,6 @@ describe('Default toolsets configuration', () => {
     const toolsetsDir = path.join(testConfigDir, 'toolsets')
     fs.mkdirSync(toolsetsDir, { recursive: true })
 
-    // Create toolset files
     fs.writeFileSync(
       path.join(toolsetsDir, 'core.yaml'),
       `allowed:
@@ -43,7 +42,6 @@ disallowed:
 `,
     )
 
-    // Create config with default toolsets
     fs.writeFileSync(
       path.join(testConfigDir, 'config.yaml'),
       `toolsets:
@@ -106,7 +104,6 @@ disallowed:
     const toolsetsDir = path.join(testConfigDir, 'toolsets')
     fs.mkdirSync(toolsetsDir, { recursive: true })
 
-    // Create toolset files
     fs.writeFileSync(
       path.join(toolsetsDir, 'core.yaml'),
       `allowed:
@@ -122,7 +119,6 @@ disallowed:
 `,
     )
 
-    // Create config with default toolsets
     fs.writeFileSync(
       path.join(testConfigDir, 'config.yaml'),
       `toolsets:
@@ -170,7 +166,6 @@ disallowed:
       })
     })
 
-    // Should only load override toolset, not core
     expect(result).toContain('※ Loaded toolset: override')
     expect(result).not.toContain('※ Loaded toolset: core')
     expect(result).toContain('ARGS:')
@@ -180,7 +175,6 @@ disallowed:
   })
 
   test('errors if default toolset does not exist', async () => {
-    // Create config with non-existent toolset
     fs.writeFileSync(
       path.join(testConfigDir, 'config.yaml'),
       `toolsets:
@@ -235,7 +229,6 @@ disallowed:
     const toolsetsDir = path.join(testConfigDir, 'toolsets')
     fs.mkdirSync(toolsetsDir, { recursive: true })
 
-    // Create toolset files with MCP configs
     fs.writeFileSync(
       path.join(toolsetsDir, 'toolset1.yaml'),
       `allowed:
@@ -258,7 +251,6 @@ mcp:
 `,
     )
 
-    // Create config with multiple default toolsets
     fs.writeFileSync(
       path.join(testConfigDir, 'config.yaml'),
       `toolsets:
@@ -305,24 +297,20 @@ mcp:
       })
     })
 
-    // Check that both toolsets are loaded
     expect(result).toContain('※ Loaded toolset: toolset1')
     expect(result).toContain('※ Loaded toolset: toolset2')
     expect(result).toContain('※ Toolset toolset1 configured 1 MCP server')
     expect(result).toContain('※ Toolset toolset2 configured 1 MCP server')
 
-    // Check that tools are merged
     expect(result).toContain('ARGS:')
     expect(result).toContain('--allowedTools tool1')
     expect(result).toContain('--allowedTools tool2')
     expect(result).toContain('--disallowedTools bad-tool')
 
-    // Check that MCP config is created
     expect(result).toContain('--mcp-config')
   })
 
   test('works with empty toolsets array in config', async () => {
-    // Create config with empty toolsets array
     fs.writeFileSync(
       path.join(testConfigDir, 'config.yaml'),
       `toolsets: []
@@ -367,7 +355,6 @@ mcp:
       })
     })
 
-    // Should not load any toolsets
     expect(result).not.toContain('※ Loaded toolset:')
     expect(result).toContain('ARGS:')
     expect(result).not.toContain('--allowedTools')
@@ -413,7 +400,6 @@ mcp:
       })
     })
 
-    // Should work normally without loading any toolsets
     expect(result).not.toContain('※ Loaded toolset:')
     expect(result).toContain('ARGS:')
     expect(result).not.toContain('--allowedTools')
@@ -424,7 +410,6 @@ mcp:
     const toolsetsDir = path.join(testConfigDir, 'toolsets')
     fs.mkdirSync(toolsetsDir, { recursive: true })
 
-    // Create toolset files
     fs.writeFileSync(
       path.join(toolsetsDir, 'core.yaml'),
       `allowed:
@@ -433,7 +418,6 @@ mcp:
 `,
     )
 
-    // Create config with default toolsets
     fs.writeFileSync(
       path.join(testConfigDir, 'config.yaml'),
       `toolsets:
@@ -480,7 +464,6 @@ mcp:
       })
     })
 
-    // Should not load any default toolsets
     expect(result).toContain('※ Ignoring default toolsets from configuration')
     expect(result).not.toContain('※ Loaded toolset: core')
     expect(result).toContain('ARGS:')
@@ -493,7 +476,6 @@ mcp:
     const toolsetsDir = path.join(testConfigDir, 'toolsets')
     fs.mkdirSync(toolsetsDir, { recursive: true })
 
-    // Create toolset files
     fs.writeFileSync(
       path.join(toolsetsDir, 'default-toolset.yaml'),
       `allowed:
@@ -508,7 +490,6 @@ mcp:
 `,
     )
 
-    // Create config with default toolsets
     fs.writeFileSync(
       path.join(testConfigDir, 'config.yaml'),
       `toolsets:
@@ -557,8 +538,6 @@ mcp:
       })
     })
 
-    // Should only load explicit toolset, not default
-    // When --toolset is explicitly provided, we don't show the ignoring message
     expect(result).toContain('※ Loaded toolset: explicit-toolset')
     expect(result).not.toContain('※ Loaded toolset: default-toolset')
     expect(result).toContain('ARGS:')

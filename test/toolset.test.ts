@@ -376,7 +376,6 @@ disallowed:
     expect(output).toContain('ARGS:')
     expect(output).toContain('--echo-args')
 
-    // Check that the output contains the MCP config argument
     const argsMatch = output.match(/ARGS: (.+)/)
     expect(argsMatch).toBeTruthy()
 
@@ -385,7 +384,6 @@ disallowed:
       expect(args).toContain('--mcp-config')
       expect(args).toContain('/tmp/claude-composer-mcp-')
 
-      // Extract the MCP config path
       const mcpConfigMatch = args.match(
         /--mcp-config (\/tmp\/claude-composer-mcp-[^\s]+\.json)/,
       )
@@ -393,7 +391,6 @@ disallowed:
 
       if (mcpConfigMatch) {
         const mcpConfigPath = mcpConfigMatch[1]
-        // The file might have been cleaned up already, so we just verify the path format
         expect(mcpConfigPath).toMatch(
           /^\/tmp\/claude-composer-mcp-\d+-\w+\.json$/,
         )
@@ -507,9 +504,7 @@ mcp:
 
     expect(output).toContain('※ Loaded toolset: test-not-passed')
     expect(output).toContain('ARGS:')
-    // Should not contain --toolset in the arguments passed to child
     expect(output).not.toMatch(/ARGS:.*--toolset/s)
-    // Should still contain the expanded toolset args
     expect(output).toContain('--allowedTools sometool')
   })
 })

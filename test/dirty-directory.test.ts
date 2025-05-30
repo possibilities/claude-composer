@@ -53,7 +53,7 @@ describe('Dirty Directory Check', () => {
     expect([0, 143]).toContain(result.exitCode)
     expect(result.output).not.toContain('Do you want to continue?')
     expect(result.output).toContain(
-      'Dangerously running in directory with uncommitted changes',
+      '※ Dangerously running in directory with uncommitted changes',
     )
     expect(result.output).toContain(
       '※ Ready, Passing off control to Claude CLI',
@@ -91,6 +91,6 @@ function runCli(
       if (!child.killed) {
         child.kill()
       }
-    }, 500)
+    }, 2000)
   })
 }
