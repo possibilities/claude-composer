@@ -194,7 +194,7 @@ process.on('SIGHUP', () => {
 process.on('exit', cleanup)
 
 process.on('uncaughtException', error => {
-  console.error('Uncaught exception:', error)
+  // Silently handle uncaught exceptions to avoid interrupting child app output
   cleanup()
   process.exit(1)
 })
