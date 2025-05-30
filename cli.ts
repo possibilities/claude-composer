@@ -207,7 +207,24 @@ process.on('uncaughtException', error => {
 function showNotification(match: MatchResult): void {
   const projectName = path.basename(process.cwd())
   const title = '🤖 Claude Composer'
-  const message = `Project: ${projectName}\nPattern triggered: ${match.patternId}`
+  let message = `Project: ${projectName}\nPattern triggered: ${match.patternId}`
+
+  if (match.extractedData && Object.keys(match.extractedData).length > 0) {
+    const extractedInfo = Object.entries(match.extractedData)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join(', ')
+    message += `\nExtracted: ${extractedInfo}`
+  }
+
+  // Log full match information for debugging
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+  const logFile = path.join('/tmp', `claude-composer-match-${timestamp}.json`)
+  try {
+    fs.writeFileSync(logFile, JSON.stringify(match, null, 2))
+    debugLog(`Match data logged to: ${logFile}`)
+  } catch (error) {
+    debugLog(`Failed to write match log: ${error}`)
+  }
 
   notifier.notify({
     title,

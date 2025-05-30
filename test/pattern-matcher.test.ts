@@ -474,4 +474,185 @@ describe('PatternMatcher', () => {
       )
     })
   })
+
+  describe('Placeholder Extraction', () => {
+    it('should extract data from simple placeholder', () => {
+      const config: PatternConfig = {
+        id: 'file-edit',
+        pattern: [
+          'Edit file',
+          'Do you want to make this edit to {{ fileName }}',
+        ],
+        action: { type: 'input', response: '1' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData(
+        'Edit file\nDo you want to make this edit to config.json',
+      )
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({ fileName: 'config.json' })
+    })
+
+    it('should extract multiple placeholders from same line', () => {
+      const config: PatternConfig = {
+        id: 'multiple-placeholders',
+        pattern: ['Process {{ action }} on {{ fileName }} at {{ timestamp }}'],
+        action: { type: 'input', response: 'ok' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData(
+        'Process create on test.js at 2023-01-01',
+      )
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({
+        action: 'create',
+        fileName: 'test.js',
+        timestamp: '2023-01-01',
+      })
+    })
+
+    it('should extract placeholders from different lines in sequence', () => {
+      const config: PatternConfig = {
+        id: 'multi-line-extract',
+        pattern: [
+          'Edit file',
+          'Do you want to make this edit to {{ fileName }}',
+          '❯ 1. Yes',
+          "2. Yes, and don't ask again this {{ sessionType }}",
+        ],
+        action: { type: 'input', response: '1' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData(
+        "Edit file\nDo you want to make this edit to app.ts\n❯ 1. Yes\n2. Yes, and don't ask again this session",
+      )
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({
+        fileName: 'app.ts',
+        sessionType: 'session',
+      })
+    })
+
+    it('should handle placeholders with spaces in variable names', () => {
+      const config: PatternConfig = {
+        id: 'spaced-placeholder',
+        pattern: ['File: {{ file name }}'],
+        action: { type: 'input', response: 'found' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData('File: my document.txt')
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({
+        'file name': 'my document.txt',
+      })
+    })
+
+    it('should work with patterns without placeholders', () => {
+      const config: PatternConfig = {
+        id: 'no-placeholders',
+        pattern: ['Edit file', 'Do you want to proceed'],
+        action: { type: 'input', response: '1' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData('Edit file\nDo you want to proceed')
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toBeUndefined()
+    })
+
+    it('should handle greedy matching for placeholders', () => {
+      const config: PatternConfig = {
+        id: 'greedy-match',
+        pattern: ['Path: {{ fullPath }}'],
+        action: { type: 'input', response: 'found' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData(
+        'Path: /very/long/path/to/my/file.txt',
+      )
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({
+        fullPath: '/very/long/path/to/my/file.txt',
+      })
+    })
+
+    it('should handle special regex characters in non-placeholder text', () => {
+      const config: PatternConfig = {
+        id: 'special-chars',
+        pattern: ['Error: {{ message }} (code: {{ code }})'],
+        action: { type: 'input', response: 'error' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData('Error: File not found (code: 404)')
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({
+        message: 'File not found',
+        code: '404',
+      })
+    })
+
+    it('should return empty extractedData when no placeholders match', () => {
+      const config: PatternConfig = {
+        id: 'no-match',
+        pattern: ['Expected: {{ value }}'],
+        action: { type: 'input', response: 'found' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData('Different text format')
+      expect(matches).toHaveLength(0)
+    })
+
+    it('should handle empty placeholder values', () => {
+      const config: PatternConfig = {
+        id: 'empty-placeholder',
+        pattern: ['Value: {{ data }}'],
+        action: { type: 'input', response: 'found' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData('Value: ')
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({ data: '' })
+    })
+
+    it('should extract file names from real Claude create file prompts', () => {
+      const config: PatternConfig = {
+        id: 'real-create-file',
+        pattern: ['Create file', 'Do you want to create {{ fileName }}?'],
+        action: { type: 'input', response: '1' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData(
+        'Create file\nDo you want to create @foo.txt?',
+      )
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({ fileName: '@foo.txt' })
+    })
+
+    it('should extract file names from real Claude edit file prompts', () => {
+      const config: PatternConfig = {
+        id: 'real-edit-file',
+        pattern: [
+          'Edit file',
+          'Do you want to make this edit to {{ fileName }}?',
+        ],
+        action: { type: 'input', response: '1' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData(
+        'Edit file\nDo you want to make this edit to config.json?',
+      )
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({ fileName: 'config.json' })
+    })
+  })
 })

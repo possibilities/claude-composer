@@ -2,7 +2,7 @@ import { PatternConfig } from './pattern-matcher'
 
 const editFilePattern = [
   'Edit file',
-  'Do you want to make this edit to',
+  'Do you want to make this edit to {{ fileName }}?',
   '❯ 1. Yes',
   "2. Yes, and don't ask again this session (shift+tab)",
   '3. No, and tell Claude what to do differently (esc)',
@@ -10,7 +10,7 @@ const editFilePattern = [
 
 const createFilePattern = [
   'Create file',
-  'Do you want to create',
+  'Do you want to create {{ fileName }}?',
   '❯ 1. Yes',
   "2. Yes, and don't ask again this session (shift+tab)",
   '3. No, and tell Claude what to do differently (esc)',

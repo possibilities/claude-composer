@@ -17,6 +17,7 @@ export interface MatchResult {
   lastLineNumber: number
   bufferContent: string
   strippedBufferContent: string
+  extractedData?: Record<string, string>
 }
 
 export class PatternMatcher {
@@ -55,6 +56,7 @@ export class PatternMatcher {
           lastLineNumber: sequenceMatch.lastLineNumber,
           bufferContent: content,
           strippedBufferContent: strippedContent,
+          extractedData: sequenceMatch.extractedData,
         })
       }
     }
@@ -94,52 +96,168 @@ export class PatternMatcher {
     firstLineNumber: number
     lastLineNumber: number
     fullMatchedContent: string
+    extractedData?: Record<string, string>
   } | null {
     if (sequence.length === 0) {
       return null
     }
     const lines = content.split('\n')
-    let sequenceIndex = 0
-    let firstMatchLine = -1
-    let lastMatchLine = -1
 
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i]
-      const searchString = sequence[sequenceIndex]
+    // Track which lines matched which patterns
+    const matchedLines: Array<{
+      lineIndex: number
+      patternIndex: number
+      lineResult: any
+    }> = []
 
-      if (!searchString) {
-        return null
+    // For each pattern in sequence, find the first line that matches it
+    // (after the previous pattern match)
+    let startSearchFrom = 0
+
+    for (let patternIndex = 0; patternIndex < sequence.length; patternIndex++) {
+      const pattern = sequence[patternIndex]
+      let found = false
+
+      for (
+        let lineIndex = startSearchFrom;
+        lineIndex < lines.length;
+        lineIndex++
+      ) {
+        const line = lines[lineIndex]
+        const matchResult = this.matchLineWithPlaceholders(line, pattern)
+
+        if (matchResult.matches) {
+          matchedLines.push({
+            lineIndex,
+            patternIndex,
+            lineResult: matchResult,
+          })
+          startSearchFrom = lineIndex + 1 // Next pattern must come after this line
+          found = true
+          break
+        }
       }
 
-      const matches = line.includes(searchString)
-
-      if (matches) {
-        if (sequenceIndex === 0) {
-          firstMatchLine = i
-        }
-        sequenceIndex++
-        lastMatchLine = i
-
-        if (sequenceIndex === sequence.length) {
-          const text = lines.slice(firstMatchLine, lastMatchLine + 1).join('\n')
-          const fullMatchedContent = lines
-            .slice(firstMatchLine, lastMatchLine + 1)
-            .join('\n')
-          return {
-            text,
-            firstLineNumber: firstMatchLine,
-            lastLineNumber: lastMatchLine,
-            fullMatchedContent,
-          }
-        }
+      // If we couldn't find this pattern, the sequence doesn't match
+      if (!found) {
+        return null
       }
     }
 
-    return null
+    // All patterns found! Now build the result
+    const firstLineNumber = matchedLines[0].lineIndex
+    const lastLineNumber = matchedLines[matchedLines.length - 1].lineIndex
+    const text = lines.slice(firstLineNumber, lastLineNumber + 1).join('\n')
+    const fullMatchedContent = text
+
+    // Collect extracted data from all matched lines
+    const extractedData: Record<string, string> = {}
+    for (const match of matchedLines) {
+      Object.assign(extractedData, match.lineResult.extractedData)
+    }
+
+    return {
+      text,
+      firstLineNumber,
+      lastLineNumber,
+      fullMatchedContent,
+      extractedData:
+        Object.keys(extractedData).length > 0 ? extractedData : undefined,
+    }
+  }
+
+  private matchLineWithPlaceholders(
+    line: string,
+    pattern: string,
+  ): LineMatchResult {
+    const extractedData: Record<string, string> = {}
+
+    // Check if pattern contains placeholders
+    const placeholderRegex = /\{\{\s*([^}]+)\s*\}\}/g
+    const placeholders: Array<{ name: string; start: number; end: number }> = []
+    let match
+
+    while ((match = placeholderRegex.exec(pattern)) !== null) {
+      placeholders.push({
+        name: match[1].trim(),
+        start: match.index,
+        end: match.index + match[0].length,
+      })
+    }
+
+    if (placeholders.length === 0) {
+      // No placeholders, use simple string matching
+      return {
+        matches: line.includes(pattern),
+        extractedData: {},
+      }
+    }
+
+    // Build regex pattern by replacing placeholders with capture groups
+    // Use a simpler approach: replace placeholders first, then escape
+    let regexPattern = pattern
+
+    // Replace all placeholders with a unique marker first
+    const PLACEHOLDER_MARKER = '___PLACEHOLDER___'
+    for (let i = placeholders.length - 1; i >= 0; i--) {
+      const placeholder = placeholders[i]
+      const before = regexPattern.substring(0, placeholder.start)
+      const after = regexPattern.substring(placeholder.end)
+      regexPattern = before + PLACEHOLDER_MARKER + after
+    }
+
+    // Escape all special regex characters
+    regexPattern = regexPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+    // Now replace markers with capture groups
+    // Use greedy matching that also allows empty strings
+    regexPattern = regexPattern.replace(
+      new RegExp(
+        PLACEHOLDER_MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+        'g',
+      ),
+      '(.*)',
+    )
+
+    try {
+      const regex = new RegExp(regexPattern)
+      const lineMatch = line.match(regex)
+
+      if (lineMatch) {
+        // Extract captured values - use original order for mapping to capture groups
+        const originalOrderPlaceholders = [...placeholders].sort(
+          (a, b) => a.start - b.start,
+        )
+        originalOrderPlaceholders.forEach((placeholder, index) => {
+          extractedData[placeholder.name] = lineMatch[index + 1] || ''
+        })
+
+        return {
+          matches: true,
+          extractedData,
+        }
+      }
+    } catch (error) {
+      // If regex construction fails, fall back to simple matching
+      return {
+        matches: line.includes(pattern.replace(/\{\{\s*\w+\s*\}\}/g, '')),
+        extractedData: {},
+      }
+    }
+
+    return {
+      matches: false,
+      extractedData: {},
+    }
   }
 }
 
 interface CompiledPattern {
   sequence: string[]
   config: PatternConfig
+}
+
+interface LineMatchResult {
+  matches: boolean
+  extractedData: Record<string, string>
 }
