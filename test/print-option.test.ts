@@ -1,25 +1,20 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { spawn } from 'child_process'
+import { runCli } from './test-utils'
 import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
-
-const cliPath = path.join(__dirname, '..', 'cli.ts')
-const mockAppPath = path.join(__dirname, 'mock-child-app.ts')
 const TEST_ID = `test-print-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 const CONFIG_DIR = path.join(os.tmpdir(), TEST_ID, '.claude-composer')
 const TOOLSETS_DIR = path.join(CONFIG_DIR, 'toolsets')
 
 describe('--print Option Detection', () => {
   beforeEach(async () => {
-    process.env.CLAUDE_APP_PATH = mockAppPath
     process.env.CLAUDE_COMPOSER_CONFIG_DIR = CONFIG_DIR
     process.env.CLAUDE_PATTERNS_PATH = './test/test-patterns'
     await fs.promises.mkdir(TOOLSETS_DIR, { recursive: true })
   })
 
   afterEach(async () => {
-    delete process.env.CLAUDE_APP_PATH
     delete process.env.CLAUDE_COMPOSER_CONFIG_DIR
     delete process.env.CLAUDE_PATTERNS_PATH
     await fs.promises.rm(path.join(os.tmpdir(), TEST_ID), {
@@ -28,38 +23,19 @@ describe('--print Option Detection', () => {
     })
   })
 
-  function runCli(
-    args: string[] = [],
-  ): Promise<{ stdout: string; stderr: string; exitCode: number | null }> {
-    return new Promise(resolve => {
-      const child = spawn('pnpm', ['tsx', cliPath, ...args], {
-        env: process.env,
-      })
-
-      let stdout = ''
-      let stderr = ''
-
-      child.stdout?.on('data', data => {
-        stdout += data.toString()
-      })
-
-      child.stderr?.on('data', data => {
-        stderr += data.toString()
-      })
-
-      child.on('exit', code => {
-        resolve({ stdout, stderr, exitCode: code })
-      })
-    })
-  }
-
   describe('--print detection', () => {
     it('should detect --print option and show non-interactive message', async () => {
-      const result = await runCli([
-        '--dangerously-allow-without-version-control',
-        '--dangerously-allow-in-dirty-directory',
-        '--print',
-      ])
+      const result = await runCli({
+        args: [
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+          '--print',
+        ],
+        env: {
+          CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
+          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+        },
+      })
       expect(result.stdout).toContain(
         '※ Starting Claude Code in non-interactive mode due to --print option',
       )
@@ -70,12 +46,18 @@ describe('--print Option Detection', () => {
     })
 
     it('should detect --print option with other arguments', async () => {
-      const result = await runCli([
-        '--dangerously-allow-without-version-control',
-        '--dangerously-allow-in-dirty-directory',
-        '--print',
-        'some-file.txt',
-      ])
+      const result = await runCli({
+        args: [
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+          '--print',
+          'some-file.txt',
+        ],
+        env: {
+          CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
+          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+        },
+      })
       expect(result.stdout).toContain(
         '※ Starting Claude Code in non-interactive mode due to --print option',
       )
@@ -83,11 +65,17 @@ describe('--print Option Detection', () => {
     })
 
     it('should detect --print option before other options', async () => {
-      const result = await runCli([
-        '--print',
-        '--dangerously-allow-without-version-control',
-        '--dangerously-allow-in-dirty-directory',
-      ])
+      const result = await runCli({
+        args: [
+          '--print',
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+        ],
+        env: {
+          CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
+          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+        },
+      })
       expect(result.stdout).toContain(
         '※ Starting Claude Code in non-interactive mode due to --print option',
       )
@@ -95,14 +83,20 @@ describe('--print Option Detection', () => {
     })
 
     it('should filter known options but pass other arguments to child app when --print is detected', async () => {
-      const result = await runCli([
-        '--dangerously-allow-without-version-control',
-        '--dangerously-allow-in-dirty-directory',
-        '--echo-args',
-        '--print',
-        '--some-other-option',
-        'file.txt',
-      ])
+      const result = await runCli({
+        args: [
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+          '--echo-args',
+          '--print',
+          '--some-other-option',
+          'file.txt',
+        ],
+        env: {
+          CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
+          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+        },
+      })
       expect(result.stdout).toContain(
         '※ Starting Claude Code in non-interactive mode due to --print option',
       )
@@ -122,12 +116,18 @@ describe('--print Option Detection', () => {
     })
 
     it('should not show subcommand message when --print is used with a subcommand-like argument', async () => {
-      const result = await runCli([
-        '--dangerously-allow-without-version-control',
-        '--dangerously-allow-in-dirty-directory',
-        '--print',
-        'build',
-      ])
+      const result = await runCli({
+        args: [
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+          '--print',
+          'build',
+        ],
+        env: {
+          CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
+          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+        },
+      })
       expect(result.stdout).toContain(
         '※ Starting Claude Code in non-interactive mode due to --print option',
       )
@@ -144,15 +144,21 @@ describe('--print Option Detection', () => {
         toolsetContent,
       )
 
-      const result = await runCli([
-        '--dangerously-allow-without-version-control',
-        '--dangerously-allow-in-dirty-directory',
-        '--toolset',
-        'some-toolset',
-        '--echo-args',
-        '--print',
-        'file.txt',
-      ])
+      const result = await runCli({
+        args: [
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+          '--toolset',
+          'some-toolset',
+          '--echo-args',
+          '--print',
+          'file.txt',
+        ],
+        env: {
+          CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
+          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+        },
+      })
       expect(result.stdout).toContain(
         '※ Starting Claude Code in non-interactive mode due to --print option',
       )
@@ -189,15 +195,21 @@ mcp:
         toolsetContent,
       )
 
-      const result = await runCli([
-        '--dangerously-allow-without-version-control',
-        '--dangerously-allow-in-dirty-directory',
-        '--toolset',
-        'test-print',
-        '--echo-args',
-        '--print',
-        'file.txt',
-      ])
+      const result = await runCli({
+        args: [
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+          '--toolset',
+          'test-print',
+          '--echo-args',
+          '--print',
+          'file.txt',
+        ],
+        env: {
+          CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
+          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+        },
+      })
 
       expect(result.stdout).toContain('※ Loaded toolset: test-print')
       expect(result.stdout).toContain('※ Toolset test-print allowed 2 tools')

@@ -1,80 +1,33 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { spawn } from 'child_process'
+import { runCliInteractive, runCli } from './test-utils'
 import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
 
-const cliPath = path.join(__dirname, '..', 'cli.ts')
-const mockAppPath = path.join(__dirname, 'mock-child-app.ts')
-
 describe('YOLO Flag functionality', () => {
   beforeEach(() => {
-    process.env.CLAUDE_APP_PATH = mockAppPath
+    // Environment setup handled by test utilities
   })
 
   afterEach(() => {
-    delete process.env.CLAUDE_APP_PATH
+    // Cleanup handled by test utilities
   })
-
-  function runCli(
-    args: string[] = [],
-    options: any = {},
-  ): Promise<{
-    stdout: string
-    stderr: string
-    exitCode: number | null
-    process: any
-  }> {
-    return new Promise(resolve => {
-      const child = spawn('pnpm', ['tsx', cliPath, ...args], {
-        env: { ...process.env, ...options.env },
-        ...options,
-      })
-
-      let stdout = ''
-      let stderr = ''
-
-      child.stdout?.on('data', data => {
-        stdout += data.toString()
-      })
-
-      child.stderr?.on('data', data => {
-        stderr += data.toString()
-      })
-
-      child.on('exit', code => {
-        resolve({ stdout, stderr, exitCode: code, process: child })
-      })
-
-      // For tests that need to respond to prompts
-      if (options.respondToPrompt !== undefined) {
-        // Listen for the prompt question before responding
-        const onData = (data: Buffer) => {
-          const output = data.toString()
-          if (
-            output.includes('Are you ABSOLUTELY SURE you want to continue?')
-          ) {
-            child.stdout?.off('data', onData)
-            child.stderr?.off('data', onData)
-            child.stdin?.write(options.respondToPrompt + '\n')
-          }
-        }
-        child.stdout?.on('data', onData)
-        child.stderr?.on('data', onData)
-      }
-    })
-  }
 
   describe('--go-off flag', () => {
     it('should show danger zone warning', async () => {
-      const result = await runCli(
-        [
+      const result = await runCliInteractive({
+        args: [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
           '--go-off',
         ],
-        { respondToPrompt: 'n' },
-      )
+        interactions: [
+          {
+            waitFor: 'Are you ABSOLUTELY SURE you want to continue?',
+            respond: 'n\n',
+          },
+        ],
+      })
 
       expect(result.stdout).toContain('🚨 DANGER ZONE 🚨')
       expect(result.stdout).toContain('You have enabled --go-off')
@@ -94,28 +47,38 @@ describe('YOLO Flag functionality', () => {
     })
 
     it('should exit when user responds no to prompt', async () => {
-      const result = await runCli(
-        [
+      const result = await runCliInteractive({
+        args: [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
           '--go-off',
         ],
-        { respondToPrompt: 'n' },
-      )
+        interactions: [
+          {
+            waitFor: 'Are you ABSOLUTELY SURE you want to continue?',
+            respond: 'n\n',
+          },
+        ],
+      })
 
       expect(result.stdout).toContain('Good choice. Exiting safely.')
       expect(result.exitCode).toBe(0)
     })
 
     it('should continue when user responds yes to prompt', async () => {
-      const result = await runCli(
-        [
+      const result = await runCliInteractive({
+        args: [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
           '--go-off',
         ],
-        { respondToPrompt: 'y' },
-      )
+        interactions: [
+          {
+            waitFor: 'Are you ABSOLUTELY SURE you want to continue?',
+            respond: 'y\n',
+          },
+        ],
+      })
 
       expect(result.stderr).toContain(
         '※ YOLO mode activated - All safety prompts disabled!',
@@ -124,12 +87,14 @@ describe('YOLO Flag functionality', () => {
     })
 
     it('should conflict with --dangerously-dismiss-edit-file-prompts', async () => {
-      const result = await runCli([
-        '--dangerously-allow-without-version-control',
-        '--dangerously-allow-in-dirty-directory',
-        '--go-off',
-        '--dangerously-dismiss-edit-file-prompts',
-      ])
+      const result = await runCli({
+        args: [
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+          '--go-off',
+          '--dangerously-dismiss-edit-file-prompts',
+        ],
+      })
 
       expect(result.stderr).toContain(
         'Error: Cannot use --go-off with individual dangerous prompt flags',
@@ -141,12 +106,14 @@ describe('YOLO Flag functionality', () => {
     })
 
     it('should conflict with --dangerously-dismiss-create-file-prompts', async () => {
-      const result = await runCli([
-        '--dangerously-allow-without-version-control',
-        '--dangerously-allow-in-dirty-directory',
-        '--go-off',
-        '--dangerously-dismiss-create-file-prompts',
-      ])
+      const result = await runCli({
+        args: [
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+          '--go-off',
+          '--dangerously-dismiss-create-file-prompts',
+        ],
+      })
 
       expect(result.stderr).toContain(
         'Error: Cannot use --go-off with individual dangerous prompt flags',
@@ -155,12 +122,14 @@ describe('YOLO Flag functionality', () => {
     })
 
     it('should conflict with --dangerously-dismiss-bash-command-prompts', async () => {
-      const result = await runCli([
-        '--dangerously-allow-without-version-control',
-        '--dangerously-allow-in-dirty-directory',
-        '--go-off',
-        '--dangerously-dismiss-bash-command-prompts',
-      ])
+      const result = await runCli({
+        args: [
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+          '--go-off',
+          '--dangerously-dismiss-bash-command-prompts',
+        ],
+      })
 
       expect(result.stderr).toContain(
         'Error: Cannot use --go-off with individual dangerous prompt flags',
@@ -169,13 +138,15 @@ describe('YOLO Flag functionality', () => {
     })
 
     it('should conflict with multiple dangerous flags', async () => {
-      const result = await runCli([
-        '--dangerously-allow-without-version-control',
-        '--dangerously-allow-in-dirty-directory',
-        '--go-off',
-        '--dangerously-dismiss-edit-file-prompts',
-        '--dangerously-dismiss-create-file-prompts',
-      ])
+      const result = await runCli({
+        args: [
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+          '--go-off',
+          '--dangerously-dismiss-edit-file-prompts',
+          '--dangerously-dismiss-create-file-prompts',
+        ],
+      })
 
       expect(result.stderr).toContain(
         'Error: Cannot use --go-off with individual dangerous prompt flags',
@@ -184,15 +155,20 @@ describe('YOLO Flag functionality', () => {
     })
 
     it('should work with other non-conflicting flags', async () => {
-      const result = await runCli(
-        [
+      const result = await runCliInteractive({
+        args: [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
           '--go-off',
           '--no-show-notifications',
         ],
-        { respondToPrompt: 'y' },
-      )
+        interactions: [
+          {
+            waitFor: 'Are you ABSOLUTELY SURE you want to continue?',
+            respond: 'y\n',
+          },
+        ],
+      })
 
       expect(result.stderr).toContain(
         '※ YOLO mode activated - All safety prompts disabled!',
