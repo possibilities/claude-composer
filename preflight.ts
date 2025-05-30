@@ -170,16 +170,7 @@ export function buildToolsetArgs(toolsetConfig: ToolsetConfig): string[] {
   return args
 }
 
-export function parseCommandLineArgs(argv: string[]): {
-  program: Command
-  options: ParsedOptions
-  args: string[]
-  helpRequested: boolean
-  hasPrintOption: boolean
-} {
-  const helpRequested = argv.includes('--help') || argv.includes('-h')
-  const hasPrintOption = argv.includes('--print')
-
+export function createClaudeComposerCommand(): Command {
   const program = new Command()
   program
     .name('claude-composer')
@@ -245,7 +236,24 @@ export function parseCommandLineArgs(argv: string[]): {
     .allowUnknownOption()
     .argument('[args...]', 'Arguments to pass to `claude`')
 
-  if (helpRequested) {
+  return program
+}
+
+export function parseCommandLineArgs(argv: string[]): {
+  program: Command
+  options: ParsedOptions
+  args: string[]
+  helpRequested: boolean
+  versionRequested: boolean
+  hasPrintOption: boolean
+} {
+  const helpRequested = argv.includes('--help') || argv.includes('-h')
+  const versionRequested = argv.includes('--version') || argv.includes('-v')
+  const hasPrintOption = argv.includes('--print')
+
+  const program = createClaudeComposerCommand()
+
+  if (helpRequested || versionRequested) {
     program.exitOverride()
     try {
       program.parse(argv)
@@ -257,6 +265,7 @@ export function parseCommandLineArgs(argv: string[]): {
           options: {},
           args: [],
           helpRequested: true,
+          versionRequested: false,
           hasPrintOption,
         }
       }
@@ -274,6 +283,7 @@ export function parseCommandLineArgs(argv: string[]): {
     options,
     args,
     helpRequested,
+    versionRequested,
     hasPrintOption,
   }
 }
@@ -664,15 +674,28 @@ export async function runPreflight(
     options: parsedOptions,
     args,
     helpRequested,
+    versionRequested,
     hasPrintOption,
   } = parseCommandLineArgs(argv)
 
   const knownOptions = buildKnownOptionsSet(program)
 
   const isHelp = helpRequested
+  const isVersion = versionRequested
   const isPrint = hasPrintOption
   const isSubcommand =
     args.length > 0 && !args[0].includes(' ') && !args[0].startsWith('-')
+
+  if (isHelp || isVersion) {
+    return {
+      appConfig,
+      toolsetArgs: [],
+      childArgs: [],
+      shouldExit: true,
+      exitCode: 0,
+      knownOptions,
+    }
+  }
 
   const ignoreGlobalConfig =
     parsedOptions.ignoreGlobalConfig ||
@@ -777,17 +800,6 @@ export async function runPreflight(
   }
 
   childArgs.push(...toolsetArgs)
-
-  if (isHelp) {
-    return {
-      appConfig,
-      toolsetArgs,
-      childArgs,
-      shouldExit: true,
-      exitCode: 0,
-      knownOptions,
-    }
-  }
 
   if (isPrint) {
     log(`※ Starting Claude Code in non-interactive mode due to --print option`)

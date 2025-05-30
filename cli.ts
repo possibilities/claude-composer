@@ -231,6 +231,64 @@ function handlePatternMatches(data: string): void {
 }
 
 async function main() {
+  // Handle --help and --version early to avoid preflight messages
+  if (process.argv.includes('--help') || process.argv.includes('-h')) {
+    // First show the wrapper's help using the shared command setup
+    const { createClaudeComposerCommand } = await import('./preflight.js')
+    const program = createClaudeComposerCommand()
+
+    program.outputHelp()
+    console.log('\n--- Claude CLI Help ---\n')
+
+    const defaultChildAppPath = path.join(
+      os.homedir(),
+      '.claude',
+      'local',
+      'claude',
+    )
+    const childAppPath = process.env.CLAUDE_APP_PATH || defaultChildAppPath
+
+    const helpProcess = spawn(childAppPath, ['--help'], {
+      stdio: 'inherit',
+      env: process.env,
+    })
+
+    helpProcess.on('exit', code => {
+      process.exit(code || 0)
+    })
+
+    return
+  }
+
+  if (process.argv.includes('--version') || process.argv.includes('-v')) {
+    try {
+      const packageJsonPath = path.resolve('./package.json')
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
+      console.log(`${packageJson.version} (Claude Composer)`)
+    } catch (error) {
+      console.log('Claude Composer')
+    }
+
+    const defaultChildAppPath = path.join(
+      os.homedir(),
+      '.claude',
+      'local',
+      'claude',
+    )
+    const childAppPath = process.env.CLAUDE_APP_PATH || defaultChildAppPath
+
+    const versionProcess = spawn(childAppPath, ['--version'], {
+      stdio: 'inherit',
+      env: process.env,
+    })
+
+    versionProcess.on('exit', code => {
+      process.exit(code || 0)
+    })
+
+    return
+  }
+
   ensureBackupDirectory()
 
   if (!process.stdin.isTTY) {
@@ -243,29 +301,6 @@ async function main() {
   const preflightResult = await runPreflight(process.argv)
 
   if (preflightResult.shouldExit) {
-    if (preflightResult.exitCode === 0 && process.argv.includes('--help')) {
-      console.log('\n--- Claude CLI Help ---\n')
-
-      const defaultChildAppPath = path.join(
-        os.homedir(),
-        '.claude',
-        'local',
-        'claude',
-      )
-      const childAppPath = process.env.CLAUDE_APP_PATH || defaultChildAppPath
-
-      const helpProcess = spawn(childAppPath, ['--help'], {
-        stdio: 'inherit',
-        env: process.env,
-      })
-
-      helpProcess.on('exit', code => {
-        process.exit(code || 0)
-      })
-
-      return
-    }
-
     if (process.argv.includes('--print')) {
       const defaultChildAppPath = path.join(
         os.homedir(),
