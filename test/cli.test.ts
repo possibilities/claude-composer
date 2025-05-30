@@ -128,13 +128,44 @@ describe('CLI Wrapper', () => {
         output += data
       })
 
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Wait for the interactive prompt to appear
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(
+          () => reject(new Error('Timeout waiting for prompt')),
+          3000,
+        )
+        const checkOutput = () => {
+          if (output.includes('mock>')) {
+            clearTimeout(timeout)
+            resolve()
+          } else {
+            setTimeout(checkOutput, 50)
+          }
+        }
+        checkOutput()
+      })
 
       expect(output).toContain('Mock interactive mode')
       expect(output).toContain('mock>')
 
       ptyProcess.write('hello\r')
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Wait for echo response
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(
+          () => reject(new Error('Timeout waiting for echo')),
+          2000,
+        )
+        const startLength = output.length
+        const checkOutput = () => {
+          if (output.includes('Echo: hello')) {
+            clearTimeout(timeout)
+            resolve()
+          } else {
+            setTimeout(checkOutput, 50)
+          }
+        }
+        checkOutput()
+      })
 
       const cleanOutput = output.replace(/\x1b\[[0-9;]*[mGKJ]/g, '')
       expect(cleanOutput).toContain('Echo: hello')
@@ -183,7 +214,7 @@ describe('CLI Wrapper', () => {
       expect(output).toContain('\x1b[0m')
     })
 
-    it('should handle terminal resize events', async () => {
+    it('should handle terminal resize events', { timeout: 10000 }, async () => {
       const pty = await import('node-pty')
 
       const ptyProcess = pty.spawn(
@@ -215,7 +246,22 @@ describe('CLI Wrapper', () => {
         processExited = true
       })
 
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Wait for initial size output
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(
+          () => reject(new Error('Timeout waiting for initial output')),
+          5000,
+        )
+        const checkOutput = () => {
+          if (output.includes('Watching for resize events...')) {
+            clearTimeout(timeout)
+            resolve()
+          } else {
+            setTimeout(checkOutput, 50)
+          }
+        }
+        checkOutput()
+      })
       expect(output).toContain('Terminal size: 80x30')
       expect(output).toContain('Watching for resize events...')
 
@@ -223,7 +269,22 @@ describe('CLI Wrapper', () => {
         try {
           ptyProcess.resize(100, 40)
 
-          await new Promise(resolve => setTimeout(resolve, 500))
+          // Wait for resize event to be processed
+          await new Promise<void>((resolve, reject) => {
+            const timeout = setTimeout(
+              () => reject(new Error('Timeout waiting for resize')),
+              2000,
+            )
+            const checkOutput = () => {
+              if (output.includes('Resized to: 100x40')) {
+                clearTimeout(timeout)
+                resolve()
+              } else {
+                setTimeout(checkOutput, 50)
+              }
+            }
+            checkOutput()
+          })
           expect(output).toContain('Resized to: 100x40')
         } catch (e) {}
       }
@@ -334,7 +395,22 @@ describe('CLI Wrapper', () => {
         output += data
       })
 
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      // Wait for pattern trigger and response
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(
+          () => reject(new Error('Timeout waiting for pattern response')),
+          5000,
+        )
+        const checkOutput = () => {
+          if (output.includes('Received input: Test response')) {
+            clearTimeout(timeout)
+            resolve()
+          } else {
+            setTimeout(checkOutput, 100)
+          }
+        }
+        checkOutput()
+      })
 
       expect(output).toContain('TEST_PATTERN_TRIGGER')
 

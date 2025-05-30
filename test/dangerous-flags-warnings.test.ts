@@ -10,17 +10,30 @@ const CLI_PATH = path.join(__dirname, '..', 'cli.ts')
 async function runCliWithArgs(args: string[], env: any): Promise<string> {
   return new Promise((resolve, reject) => {
     let output = ''
+    let warningsFound = false
     const proc = spawn('tsx', [CLI_PATH, ...args], {
       env,
       stdio: ['ignore', 'pipe', 'pipe'],
     })
 
+    const checkForWarnings = (data: string) => {
+      if (data.includes('⚠️  WARNING:') && data.includes('is enabled')) {
+        warningsFound = true
+        // Kill process once we've captured the warnings
+        setTimeout(() => proc.kill(), 100)
+      }
+    }
+
     proc.stdout.on('data', data => {
-      output += data.toString()
+      const text = data.toString()
+      output += text
+      checkForWarnings(text)
     })
 
     proc.stderr.on('data', data => {
-      output += data.toString()
+      const text = data.toString()
+      output += text
+      checkForWarnings(text)
     })
 
     proc.on('close', code => {
@@ -29,10 +42,12 @@ async function runCliWithArgs(args: string[], env: any): Promise<string> {
 
     proc.on('error', reject)
 
-    // Give it a moment to show warnings then kill it
+    // Safety timeout in case warnings aren't found
     setTimeout(() => {
-      proc.kill()
-    }, 2000)
+      if (!warningsFound) {
+        proc.kill()
+      }
+    }, 1000)
   })
 }
 

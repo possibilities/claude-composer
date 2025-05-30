@@ -37,21 +37,20 @@ if (args.includes('--welcome')) {
     process.stdout.write('')
   }
 
-  setTimeout(() => {
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-      terminal: false,
-    })
+  // Create readline interface immediately
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    terminal: false,
+  })
 
-    rl.on('line', (input: string) => {
-      console.log(`Received input: ${input}`)
-      if (input.trim() === 'exit') {
-        rl.close()
-        process.exit(0)
-      }
-    })
-  }, 500)
+  rl.on('line', (input: string) => {
+    console.log(`Received input: ${input}`)
+    if (input.trim() === 'exit') {
+      rl.close()
+      process.exit(0)
+    }
+  })
 } else if (args.includes('--size')) {
   console.log(
     'Terminal size:',
@@ -66,10 +65,11 @@ if (args.includes('--welcome')) {
         process.stdout.columns + 'x' + process.stdout.rows,
       )
     })
+    // Reduce watch timeout significantly since tests will kill the process
     setTimeout(() => {
       console.log('Size watch complete')
       process.exit(0)
-    }, 5000)
+    }, 1000)
   } else {
     process.exit(0)
   }

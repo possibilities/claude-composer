@@ -48,9 +48,19 @@ describe('YOLO Flag functionality', () => {
 
       // For tests that need to respond to prompts
       if (options.respondToPrompt !== undefined) {
-        setTimeout(() => {
-          child.stdin?.write(options.respondToPrompt + '\n')
-        }, 300)
+        // Listen for the prompt question before responding
+        const onData = (data: Buffer) => {
+          const output = data.toString()
+          if (
+            output.includes('Are you ABSOLUTELY SURE you want to continue?')
+          ) {
+            child.stdout?.off('data', onData)
+            child.stderr?.off('data', onData)
+            child.stdin?.write(options.respondToPrompt + '\n')
+          }
+        }
+        child.stdout?.on('data', onData)
+        child.stderr?.on('data', onData)
       }
     })
   }
