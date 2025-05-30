@@ -21,4 +21,5 @@ export const PATTERNS: PatternConfig[] = [
 
 export const SETTINGS = {
   bufferSize: 2048,
+  duplicatePreventionWindowMs: 1000, // Shorter window for testing
 }

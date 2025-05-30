@@ -466,6 +466,78 @@ describe('PatternMatcher', () => {
   })
 
   describe('Pattern Matching With Duplicate Prevention', () => {
+    it('should prevent duplicate responses for identical text within time window', () => {
+      const config: PatternConfig = {
+        id: 'edit-prompt',
+        pattern: ['Edit file', 'Do you want to make this edit', '❯ 1. Yes'],
+        action: { type: 'input', response: '1' },
+      }
+
+      // Use a 1000ms window for testing
+      const testMatcher = new PatternMatcher(2048, 1000)
+      testMatcher.addPattern(config)
+
+      // Simulate the real scenario: first, we get some screen content that matches
+      const promptText =
+        'Edit file\nDo you want to make this edit to file1.js?\n❯ 1. Yes'
+      const matches1 = testMatcher.processData(promptText)
+      expect(matches1).toHaveLength(1)
+
+      // Simulate the 100ms screen polling seeing the same content again (common in real usage)
+      // This should be blocked as a duplicate
+      const matches2 = testMatcher.processData('') // Empty data but pattern still in buffer
+      expect(matches2).toHaveLength(0)
+
+      // Clear buffer and test different content
+      const testMatcher2 = new PatternMatcher(2048, 1000)
+      testMatcher2.addPattern(config)
+
+      // Different file should be allowed immediately
+      const matches3 = testMatcher2.processData(
+        'Edit file\nDo you want to make this edit to file2.js?\n❯ 1. Yes',
+      )
+      expect(matches3).toHaveLength(1)
+
+      // Same file after time window should be allowed
+      vi.advanceTimersByTime(1100)
+      const matches4 = testMatcher2.processData(
+        'Edit file\nDo you want to make this edit to file1.js?\n❯ 1. Yes',
+      )
+      expect(matches4).toHaveLength(1)
+    })
+
+    it('should allow different prompt types within time window', () => {
+      const editConfig: PatternConfig = {
+        id: 'edit-prompt',
+        pattern: ['Edit file', 'Do you want to make this edit', '❯ 1. Yes'],
+        action: { type: 'input', response: '1' },
+      }
+
+      const createConfig: PatternConfig = {
+        id: 'create-prompt',
+        pattern: ['Create file', 'Do you want to create', '❯ 1. Yes'],
+        action: { type: 'input', response: '1' },
+      }
+
+      // Test edit prompt first
+      const editMatcher = new PatternMatcher(2048, 1000)
+      editMatcher.addPattern(editConfig)
+      const matches1 = editMatcher.processData(
+        'Edit file\nDo you want to make this edit to file.js?\n❯ 1. Yes',
+      )
+      expect(matches1).toHaveLength(1)
+      expect(matches1[0].patternId).toBe('edit-prompt')
+
+      // Test create prompt separately - different pattern types should always be allowed
+      const createMatcher = new PatternMatcher(2048, 1000)
+      createMatcher.addPattern(createConfig)
+      const matches2 = createMatcher.processData(
+        'Create file\nDo you want to create newfile.js?\n❯ 1. Yes',
+      )
+      expect(matches2).toHaveLength(1)
+      expect(matches2[0].patternId).toBe('create-prompt')
+    })
+
     it('should only match when content changes', () => {
       const config: PatternConfig = {
         id: 'test1',

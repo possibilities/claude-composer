@@ -19,11 +19,17 @@ export interface MatchResult {
 export class PatternMatcher {
   private patterns: Map<string, CompiledPattern> = new Map()
   private lastMatches: Map<string, string> = new Map()
+  private lastMatchTimestamps: Map<string, number> = new Map()
   private buffer: string = ''
   private maxSize: number
+  private duplicatePreventionWindowMs: number
 
-  constructor(bufferSize: number = 2048) {
+  constructor(
+    bufferSize: number = 2048,
+    duplicatePreventionWindowMs: number = 5000,
+  ) {
     this.maxSize = bufferSize
+    this.duplicatePreventionWindowMs = duplicatePreventionWindowMs
   }
 
   addPattern(config: PatternConfig): void {
@@ -34,6 +40,7 @@ export class PatternMatcher {
   removePattern(id: string): void {
     this.patterns.delete(id)
     this.lastMatches.delete(id)
+    this.lastMatchTimestamps.delete(id)
   }
 
   getBufferContent(): string {
@@ -59,8 +66,20 @@ export class PatternMatcher {
       )
 
       if (sequenceMatch) {
+        const now = Date.now()
         const lastMatch = this.lastMatches.get(id)
-        if (lastMatch === sequenceMatch.text) {
+        const lastTimestamp = this.lastMatchTimestamps.get(id) || 0
+
+        // Check if we should prevent duplicate based on time window and text similarity
+        if (
+          this.shouldPreventDuplicate(
+            id,
+            sequenceMatch.text,
+            lastMatch,
+            lastTimestamp,
+            now,
+          )
+        ) {
           continue
         }
 
@@ -72,10 +91,32 @@ export class PatternMatcher {
           strippedBufferContent: strippedContent,
         })
         this.lastMatches.set(id, sequenceMatch.text)
+        this.lastMatchTimestamps.set(id, now)
       }
     }
 
     return matches
+  }
+
+  private shouldPreventDuplicate(
+    patternId: string,
+    currentText: string,
+    lastMatch: string | undefined,
+    lastTimestamp: number,
+    now: number,
+  ): boolean {
+    // If no previous match, allow this one
+    if (!lastMatch) {
+      return false
+    }
+
+    // If the matched text is different, allow immediately (different files/prompts)
+    if (currentText !== lastMatch) {
+      return false
+    }
+
+    // Same text: check if within time window (true duplicate)
+    return now - lastTimestamp <= this.duplicatePreventionWindowMs
   }
 
   private compilePattern(config: PatternConfig): CompiledPattern {

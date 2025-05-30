@@ -109,7 +109,10 @@ async function initializePatterns() {
   const patternsPath = process.env.CLAUDE_PATTERNS_PATH || './patterns'
   const { PATTERNS, SETTINGS } = await import(patternsPath)
 
-  patternMatcher = new PatternMatcher(SETTINGS.bufferSize)
+  patternMatcher = new PatternMatcher(
+    SETTINGS.bufferSize,
+    SETTINGS.duplicatePreventionWindowMs,
+  )
   responseQueue = new ResponseQueue()
 
   PATTERNS.forEach(pattern => {
