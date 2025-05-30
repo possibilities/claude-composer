@@ -415,16 +415,24 @@ async function main() {
 
     ptyProcess.onData((data: string) => {
       process.stdout.write(data)
-      terminal.write(data)
+      try {
+        terminal.write(data)
+      } catch (error) {
+        // Silently ignore xterm parsing errors
+      }
     })
 
     let lastScreenContent = ''
     screenReadInterval = setInterval(() => {
       if (terminal && serializeAddon) {
-        const currentScreenContent = serializeAddon.serialize()
-        if (currentScreenContent !== lastScreenContent) {
-          handlePatternMatches(currentScreenContent)
-          lastScreenContent = currentScreenContent
+        try {
+          const currentScreenContent = serializeAddon.serialize()
+          if (currentScreenContent !== lastScreenContent) {
+            handlePatternMatches(currentScreenContent)
+            lastScreenContent = currentScreenContent
+          }
+        } catch (error) {
+          // Silently ignore xterm parsing errors
         }
       }
     }, 100)
@@ -488,16 +496,24 @@ async function main() {
     childProcess.stdout!.on('data', (data: Buffer) => {
       const dataStr = data.toString()
       process.stdout.write(data)
-      terminal.write(dataStr)
+      try {
+        terminal.write(dataStr)
+      } catch (error) {
+        // Silently ignore xterm parsing errors
+      }
     })
 
     let lastScreenContent = ''
     screenReadInterval = setInterval(() => {
       if (terminal && serializeAddon) {
-        const currentScreenContent = serializeAddon.serialize()
-        if (currentScreenContent !== lastScreenContent) {
-          handlePatternMatches(currentScreenContent)
-          lastScreenContent = currentScreenContent
+        try {
+          const currentScreenContent = serializeAddon.serialize()
+          if (currentScreenContent !== lastScreenContent) {
+            handlePatternMatches(currentScreenContent)
+            lastScreenContent = currentScreenContent
+          }
+        } catch (error) {
+          // Silently ignore xterm parsing errors
         }
       }
     }, 100)
