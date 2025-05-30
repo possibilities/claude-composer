@@ -9,7 +9,7 @@
   },
   "type": "module",
   "bin": {
-    "claude-composer-next": "./cli.ts"
+    "claude-composer": "./cli.ts"
   },
   "dependencies": {
     "@types/js-yaml": "^4.0.9",

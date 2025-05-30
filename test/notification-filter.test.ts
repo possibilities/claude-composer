@@ -41,7 +41,7 @@ describe('Notification filtering by action type', () => {
     ) => {
       if (showNotifications && match.action.type === 'input') {
         const projectName = 'test-project'
-        const title = '🤖 Claude Composer Next'
+        const title = '🤖 Claude Composer'
         const message = `Project: ${projectName}\nPattern triggered: ${match.patternId}`
 
         notifier.notify({
@@ -61,7 +61,7 @@ describe('Notification filtering by action type', () => {
     // Should only have been called once for the input match
     expect(mockNotify).toHaveBeenCalledTimes(1)
     expect(mockNotify).toHaveBeenCalledWith({
-      title: '🤖 Claude Composer Next',
+      title: '🤖 Claude Composer',
       message: 'Project: test-project\nPattern triggered: edit-file-prompt',
       wait: false,
       sound: false,
@@ -119,7 +119,7 @@ describe('Notification filtering by action type', () => {
       for (const match of matches) {
         if (showNotifications && match.action.type === 'input') {
           const projectName = 'test-project'
-          const title = '🤖 Claude Composer Next'
+          const title = '🤖 Claude Composer'
           const message = `Project: ${projectName}\nPattern triggered: ${match.patternId}`
 
           notifier.notify({
@@ -138,14 +138,14 @@ describe('Notification filtering by action type', () => {
     // Should only be called for the two input action matches
     expect(mockNotify).toHaveBeenCalledTimes(2)
     expect(mockNotify).toHaveBeenNthCalledWith(1, {
-      title: '🤖 Claude Composer Next',
+      title: '🤖 Claude Composer',
       message: 'Project: test-project\nPattern triggered: edit-file-prompt',
       wait: false,
       sound: false,
       timeout: 22222,
     })
     expect(mockNotify).toHaveBeenNthCalledWith(2, {
-      title: '🤖 Claude Composer Next',
+      title: '🤖 Claude Composer',
       message: 'Project: test-project\nPattern triggered: create-file-prompt',
       wait: false,
       sound: false,

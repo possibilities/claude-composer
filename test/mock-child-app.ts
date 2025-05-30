@@ -30,7 +30,7 @@ if (args.includes('--welcome')) {
   console.log('│                                                   │')
   console.log('│   This is a test pattern for automated testing    │')
   console.log('│                                                   │')
-  console.log('│   cwd: /home/mike/code/claude-composer-next       │')
+  console.log('│   cwd: /home/mike/code/claude-composer             │')
   console.log('╰───────────────────────────────────────────────────╯')
 
   if (process.stdout.isTTY) {

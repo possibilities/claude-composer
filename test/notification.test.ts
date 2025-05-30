@@ -148,7 +148,7 @@ describe('Notification functionality', () => {
     }
 
     const showNotification = (match: MatchResult) => {
-      const title = '🤖 Claude Composer Next'
+      const title = '🤖 Claude Composer'
       const message = `Pattern triggered: ${match.patternId}\nMatched: ${stripAnsi(match.matchedText).substring(0, 100)}`
 
       notifier.notify({
@@ -163,7 +163,7 @@ describe('Notification functionality', () => {
     showNotification(match)
 
     expect(mockNotify).toHaveBeenCalledWith({
-      title: '🤖 Claude Composer Next',
+      title: '🤖 Claude Composer',
       message:
         'Pattern triggered: ansi-pattern\nMatched: Colored text with red content',
       timeout: false,

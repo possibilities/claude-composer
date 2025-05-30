@@ -201,7 +201,7 @@ process.on('uncaughtException', error => {
 
 function showNotification(match: MatchResult): void {
   const projectName = path.basename(process.cwd())
-  const title = '🤖 Claude Composer Next'
+  const title = '🤖 Claude Composer'
   const message = `Project: ${projectName}\nPattern triggered: ${match.patternId}`
 
   notifier.notify({
