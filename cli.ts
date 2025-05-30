@@ -407,7 +407,7 @@ async function main() {
     terminal = new Terminal({
       cols: cols,
       rows: rows,
-      scrollback: 1000,
+      scrollback: 5000,
     })
 
     serializeAddon = new SerializeAddon()
@@ -469,7 +469,7 @@ async function main() {
     terminal = new Terminal({
       cols: 80,
       rows: 30,
-      scrollback: 1000,
+      scrollback: 5000,
     })
 
     serializeAddon = new SerializeAddon()
