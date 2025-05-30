@@ -1,16 +1,14 @@
 import stripAnsi from 'strip-ansi'
 
-export type PatternAction = { type: 'input'; response: string | string[] }
-
 export interface PatternConfig {
   id: string
   pattern: string[]
-  action: PatternAction
+  response: string
 }
 
 export interface MatchResult {
   patternId: string
-  action: PatternAction
+  response: string
   matchedText: string
   fullMatchedContent: string
   firstLineNumber: number
@@ -49,7 +47,7 @@ export class PatternMatcher {
       if (sequenceMatch) {
         allMatches.push({
           patternId: id,
-          action: pattern.config.action,
+          response: pattern.config.response,
           matchedText: sequenceMatch.text,
           fullMatchedContent: sequenceMatch.fullMatchedContent,
           firstLineNumber: sequenceMatch.firstLineNumber,

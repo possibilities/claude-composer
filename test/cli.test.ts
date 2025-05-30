@@ -118,7 +118,11 @@ describe('CLI Wrapper', () => {
           name: 'xterm-color',
           cols: 80,
           rows: 30,
-          env: { ...process.env, CLAUDE_APP_PATH: mockAppPath },
+          env: {
+            ...process.env,
+            CLAUDE_APP_PATH: mockAppPath,
+            CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          },
         },
       )
 

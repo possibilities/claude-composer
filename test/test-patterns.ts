@@ -1,20 +1,9 @@
 import { PatternConfig } from '../pattern-matcher'
 
-export const PATTERNS: PatternConfig[] = [
+export const patterns: PatternConfig[] = [
   {
     id: 'test-welcome',
+    response: 'Test response\n',
     pattern: ['TEST_PATTERN_TRIGGER'],
-    action: {
-      type: 'input',
-      response: 'Test response\n',
-    },
-  },
-  {
-    id: 'test-log',
-    pattern: ['TEST_LOG_TRIGGER'],
-    action: {
-      type: 'log',
-      path: '/tmp/test-pattern-match.log',
-    },
   },
 ]

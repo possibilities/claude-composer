@@ -19,20 +19,20 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: ['hello', 'world'],
-        action: { type: 'input', response: 'matched' },
+        response: 'matched',
       }
       matcher.addPattern(config)
       const matches = matcher.processData('hello\nworld')
       expect(matches).toHaveLength(1)
-      expect(matches[0].action.type).toBe('input')
-      expect((matches[0].action as any).response).toBe('matched')
+      // action.type check removed - now using response directly
+      expect(matches[0].response).toBe('matched')
     })
 
     it('should remove pattern', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: ['hello', 'world'],
-        action: { type: 'input', response: 'matched' },
+        response: 'matched',
       }
       matcher.addPattern(config)
       matcher.removePattern('test1')
@@ -46,16 +46,16 @@ describe('PatternMatcher', () => {
       matcher.addPattern({
         id: 'test1',
         pattern: ['error', 'occurred'],
-        action: { type: 'input', response: 'Error found' },
+        response: 'Error found',
       })
       matcher.addPattern({
         id: 'test2',
         pattern: ['warning', 'issued'],
-        action: { type: 'input', response: 'Warning found' },
+        response: 'Warning found',
       })
       const matches = matcher.processData('error\noccurred\nwarning\nissued')
       expect(matches).toHaveLength(1)
-      expect((matches[0].action as any).response).toBe('Warning found')
+      expect(matches[0].response).toBe('Warning found')
       expect(matches[0].lastLineNumber).toBe(3)
     })
 
@@ -63,15 +63,12 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: ['help', 'needed'],
-        action: { type: 'input', response: ['Sure!', 'How can I help?'] },
+        response: ['Sure!', 'How can I help?'],
       }
       matcher.addPattern(config)
       const matches = matcher.processData('I need help\nHelp needed')
       expect(matches).toHaveLength(1)
-      expect((matches[0].action as any).response).toEqual([
-        'Sure!',
-        'How can I help?',
-      ])
+      expect(matches[0].response).toEqual(['Sure!', 'How can I help?'])
     })
   })
 
@@ -80,20 +77,20 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: ['complete', 'message'],
-        action: { type: 'input', response: 'Found it!' },
+        response: 'Found it!',
       }
       matcher.addPattern(config)
 
       const matches = matcher.processData('This is a complete\nmessage')
       expect(matches).toHaveLength(1)
-      expect((matches[0].action as any).response).toBe('Found it!')
+      expect(matches[0].response).toBe('Found it!')
     })
 
     it('should process each data call independently', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: ['old', 'data'],
-        action: { type: 'input', response: 'Found old' },
+        response: 'Found old',
       }
       matcher.addPattern(config)
 
@@ -113,7 +110,7 @@ describe('PatternMatcher', () => {
       matcher.addPattern({
         id: 'test-ansi',
         pattern: ['Edit', 'file'],
-        action: { type: 'input', response: 'yes' },
+        response: 'yes',
       })
 
       const matches = matcher.processData(
@@ -134,7 +131,7 @@ describe('PatternMatcher', () => {
       matcher.addPattern({
         id: 'bash-pattern',
         pattern: ['Bash', 'command'],
-        action: { type: 'log', path: '/tmp/test.log' },
+        response: { type: 'log', path: '/tmp/test.log' },
       })
 
       const matches = matcher.processData(
@@ -155,14 +152,14 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'seq1',
         pattern: ['First line', 'Second line', 'Third line'],
-        action: { type: 'input', response: 'Sequence found!' },
+        response: 'Sequence found!',
       }
       matcher.addPattern(config)
 
       const matches = matcher.processData('First line\nSecond line\nThird line')
       expect(matches).toHaveLength(1)
       expect(matches[0].patternId).toBe('seq1')
-      expect((matches[0].action as any).response).toBe('Sequence found!')
+      expect(matches[0].response).toBe('Sequence found!')
       expect(matches[0].matchedText).toBe('First line\nSecond line\nThird line')
       expect(matches[0].firstLineNumber).toBe(0)
       expect(matches[0].lastLineNumber).toBe(2)
@@ -175,7 +172,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'seq1',
         pattern: ['Start', 'Middle', 'End'],
-        action: { type: 'input', response: 'Found it' },
+        response: 'Found it',
       }
       matcher.addPattern(config)
 
@@ -192,7 +189,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'seq1',
         pattern: ['First', 'Second', 'Third'],
-        action: { type: 'input', response: 'Complete' },
+        response: 'Complete',
       }
       matcher.addPattern(config)
 
@@ -204,7 +201,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'seq1',
         pattern: ['A', 'B', 'C'],
-        action: { type: 'input', response: 'ABC' },
+        response: 'ABC',
       }
       matcher.addPattern(config)
 
@@ -216,7 +213,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'seq1',
         pattern: ['hello', 'world'],
-        action: { type: 'input', response: 'Hi!' },
+        response: 'Hi!',
       }
       matcher.addPattern(config)
 
@@ -229,7 +226,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'edit-prompt',
         pattern: ['Edit file', 'Do you want to make this edit', '❯ 1. Yes'],
-        action: { type: 'input', response: '1' },
+        response: '1',
       }
       largeMatcher.addPattern(config)
 
@@ -255,7 +252,7 @@ describe('PatternMatcher', () => {
           "2. Yes, and don't ask again this session (shift+tab)",
           '3. No, and tell Claude what to do differently (esc)',
         ],
-        action: { type: 'input', response: '1' },
+        response: '1',
       }
       largeMatcher.addPattern(config)
 
@@ -275,15 +272,15 @@ describe('PatternMatcher', () => {
 
       const matches = largeMatcher.processData(buffer)
       expect(matches).toHaveLength(1)
-      expect(matches[0].action.type).toBe('input')
-      expect((matches[0].action as any).response).toBe('1')
+      // action.type check removed - now using response directly
+      expect(matches[0].response).toBe('1')
     })
 
     it('should match complete sequence in single data input', () => {
       const config: PatternConfig = {
         id: 'seq1',
         pattern: ['Beginning', 'Middle part', 'The end'],
-        action: { type: 'input', response: 'Complete sequence' },
+        response: 'Complete sequence',
       }
       matcher.addPattern(config)
 
@@ -299,7 +296,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'empty',
         pattern: [],
-        action: { type: 'input', response: 'Empty' },
+        response: 'Empty',
       }
       matcher.addPattern(config)
 
@@ -311,7 +308,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'partial',
         pattern: ['file', 'edit', 'Yes'],
-        action: { type: 'input', response: '1' },
+        response: '1',
       }
       matcher.addPattern(config)
 
@@ -330,7 +327,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'optimized',
         pattern: ['Start of sequence', 'Middle part', 'Final line'],
-        action: { type: 'input', response: 'Found' },
+        response: 'Found',
       }
       testMatcher.addPattern(config)
 
@@ -357,7 +354,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'long-seq',
         pattern: longSequence,
-        action: { type: 'input', response: 'Long sequence found' },
+        response: 'Long sequence found',
       }
       largeMatcher.addPattern(config)
 
@@ -378,7 +375,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'test-dup',
         pattern: ['hello', 'world'],
-        action: { type: 'input', response: 'matched' },
+        response: 'matched',
       }
       matcher.addPattern(config)
 
@@ -396,7 +393,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'test-change',
         pattern: ['edit', 'file'],
-        action: { type: 'input', response: '1' },
+        response: '1',
       }
       matcher.addPattern(config)
 
@@ -415,26 +412,26 @@ describe('PatternMatcher', () => {
       matcher.addPattern({
         id: 'upper',
         pattern: ['start', 'middle'],
-        action: { type: 'input', response: 'upper' },
+        response: 'upper',
       })
       matcher.addPattern({
         id: 'lower',
         pattern: ['middle', 'end'],
-        action: { type: 'input', response: 'lower' },
+        response: 'lower',
       })
 
       const matches = matcher.processData('start\nmiddle\nend')
       expect(matches).toHaveLength(1)
       expect(matches[0].patternId).toBe('lower')
       expect(matches[0].lastLineNumber).toBe(2)
-      expect((matches[0].action as any).response).toBe('lower')
+      expect(matches[0].response).toBe('lower')
     })
 
     it('should handle scrolled content with deduplication', () => {
       const config: PatternConfig = {
         id: 'scroll-test',
         pattern: ['Do you want', 'Yes'],
-        action: { type: 'input', response: '1' },
+        response: '1',
       }
       matcher.addPattern(config)
 
@@ -456,7 +453,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'full-content',
         pattern: ['first', 'last'],
-        action: { type: 'input', response: 'found' },
+        response: 'found',
       }
       matcher.addPattern(config)
 
@@ -483,7 +480,7 @@ describe('PatternMatcher', () => {
           'Edit file',
           'Do you want to make this edit to {{ fileName }}',
         ],
-        action: { type: 'input', response: '1' },
+        response: '1',
       }
       matcher.addPattern(config)
 
@@ -498,7 +495,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'multiple-placeholders',
         pattern: ['Process {{ action }} on {{ fileName }} at {{ timestamp }}'],
-        action: { type: 'input', response: 'ok' },
+        response: 'ok',
       }
       matcher.addPattern(config)
 
@@ -522,7 +519,7 @@ describe('PatternMatcher', () => {
           '❯ 1. Yes',
           "2. Yes, and don't ask again this {{ sessionType }}",
         ],
-        action: { type: 'input', response: '1' },
+        response: '1',
       }
       matcher.addPattern(config)
 
@@ -540,7 +537,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'spaced-placeholder',
         pattern: ['File: {{ file name }}'],
-        action: { type: 'input', response: 'found' },
+        response: 'found',
       }
       matcher.addPattern(config)
 
@@ -555,7 +552,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'no-placeholders',
         pattern: ['Edit file', 'Do you want to proceed'],
-        action: { type: 'input', response: '1' },
+        response: '1',
       }
       matcher.addPattern(config)
 
@@ -568,7 +565,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'greedy-match',
         pattern: ['Path: {{ fullPath }}'],
-        action: { type: 'input', response: 'found' },
+        response: 'found',
       }
       matcher.addPattern(config)
 
@@ -585,7 +582,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'special-chars',
         pattern: ['Error: {{ message }} (code: {{ code }})'],
-        action: { type: 'input', response: 'error' },
+        response: 'error',
       }
       matcher.addPattern(config)
 
@@ -601,7 +598,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'no-match',
         pattern: ['Expected: {{ value }}'],
-        action: { type: 'input', response: 'found' },
+        response: 'found',
       }
       matcher.addPattern(config)
 
@@ -613,7 +610,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'empty-placeholder',
         pattern: ['Value: {{ data }}'],
-        action: { type: 'input', response: 'found' },
+        response: 'found',
       }
       matcher.addPattern(config)
 
@@ -626,7 +623,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'real-create-file',
         pattern: ['Create file', 'Do you want to create {{ fileName }}?'],
-        action: { type: 'input', response: '1' },
+        response: '1',
       }
       matcher.addPattern(config)
 
@@ -644,7 +641,7 @@ describe('PatternMatcher', () => {
           'Edit file',
           'Do you want to make this edit to {{ fileName }}?',
         ],
-        action: { type: 'input', response: '1' },
+        response: '1',
       }
       matcher.addPattern(config)
 
@@ -665,7 +662,7 @@ describe('PatternMatcher', () => {
           '{{ diffContent | multiline }}',
           'Do you want to make this edit to {{ fileName }}?',
         ],
-        action: { type: 'input', response: '1' },
+        response: '1',
       }
       matcher.addPattern(config)
 
@@ -693,7 +690,7 @@ describe('PatternMatcher', () => {
           '{{ section2 | multiline }}',
           'End',
         ],
-        action: { type: 'input', response: 'ok' },
+        response: 'ok',
       }
       matcher.addPattern(config)
 
@@ -717,7 +714,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'empty-multiline',
         pattern: ['Start', '{{ empty | multiline }}', 'End'],
-        action: { type: 'input', response: 'ok' },
+        response: 'ok',
       }
       matcher.addPattern(config)
 
@@ -732,7 +729,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'multiline-start',
         pattern: ['{{ header | multiline }}', 'Important line'],
-        action: { type: 'input', response: 'ok' },
+        response: 'ok',
       }
       matcher.addPattern(config)
 
@@ -749,7 +746,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'multiline-end',
         pattern: ['Important line', '{{ footer | multiline }}'],
-        action: { type: 'input', response: 'ok' },
+        response: 'ok',
       }
       matcher.addPattern(config)
 
@@ -772,7 +769,7 @@ describe('PatternMatcher', () => {
           '{{ options | multiline }}',
           '❯ 1. {{ choice }}',
         ],
-        action: { type: 'input', response: '1' },
+        response: '1',
       }
       matcher.addPattern(config)
 
@@ -804,7 +801,7 @@ describe('PatternMatcher', () => {
           'Do you want to make this edit to {{ fileName }}?',
           '❯ 1. Yes',
         ],
-        action: { type: 'input', response: '1' },
+        response: '1',
       }
       matcher.addPattern(config)
 
@@ -833,7 +830,7 @@ describe('PatternMatcher', () => {
           '{{ diffContent | multiline }}',
           'Do you want to proceed?',
         ],
-        action: { type: 'input', response: '1' },
+        response: '1',
       }
       matcher.addPattern(config)
 
@@ -853,7 +850,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'missing-concrete',
         pattern: ['Start pattern', '{{ content | multiline }}', 'End pattern'],
-        action: { type: 'input', response: 'ok' },
+        response: 'ok',
       }
       matcher.addPattern(config)
 
@@ -868,7 +865,7 @@ describe('PatternMatcher', () => {
       const config: PatternConfig = {
         id: 'whitespace-name',
         pattern: ['Begin', '{{ diff content | multiline }}', 'End'],
-        action: { type: 'input', response: 'ok' },
+        response: 'ok',
       }
       matcher.addPattern(config)
 

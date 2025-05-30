@@ -20,7 +20,7 @@ describe('Notification filtering by action type', () => {
     // Test matches with different action types
     const inputMatch: MatchResult = {
       patternId: 'edit-file-prompt',
-      action: { type: 'input', response: '1' },
+      response: '1',
       matchedText: 'Edit file prompt',
       bufferContent: 'buffer',
       strippedBufferContent: 'buffer',
@@ -28,7 +28,7 @@ describe('Notification filtering by action type', () => {
 
     const logMatch: MatchResult = {
       patternId: 'edit-file-log',
-      action: { type: 'log', path: '/tmp/test.log' },
+      response: { type: 'log', path: '/tmp/test.log' },
       matchedText: 'Edit file prompt',
       bufferContent: 'buffer',
       strippedBufferContent: 'buffer',
@@ -39,7 +39,10 @@ describe('Notification filtering by action type', () => {
       match: MatchResult,
       showNotifications: boolean,
     ) => {
-      if (showNotifications && match.action.type === 'input') {
+      // Check if response is a simple string/array (input type) vs object (log type)
+      const isInputPattern =
+        typeof match.response === 'string' || Array.isArray(match.response)
+      if (showNotifications && isInputPattern) {
         const projectName = 'test-project'
         const title = '🤖 Claude Composer'
         const message = `Project: ${projectName}\nPattern triggered: ${match.patternId}`
@@ -83,28 +86,28 @@ describe('Notification filtering by action type', () => {
     const matches: MatchResult[] = [
       {
         patternId: 'edit-file-prompt',
-        action: { type: 'input', response: '1' },
+        response: '1',
         matchedText: 'Edit file',
         bufferContent: 'buffer',
         strippedBufferContent: 'buffer',
       },
       {
         patternId: 'create-file-prompt',
-        action: { type: 'input', response: '1' },
+        response: '1',
         matchedText: 'Create file',
         bufferContent: 'buffer',
         strippedBufferContent: 'buffer',
       },
       {
         patternId: 'edit-file-log',
-        action: { type: 'log', path: '/tmp/edit.log' },
+        response: { type: 'log', path: '/tmp/edit.log' },
         matchedText: 'Edit file',
         bufferContent: 'buffer',
         strippedBufferContent: 'buffer',
       },
       {
         patternId: 'create-file-log',
-        action: { type: 'log', path: '/tmp/create.log' },
+        response: { type: 'log', path: '/tmp/create.log' },
         matchedText: 'Create file',
         bufferContent: 'buffer',
         strippedBufferContent: 'buffer',
@@ -117,7 +120,10 @@ describe('Notification filtering by action type', () => {
       showNotifications: boolean,
     ) => {
       for (const match of matches) {
-        if (showNotifications && match.action.type === 'input') {
+        // Check if response is a simple string/array (input type) vs object (log type)
+        const isInputPattern =
+          typeof match.response === 'string' || Array.isArray(match.response)
+        if (showNotifications && isInputPattern) {
           const projectName = 'test-project'
           const title = '🤖 Claude Composer'
           const message = `Project: ${projectName}\nPattern triggered: ${match.patternId}`

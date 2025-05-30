@@ -107,14 +107,14 @@ export { appConfig }
 
 async function initializePatterns(): Promise<boolean> {
   const patternsPath = process.env.CLAUDE_PATTERNS_PATH || './patterns'
-  const { PATTERNS } = await import(patternsPath)
+  const { patterns } = await import(patternsPath)
 
   patternMatcher = new PatternMatcher()
   responseQueue = new ResponseQueue()
 
   let hasActivePatterns = false
 
-  PATTERNS.forEach(pattern => {
+  patterns.forEach(pattern => {
     if (
       pattern.id === 'edit-file-prompt' &&
       !appConfig.dangerously_dismiss_edit_file_prompts
@@ -229,14 +229,9 @@ function handlePatternMatches(data: string): void {
   const matches = patternMatcher.processData(data)
 
   for (const match of matches) {
-    if (match.action.type === 'input') {
-      responseQueue.enqueue(match.action.response)
-    }
+    responseQueue.enqueue(match.response)
 
-    if (
-      appConfig.show_notifications !== false &&
-      match.action.type === 'input'
-    ) {
+    if (appConfig.show_notifications !== false) {
       showNotification(match)
     }
   }
