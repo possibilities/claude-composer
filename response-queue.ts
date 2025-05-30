@@ -54,8 +54,6 @@ export class ResponseQueue {
       }
 
       await this.sendResponse(item.response)
-
-      await this.sleep(50)
     }
 
     this.processing = false
@@ -69,10 +67,6 @@ export class ResponseQueue {
         this.ptyProcess.write(resp)
       } else if (this.childProcess?.stdin) {
         this.childProcess.stdin.write(resp)
-      }
-
-      if (responses.length > 1) {
-        await this.sleep(100)
       }
     }
   }

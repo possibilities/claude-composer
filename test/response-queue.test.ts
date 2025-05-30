@@ -193,44 +193,6 @@ describe('ResponseQueue', () => {
     })
   })
 
-  describe('Inter-response Delays', () => {
-    beforeEach(() => {
-      queue.setTargets(mockPty, undefined)
-    })
-
-    it('should add delay between array elements', async () => {
-      const writeCallTimes: number[] = []
-      ;(mockPty.write as MockedFunction<any>).mockImplementation(() => {
-        writeCallTimes.push(Date.now())
-      })
-
-      queue.enqueue(['first', 'second', 'third'])
-
-      await vi.runAllTimersAsync()
-
-      expect(mockPty.write).toHaveBeenCalledTimes(3)
-      expect(writeCallTimes[1] - writeCallTimes[0]).toBeGreaterThanOrEqual(100)
-      expect(writeCallTimes[2] - writeCallTimes[1]).toBeGreaterThanOrEqual(100)
-    })
-
-    it('should add delay between queued items', async () => {
-      vi.setSystemTime(0)
-
-      const writeCallTimes: number[] = []
-      ;(mockPty.write as MockedFunction<any>).mockImplementation(() => {
-        writeCallTimes.push(Date.now())
-      })
-
-      queue.enqueue('first')
-      queue.enqueue('second')
-
-      await vi.runAllTimersAsync()
-
-      expect(writeCallTimes).toHaveLength(2)
-      expect(writeCallTimes[1] - writeCallTimes[0]).toBeGreaterThanOrEqual(50)
-    })
-  })
-
   describe('Edge Cases', () => {
     it('should handle no targets gracefully', async () => {
       queue.enqueue('test')
