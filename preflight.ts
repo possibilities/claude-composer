@@ -566,7 +566,7 @@ export async function handleGoOffMode(
     '\x1b[31m║                                                                ║\x1b[0m',
   )
   console.log(
-    '\x1b[31m║ ⚠️  This is EXTREMELY DANGEROUS and should only be used when    ║\x1b[0m',
+    '\x1b[31m║    This is EXTREMELY DANGEROUS and should only be used when    ║\x1b[0m',
   )
   console.log(
     '\x1b[31m║    you fully trust the AI and understand the risks!            ║\x1b[0m',
