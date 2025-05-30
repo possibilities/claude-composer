@@ -30,7 +30,7 @@ describe('CLI Wrapper', () => {
     process: ChildProcess
   }> {
     return new Promise(resolve => {
-      const child = spawn('pnpm', ['tsx', cliPath, ...args], {
+      const child = spawn('tsx', [cliPath, ...args], {
         env: { ...process.env, ...options.env },
         ...options,
       })
@@ -107,9 +107,8 @@ describe('CLI Wrapper', () => {
       const pty = await import('node-pty')
 
       const ptyProcess = pty.spawn(
-        'pnpm',
+        'tsx',
         [
-          'tsx',
           cliPath,
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
@@ -182,9 +181,8 @@ describe('CLI Wrapper', () => {
       const pty = await import('node-pty')
 
       const ptyProcess = pty.spawn(
-        'pnpm',
+        'tsx',
         [
-          'tsx',
           cliPath,
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
@@ -218,9 +216,8 @@ describe('CLI Wrapper', () => {
       const pty = await import('node-pty')
 
       const ptyProcess = pty.spawn(
-        'pnpm',
+        'tsx',
         [
-          'tsx',
           cliPath,
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
@@ -370,9 +367,8 @@ describe('CLI Wrapper', () => {
       const testPatternsPath = path.join(__dirname, 'test-patterns')
 
       const ptyProcess = pty.spawn(
-        'pnpm',
+        'tsx',
         [
-          'tsx',
           cliPath,
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',

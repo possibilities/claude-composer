@@ -49,9 +49,8 @@ dangerously_dismiss_bash_command_prompts: true
       exitCode: number | null
     }>(resolve => {
       const child = spawn(
-        'npx',
+        'tsx',
         [
-          'tsx',
           cliPath,
           '--ignore-global-config',
           '--dangerously-allow-without-version-control',
@@ -104,9 +103,8 @@ dangerously_dismiss_bash_command_prompts: true
       exitCode: number | null
     }>(resolve => {
       const child = spawn(
-        'npx',
+        'tsx',
         [
-          'tsx',
           cliPath,
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
@@ -158,9 +156,8 @@ dangerously_dismiss_bash_command_prompts: true
       exitCode: number | null
     }>(resolve => {
       const child = spawn(
-        'npx',
+        'tsx',
         [
-          'tsx',
           cliPath,
           '--ignore-global-config',
           '--show-notifications',
