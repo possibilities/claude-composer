@@ -16,38 +16,14 @@ export interface MatchResult {
   strippedBufferContent: string
 }
 
-export class CircularBuffer {
-  private buffer: string
-  private maxSize: number
-
-  constructor(maxSize: number = 2048) {
-    this.buffer = ''
-    this.maxSize = maxSize
-  }
-
-  append(data: string): void {
-    this.buffer += data
-    if (this.buffer.length > this.maxSize) {
-      this.buffer = this.buffer.slice(-this.maxSize)
-    }
-  }
-
-  getContent(): string {
-    return this.buffer
-  }
-
-  clear(): void {
-    this.buffer = ''
-  }
-}
-
 export class PatternMatcher {
   private patterns: Map<string, CompiledPattern> = new Map()
   private lastMatches: Map<string, string> = new Map()
-  private buffer: CircularBuffer
+  private buffer: string = ''
+  private maxSize: number
 
   constructor(bufferSize: number = 2048) {
-    this.buffer = new CircularBuffer(bufferSize)
+    this.maxSize = bufferSize
   }
 
   addPattern(config: PatternConfig): void {
@@ -61,15 +37,18 @@ export class PatternMatcher {
   }
 
   getBufferContent(): string {
-    return this.buffer.getContent()
+    return this.buffer
   }
 
   processData(data: string): MatchResult[] {
     if (data.length > 0) {
-      this.buffer.append(data)
+      this.buffer += data
+      if (this.buffer.length > this.maxSize) {
+        this.buffer = this.buffer.slice(-this.maxSize)
+      }
     }
 
-    const content = this.buffer.getContent()
+    const content = this.buffer
     const strippedContent = stripAnsi(content)
     const matches: MatchResult[] = []
 

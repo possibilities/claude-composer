@@ -1,40 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import {
-  CircularBuffer,
-  PatternMatcher,
-  type PatternConfig,
-} from '../pattern-matcher'
+import { PatternMatcher, type PatternConfig } from '../pattern-matcher'
 import { readFileSync, unlinkSync, existsSync } from 'fs'
-
-describe('CircularBuffer', () => {
-  let buffer: CircularBuffer
-
-  beforeEach(() => {
-    buffer = new CircularBuffer(10)
-  })
-
-  it('should append data to buffer', () => {
-    buffer.append('hello')
-    expect(buffer.getContent()).toBe('hello')
-  })
-
-  it('should maintain max size by removing oldest data', () => {
-    buffer.append('1234567890')
-    buffer.append('abc')
-    expect(buffer.getContent()).toBe('4567890abc')
-  })
-
-  it('should clear buffer', () => {
-    buffer.append('test data')
-    buffer.clear()
-    expect(buffer.getContent()).toBe('')
-  })
-
-  it('should handle empty data', () => {
-    buffer.append('')
-    expect(buffer.getContent()).toBe('')
-  })
-})
 
 describe('PatternMatcher', () => {
   let matcher: PatternMatcher
