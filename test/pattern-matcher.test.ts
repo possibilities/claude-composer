@@ -6,7 +6,7 @@ describe('PatternMatcher', () => {
   let matcher: PatternMatcher
 
   beforeEach(() => {
-    matcher = new PatternMatcher(100)
+    matcher = new PatternMatcher()
     vi.useFakeTimers()
   })
 
@@ -79,8 +79,8 @@ describe('PatternMatcher', () => {
     })
   })
 
-  describe('Buffer Behavior', () => {
-    it('should match patterns across multiple data chunks', () => {
+  describe('Direct Content Processing', () => {
+    it('should match patterns in complete screen content', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: ['complete', 'message'],
@@ -88,24 +88,26 @@ describe('PatternMatcher', () => {
       }
       matcher.addPattern(config)
 
-      matcher.processData('This is a comp')
-      const matches = matcher.processData('lete\nmessage')
+      const matches = matcher.processData('This is a complete\nmessage')
       expect(matches).toHaveLength(1)
       expect((matches[0].action as any).response).toBe('Found it!')
     })
 
-    it('should respect buffer size limit', () => {
-      const smallMatcher = new PatternMatcher(10)
+    it('should process each data call independently', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: ['old', 'data'],
         action: { type: 'input', response: 'Found old' },
       }
-      smallMatcher.addPattern(config)
+      matcher.addPattern(config)
 
-      smallMatcher.processData('old data here')
-      const matches = smallMatcher.processData(' new stuff')
-      expect(matches).toHaveLength(0)
+      // First call with complete content that matches
+      const matches1 = matcher.processData('old line here\ndata is present')
+      expect(matches1).toHaveLength(1)
+
+      // Second call with different content should not affect previous state
+      const matches2 = matcher.processData('new stuff')
+      expect(matches2).toHaveLength(0)
     })
   })
 
@@ -216,7 +218,7 @@ describe('PatternMatcher', () => {
     })
 
     it('should match sequence with ANSI codes stripped', () => {
-      const largeMatcher = new PatternMatcher(500) // Use larger buffer for this test
+      const largeMatcher = new PatternMatcher()
       const config: PatternConfig = {
         id: 'edit-prompt',
         pattern: ['Edit file', 'Do you want to make this edit', '❯ 1. Yes'],
@@ -236,7 +238,7 @@ describe('PatternMatcher', () => {
     })
 
     it('should match complex UI prompt sequence', () => {
-      const largeMatcher = new PatternMatcher(2000) // Use larger buffer for complex UI
+      const largeMatcher = new PatternMatcher()
       const config: PatternConfig = {
         id: 'complex-prompt',
         pattern: [
@@ -270,7 +272,7 @@ describe('PatternMatcher', () => {
       expect((matches[0].action as any).response).toBe('1')
     })
 
-    it('should match sequence across multiple data chunks', () => {
+    it('should match complete sequence in single data input', () => {
       const config: PatternConfig = {
         id: 'seq1',
         pattern: ['Beginning', 'Middle part', 'The end'],
@@ -278,10 +280,9 @@ describe('PatternMatcher', () => {
       }
       matcher.addPattern(config)
 
-      matcher.processData('Beginning of the story\n')
-      matcher.processData('Some filler text\n')
-      matcher.processData('Middle part is here\n')
-      const matches = matcher.processData('More text\nThe end')
+      const fullContent =
+        'Beginning of the story\nSome filler text\nMiddle part is here\nMore text\nThe end'
+      const matches = matcher.processData(fullContent)
 
       expect(matches).toHaveLength(1)
       expect(matches[0].patternId).toBe('seq1')
@@ -317,7 +318,7 @@ describe('PatternMatcher', () => {
 
     it('should optimize sequence matching by checking last line first', () => {
       // Create a fresh matcher for this test to avoid buffer contamination
-      const testMatcher = new PatternMatcher(500)
+      const testMatcher = new PatternMatcher()
 
       const config: PatternConfig = {
         id: 'optimized',
@@ -339,7 +340,7 @@ describe('PatternMatcher', () => {
 
     it('should handle very long sequences efficiently', () => {
       // Create a matcher with larger buffer for this test
-      const largeMatcher = new PatternMatcher(2000)
+      const largeMatcher = new PatternMatcher()
 
       // Create a long sequence pattern with unique lines
       const longSequence = Array.from(

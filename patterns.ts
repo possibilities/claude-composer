@@ -50,8 +50,3 @@ export const PATTERNS: PatternConfig[] = [
     },
   },
 ]
-
-export const SETTINGS = {
-  bufferSize: 131072,
-  duplicatePreventionWindowMs: 5000, // 5 second window to prevent duplicate responses for identical text
-}

@@ -107,12 +107,9 @@ export { appConfig }
 
 async function initializePatterns() {
   const patternsPath = process.env.CLAUDE_PATTERNS_PATH || './patterns'
-  const { PATTERNS, SETTINGS } = await import(patternsPath)
+  const { PATTERNS } = await import(patternsPath)
 
-  patternMatcher = new PatternMatcher(
-    SETTINGS.bufferSize,
-    SETTINGS.duplicatePreventionWindowMs,
-  )
+  patternMatcher = new PatternMatcher()
   responseQueue = new ResponseQueue()
 
   PATTERNS.forEach(pattern => {

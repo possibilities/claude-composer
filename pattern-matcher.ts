@@ -18,12 +18,8 @@ export interface MatchResult {
 
 export class PatternMatcher {
   private patterns: Map<string, CompiledPattern> = new Map()
-  private buffer: string = ''
-  private maxSize: number
 
-  constructor(bufferSize: number = 2048) {
-    this.maxSize = bufferSize
-  }
+  constructor() {}
 
   addPattern(config: PatternConfig): void {
     const compiled = this.compilePattern(config)
@@ -34,19 +30,8 @@ export class PatternMatcher {
     this.patterns.delete(id)
   }
 
-  getBufferContent(): string {
-    return this.buffer
-  }
-
   processData(data: string): MatchResult[] {
-    if (data.length > 0) {
-      this.buffer += data
-      if (this.buffer.length > this.maxSize) {
-        this.buffer = this.buffer.slice(-this.maxSize)
-      }
-    }
-
-    const content = this.buffer
+    const content = data
     const strippedContent = stripAnsi(content)
     const matches: MatchResult[] = []
 
