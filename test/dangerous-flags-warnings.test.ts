@@ -47,7 +47,7 @@ async function runCliWithArgs(args: string[], env: any): Promise<string> {
       if (!warningsFound) {
         proc.kill()
       }
-    }, 1000)
+    }, 500)
   })
 }
 

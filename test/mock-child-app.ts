@@ -69,7 +69,7 @@ if (args.includes('--welcome')) {
     setTimeout(() => {
       console.log('Size watch complete')
       process.exit(0)
-    }, 1000)
+    }, 500)
   } else {
     process.exit(0)
   }
