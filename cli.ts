@@ -19,6 +19,7 @@ import {
   type AppConfig,
   type ToolsetConfig,
 } from './config-schemas.js'
+import { Readable, PassThrough } from 'stream'
 
 let ptyProcess: pty.IPty | undefined
 let childProcess: ChildProcess | undefined
@@ -26,6 +27,9 @@ let isRawMode = false
 let patternMatcher: PatternMatcher
 let responseQueue: ResponseQueue
 let tempMcpConfigPath: string | undefined
+let terminal: any | undefined
+let serializeAddon: any | undefined
+let screenReadInterval: NodeJS.Timeout | undefined
 let appConfig: AppConfig = {
   show_notifications: true,
   dangerously_dismiss_edit_file_prompts: false,
@@ -37,6 +41,8 @@ let appConfig: AppConfig = {
   log_latest_buffer: false,
 }
 let bufferLogInterval: NodeJS.Timeout | undefined
+let stdinBuffer: PassThrough | undefined
+let isStdinPaused = false
 
 function getConfigDirectory(): string {
   return (
@@ -313,6 +319,16 @@ function cleanup() {
     isRawMode = false
   }
 
+  if (screenReadInterval) {
+    clearInterval(screenReadInterval)
+    screenReadInterval = undefined
+  }
+
+  if (terminal) {
+    terminal.dispose()
+    terminal = undefined
+  }
+
   if (ptyProcess) {
     try {
       ptyProcess.kill()
@@ -329,6 +345,11 @@ function cleanup() {
     try {
       fs.unlinkSync(tempMcpConfigPath)
     } catch (e) {}
+  }
+
+  if (stdinBuffer) {
+    stdinBuffer.destroy()
+    stdinBuffer = undefined
   }
 
   stopBufferLogging()
@@ -369,32 +390,85 @@ async function askYesNo(
   question: string,
   defaultNo: boolean = true,
 ): Promise<boolean> {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  })
-
   const prompt = defaultNo
     ? `\x1b[33m${question} (y/N): \x1b[0m`
     : `\x1b[33m${question} (Y/n): \x1b[0m`
 
-  return new Promise(resolve => {
-    rl.question(prompt, answer => {
-      rl.close()
+  // If stdin is being piped, we need to use a different approach
+  if (!process.stdin.isTTY) {
+    // In production, we want to read from /dev/tty to avoid consuming piped data
+    // In tests, /dev/tty might not be available, so we fall back to stdin
+    let input: NodeJS.ReadableStream = process.stdin
+    let tty: fs.ReadStream | undefined
 
-      if (process.stdin.isPaused()) {
-        process.stdin.resume()
+    try {
+      // Only try /dev/tty if we're not in a test environment
+      // Tests will have stdin available for interaction
+      if (
+        !process.env.NODE_ENV?.includes('test') &&
+        fs.existsSync('/dev/tty')
+      ) {
+        tty = fs.createReadStream('/dev/tty')
+        // Test if we can actually use it
+        await new Promise((resolve, reject) => {
+          tty!.once('error', reject)
+          tty!.once('open', resolve)
+        })
+        input = tty
       }
-
-      const normalizedAnswer = answer.trim().toLowerCase()
-
-      if (normalizedAnswer === '') {
-        resolve(!defaultNo)
-      } else {
-        resolve(normalizedAnswer === 'y' || normalizedAnswer === 'yes')
+    } catch (error) {
+      // Fall back to stdin if /dev/tty fails
+      if (tty) {
+        tty.close()
       }
+    }
+
+    const rl = readline.createInterface({
+      input,
+      output: process.stdout,
     })
-  })
+
+    return new Promise(resolve => {
+      rl.question(prompt, answer => {
+        rl.close()
+        if (tty) {
+          tty.close()
+        }
+
+        const normalizedAnswer = answer.trim().toLowerCase()
+
+        if (normalizedAnswer === '') {
+          resolve(!defaultNo)
+        } else {
+          resolve(normalizedAnswer === 'y' || normalizedAnswer === 'yes')
+        }
+      })
+    })
+  } else {
+    // Normal TTY mode
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    })
+
+    return new Promise(resolve => {
+      rl.question(prompt, answer => {
+        rl.close()
+
+        if (process.stdin.isPaused()) {
+          process.stdin.resume()
+        }
+
+        const normalizedAnswer = answer.trim().toLowerCase()
+
+        if (normalizedAnswer === '') {
+          resolve(!defaultNo)
+        } else {
+          resolve(normalizedAnswer === 'y' || normalizedAnswer === 'yes')
+        }
+      })
+    })
+  }
 }
 
 function showNotification(match: MatchResult): void {
@@ -439,6 +513,14 @@ function handlePatternMatches(data: string): void {
 async function main() {
   ensureConfigDirectory()
   ensureBackupDirectory()
+
+  // If stdin is being piped, start buffering it immediately
+  if (!process.stdin.isTTY) {
+    stdinBuffer = new PassThrough()
+    process.stdin.pipe(stdinBuffer)
+    process.stdin.pause() // Pause to prevent data loss during prompts
+    isStdinPaused = true
+  }
 
   const ignoreGlobalConfig = process.argv.includes('--ignore-global-config')
 
@@ -988,20 +1070,50 @@ async function main() {
   childArgs.push(...toolsetArgs)
 
   if (process.stdin.isTTY) {
+    const cols = process.stdout.columns || 80
+    const rows = process.stdout.rows || 30
+
     ptyProcess = pty.spawn(childAppPath, childArgs, {
       name: 'xterm-color',
-      cols: process.stdout.columns || 80,
-      rows: process.stdout.rows || 30,
+      cols: cols,
+      rows: rows,
       env: process.env,
       cwd: process.env.PWD,
     })
 
     responseQueue.setTargets(ptyProcess, undefined)
 
+    // Dynamically import xterm modules
+    const { Terminal } = await import('@xterm/xterm')
+    const { SerializeAddon } = await import('@xterm/addon-serialize')
+
+    // Initialize xterm terminal
+    terminal = new Terminal({
+      cols: cols,
+      rows: rows,
+      scrollback: 1000,
+    })
+
+    serializeAddon = new SerializeAddon()
+    terminal.loadAddon(serializeAddon)
+
+    // Write PTY output to both stdout and xterm
     ptyProcess.onData((data: string) => {
       process.stdout.write(data)
-      handlePatternMatches(data)
+      terminal.write(data)
     })
+
+    // Start screen reading interval
+    let lastScreenContent = ''
+    screenReadInterval = setInterval(() => {
+      if (terminal && serializeAddon) {
+        const currentScreenContent = serializeAddon.serialize()
+        if (currentScreenContent !== lastScreenContent) {
+          handlePatternMatches(currentScreenContent)
+          lastScreenContent = currentScreenContent
+        }
+      }
+    }, 100)
 
     process.stdin.removeAllListeners('data')
 
@@ -1018,7 +1130,12 @@ async function main() {
     })
 
     process.stdout.on('resize', () => {
-      ptyProcess.resize(process.stdout.columns || 80, process.stdout.rows || 30)
+      const newCols = process.stdout.columns || 80
+      const newRows = process.stdout.rows || 30
+      ptyProcess.resize(newCols, newRows)
+      if (terminal) {
+        terminal.resize(newCols, newRows)
+      }
     })
   } else {
     childProcess = spawn(childAppPath, childArgs, {
@@ -1032,13 +1149,49 @@ async function main() {
 
     responseQueue.setTargets(undefined, childProcess)
 
-    process.stdin.pipe(childProcess.stdin!)
+    // Dynamically import xterm modules
+    const { Terminal } = await import('@xterm/xterm')
+    const { SerializeAddon } = await import('@xterm/addon-serialize')
+
+    // Initialize xterm terminal for non-TTY mode
+    terminal = new Terminal({
+      cols: 80,
+      rows: 30,
+      scrollback: 1000,
+    })
+
+    serializeAddon = new SerializeAddon()
+    terminal.loadAddon(serializeAddon)
+
+    // Use buffered stdin if available, otherwise pipe directly
+    if (stdinBuffer) {
+      // Resume the paused stdin stream if needed
+      if (isStdinPaused) {
+        process.stdin.resume()
+        isStdinPaused = false
+      }
+      stdinBuffer.pipe(childProcess.stdin!)
+    } else {
+      process.stdin.pipe(childProcess.stdin!)
+    }
 
     childProcess.stdout!.on('data', (data: Buffer) => {
       const dataStr = data.toString()
       process.stdout.write(data)
-      handlePatternMatches(dataStr)
+      terminal.write(dataStr)
     })
+
+    // Start screen reading interval for non-TTY mode
+    let lastScreenContent = ''
+    screenReadInterval = setInterval(() => {
+      if (terminal && serializeAddon) {
+        const currentScreenContent = serializeAddon.serialize()
+        if (currentScreenContent !== lastScreenContent) {
+          handlePatternMatches(currentScreenContent)
+          lastScreenContent = currentScreenContent
+        }
+      }
+    }, 100)
 
     childProcess.stderr!.pipe(process.stderr)
 
