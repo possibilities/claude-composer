@@ -105,12 +105,14 @@ function createBackup(md5: string): void {
 
 export { appConfig }
 
-async function initializePatterns() {
+async function initializePatterns(): Promise<boolean> {
   const patternsPath = process.env.CLAUDE_PATTERNS_PATH || './patterns'
   const { PATTERNS } = await import(patternsPath)
 
   patternMatcher = new PatternMatcher()
   responseQueue = new ResponseQueue()
+
+  let hasActivePatterns = false
 
   PATTERNS.forEach(pattern => {
     if (
@@ -133,7 +135,10 @@ async function initializePatterns() {
     }
 
     patternMatcher.addPattern(pattern)
+    hasActivePatterns = true
   })
+
+  return hasActivePatterns
 }
 
 function cleanup() {
@@ -381,7 +386,7 @@ async function main() {
     }
   }
 
-  await initializePatterns()
+  const hasActivePatterns = await initializePatterns()
 
   log('※ Ready, Passing off control to Claude CLI')
 
@@ -401,41 +406,47 @@ async function main() {
 
     responseQueue.setTargets(ptyProcess, undefined)
 
-    const { Terminal } = await import('@xterm/xterm')
-    const { SerializeAddon } = await import('@xterm/addon-serialize')
+    if (hasActivePatterns) {
+      const { Terminal } = await import('@xterm/xterm')
+      const { SerializeAddon } = await import('@xterm/addon-serialize')
 
-    terminal = new Terminal({
-      cols: cols,
-      rows: rows,
-      scrollback: 5000,
-    })
+      terminal = new Terminal({
+        cols: cols,
+        rows: rows,
+        scrollback: 5000,
+      })
 
-    serializeAddon = new SerializeAddon()
-    terminal.loadAddon(serializeAddon)
+      serializeAddon = new SerializeAddon()
+      terminal.loadAddon(serializeAddon)
 
-    ptyProcess.onData((data: string) => {
-      process.stdout.write(data)
-      try {
-        terminal.write(data)
-      } catch (error) {
-        // Silently ignore xterm parsing errors
-      }
-    })
-
-    let lastScreenContent = ''
-    screenReadInterval = setInterval(() => {
-      if (terminal && serializeAddon) {
+      ptyProcess.onData((data: string) => {
+        process.stdout.write(data)
         try {
-          const currentScreenContent = serializeAddon.serialize()
-          if (currentScreenContent !== lastScreenContent) {
-            handlePatternMatches(currentScreenContent)
-            lastScreenContent = currentScreenContent
-          }
+          terminal.write(data)
         } catch (error) {
           // Silently ignore xterm parsing errors
         }
-      }
-    }, 100)
+      })
+
+      let lastScreenContent = ''
+      screenReadInterval = setInterval(() => {
+        if (terminal && serializeAddon) {
+          try {
+            const currentScreenContent = serializeAddon.serialize()
+            if (currentScreenContent !== lastScreenContent) {
+              handlePatternMatches(currentScreenContent)
+              lastScreenContent = currentScreenContent
+            }
+          } catch (error) {
+            // Silently ignore xterm parsing errors
+          }
+        }
+      }, 100)
+    } else {
+      ptyProcess.onData((data: string) => {
+        process.stdout.write(data)
+      })
+    }
 
     process.stdin.removeAllListeners('data')
 
@@ -471,52 +482,68 @@ async function main() {
 
     responseQueue.setTargets(undefined, childProcess)
 
-    const { Terminal } = await import('@xterm/xterm')
-    const { SerializeAddon } = await import('@xterm/addon-serialize')
+    if (hasActivePatterns) {
+      const { Terminal } = await import('@xterm/xterm')
+      const { SerializeAddon } = await import('@xterm/addon-serialize')
 
-    terminal = new Terminal({
-      cols: 80,
-      rows: 30,
-      scrollback: 5000,
-    })
+      terminal = new Terminal({
+        cols: 80,
+        rows: 30,
+        scrollback: 5000,
+      })
 
-    serializeAddon = new SerializeAddon()
-    terminal.loadAddon(serializeAddon)
+      serializeAddon = new SerializeAddon()
+      terminal.loadAddon(serializeAddon)
 
-    if (stdinBuffer) {
-      if (isStdinPaused) {
-        process.stdin.resume()
-        isStdinPaused = false
+      if (stdinBuffer) {
+        if (isStdinPaused) {
+          process.stdin.resume()
+          isStdinPaused = false
+        }
+        stdinBuffer.pipe(childProcess.stdin!)
+      } else {
+        process.stdin.pipe(childProcess.stdin!)
       }
-      stdinBuffer.pipe(childProcess.stdin!)
-    } else {
-      process.stdin.pipe(childProcess.stdin!)
-    }
 
-    childProcess.stdout!.on('data', (data: Buffer) => {
-      const dataStr = data.toString()
-      process.stdout.write(data)
-      try {
-        terminal.write(dataStr)
-      } catch (error) {
-        // Silently ignore xterm parsing errors
-      }
-    })
-
-    let lastScreenContent = ''
-    screenReadInterval = setInterval(() => {
-      if (terminal && serializeAddon) {
+      childProcess.stdout!.on('data', (data: Buffer) => {
+        const dataStr = data.toString()
+        process.stdout.write(data)
         try {
-          const currentScreenContent = serializeAddon.serialize()
-          if (currentScreenContent !== lastScreenContent) {
-            handlePatternMatches(currentScreenContent)
-            lastScreenContent = currentScreenContent
-          }
+          terminal.write(dataStr)
         } catch (error) {
           // Silently ignore xterm parsing errors
         }
+      })
+
+      let lastScreenContent = ''
+      screenReadInterval = setInterval(() => {
+        if (terminal && serializeAddon) {
+          try {
+            const currentScreenContent = serializeAddon.serialize()
+            if (currentScreenContent !== lastScreenContent) {
+              handlePatternMatches(currentScreenContent)
+              lastScreenContent = currentScreenContent
+            }
+          } catch (error) {
+            // Silently ignore xterm parsing errors
+          }
+        }
+      }, 100)
+    } else {
+      if (stdinBuffer) {
+        if (isStdinPaused) {
+          process.stdin.resume()
+          isStdinPaused = false
+        }
+        stdinBuffer.pipe(childProcess.stdin!)
+      } else {
+        process.stdin.pipe(childProcess.stdin!)
       }
-    }, 100)
+
+      childProcess.stdout!.on('data', (data: Buffer) => {
+        process.stdout.write(data)
+      })
+    }
 
     childProcess.stderr!.pipe(process.stderr)
 
