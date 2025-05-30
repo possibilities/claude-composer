@@ -32,7 +32,7 @@ export const PATTERNS: PatternConfig[] = [
       type: 'input',
       response: '1',
     },
-    cooldown: 30000,
+    cooldown: 3000,
   },
   {
     id: 'create-file-prompt',
@@ -41,7 +41,7 @@ export const PATTERNS: PatternConfig[] = [
       type: 'input',
       response: '1',
     },
-    cooldown: 30000,
+    cooldown: 3000,
   },
   {
     id: 'bash-command-prompt',
@@ -50,7 +50,7 @@ export const PATTERNS: PatternConfig[] = [
       type: 'input',
       response: '1',
     },
-    cooldown: 30000,
+    cooldown: 3000,
   },
   {
     id: 'edit-file-log',
@@ -59,7 +59,7 @@ export const PATTERNS: PatternConfig[] = [
       type: 'log',
       path: '/tmp/claude-edit-file-prompts.log',
     },
-    cooldown: 30000,
+    cooldown: 3000,
   },
   {
     id: 'create-file-log',
@@ -68,7 +68,7 @@ export const PATTERNS: PatternConfig[] = [
       type: 'log',
       path: '/tmp/claude-create-file-prompts.log',
     },
-    cooldown: 30000,
+    cooldown: 3000,
   },
   {
     id: 'bash-command-log',
@@ -77,7 +77,7 @@ export const PATTERNS: PatternConfig[] = [
       type: 'log',
       path: '/tmp/claude-bash-command-prompts.log',
     },
-    cooldown: 30000,
+    cooldown: 3000,
   },
 ]
 
