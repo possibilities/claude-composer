@@ -26,8 +26,6 @@ let isRawMode = false
 let patternMatcher: PatternMatcher
 let responseQueue: ResponseQueue
 let tempMcpConfigPath: string | undefined
-let patternMatchTimeout: NodeJS.Timeout | undefined
-const PATTERN_MATCH_DEBOUNCE_MS = 100
 let appConfig: AppConfig = {
   show_notifications: true,
   dangerously_dismiss_edit_file_prompts: false,
@@ -333,10 +331,6 @@ function cleanup() {
     } catch (e) {}
   }
 
-  if (patternMatchTimeout) {
-    clearTimeout(patternMatchTimeout)
-  }
-
   stopBufferLogging()
 }
 
@@ -418,23 +412,7 @@ function showNotification(match: MatchResult): void {
 }
 
 function handlePatternMatches(data: string): void {
-  // Add data to buffer immediately
-  patternMatcher.processData(data)
-
-  // Clear existing timeout
-  if (patternMatchTimeout) {
-    clearTimeout(patternMatchTimeout)
-  }
-
-  // Set new timeout to check patterns after debounce period
-  patternMatchTimeout = setTimeout(() => {
-    checkPatterns()
-  }, PATTERN_MATCH_DEBOUNCE_MS)
-}
-
-function checkPatterns(): void {
-  // Process with empty string to just check existing buffer
-  const matches = patternMatcher.processData('')
+  const matches = patternMatcher.processData(data)
 
   for (const match of matches) {
     if (match.action.type === 'input') {
