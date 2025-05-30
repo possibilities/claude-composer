@@ -42,7 +42,7 @@ describe('PatternMatcher', () => {
   })
 
   describe('Pattern Matching', () => {
-    it('should return multiple matches for multiple patterns', () => {
+    it('should return only bottommost match when multiple patterns match', () => {
       matcher.addPattern({
         id: 'test1',
         pattern: ['error', 'occurred'],
@@ -54,13 +54,9 @@ describe('PatternMatcher', () => {
         action: { type: 'input', response: 'Warning found' },
       })
       const matches = matcher.processData('error\noccurred\nwarning\nissued')
-      expect(matches).toHaveLength(2)
-      expect(matches.map(m => (m.action as any).response)).toContain(
-        'Error found',
-      )
-      expect(matches.map(m => (m.action as any).response)).toContain(
-        'Warning found',
-      )
+      expect(matches).toHaveLength(1)
+      expect((matches[0].action as any).response).toBe('Warning found')
+      expect(matches[0].lastLineNumber).toBe(3)
     })
 
     it('should handle array responses', () => {
@@ -128,6 +124,9 @@ describe('PatternMatcher', () => {
       expect(matches[0].patternId).toBe('test-ansi')
       expect(matches[0].matchedText).toBe('Edit\nfile')
       expect(matches[0].bufferContent).toContain('\x1b[31m')
+      expect(matches[0].firstLineNumber).toBe(0)
+      expect(matches[0].lastLineNumber).toBe(1)
+      expect(matches[0].fullMatchedContent).toBe('Edit\nfile')
     })
 
     it('should match patterns with complex ANSI sequences', () => {
@@ -145,6 +144,9 @@ describe('PatternMatcher', () => {
       expect(matches).toHaveLength(1)
       expect(matches[0].patternId).toBe('bash-pattern')
       expect(matches[0].matchedText).toBe('Bash\ncommand')
+      expect(matches[0].firstLineNumber).toBe(0)
+      expect(matches[0].lastLineNumber).toBe(1)
+      expect(matches[0].fullMatchedContent).toBe('Bash\ncommand')
     })
   })
 
@@ -162,6 +164,11 @@ describe('PatternMatcher', () => {
       expect(matches[0].patternId).toBe('seq1')
       expect((matches[0].action as any).response).toBe('Sequence found!')
       expect(matches[0].matchedText).toBe('First line\nSecond line\nThird line')
+      expect(matches[0].firstLineNumber).toBe(0)
+      expect(matches[0].lastLineNumber).toBe(2)
+      expect(matches[0].fullMatchedContent).toBe(
+        'First line\nSecond line\nThird line',
+      )
     })
 
     it('should match sequence with lines in between', () => {
@@ -363,6 +370,108 @@ describe('PatternMatcher', () => {
       const completeData = longSequence.join('\n')
       const matches2 = largeMatcher.processData(completeData)
       expect(matches2).toHaveLength(1)
+    })
+  })
+
+  describe('Deduplication and Bottommost Selection', () => {
+    it('should prevent duplicate matches on same content', () => {
+      const config: PatternConfig = {
+        id: 'test-dup',
+        pattern: ['hello', 'world'],
+        action: { type: 'input', response: 'matched' },
+      }
+      matcher.addPattern(config)
+
+      // First match should work
+      const matches1 = matcher.processData('hello\nworld')
+      expect(matches1).toHaveLength(1)
+      expect(matches1[0].fullMatchedContent).toBe('hello\nworld')
+
+      // Same content should not trigger again
+      const matches2 = matcher.processData('hello\nworld')
+      expect(matches2).toHaveLength(0)
+    })
+
+    it('should allow new matches when content changes', () => {
+      const config: PatternConfig = {
+        id: 'test-change',
+        pattern: ['edit', 'file'],
+        action: { type: 'input', response: '1' },
+      }
+      matcher.addPattern(config)
+
+      // First match
+      const matches1 = matcher.processData('edit\nfile foo.txt')
+      expect(matches1).toHaveLength(1)
+      expect(matches1[0].fullMatchedContent).toBe('edit\nfile foo.txt')
+
+      // Different content should trigger new match
+      const matches2 = matcher.processData('edit\nfile bar.txt')
+      expect(matches2).toHaveLength(1)
+      expect(matches2[0].fullMatchedContent).toBe('edit\nfile bar.txt')
+    })
+
+    it('should select bottommost match when multiple patterns match', () => {
+      matcher.addPattern({
+        id: 'upper',
+        pattern: ['start', 'middle'],
+        action: { type: 'input', response: 'upper' },
+      })
+      matcher.addPattern({
+        id: 'lower',
+        pattern: ['middle', 'end'],
+        action: { type: 'input', response: 'lower' },
+      })
+
+      const matches = matcher.processData('start\nmiddle\nend')
+      expect(matches).toHaveLength(1)
+      expect(matches[0].patternId).toBe('lower')
+      expect(matches[0].lastLineNumber).toBe(2)
+      expect((matches[0].action as any).response).toBe('lower')
+    })
+
+    it('should handle scrolled content with deduplication', () => {
+      const config: PatternConfig = {
+        id: 'scroll-test',
+        pattern: ['Do you want', 'Yes'],
+        action: { type: 'input', response: '1' },
+      }
+      matcher.addPattern(config)
+
+      // Initial match at bottom
+      const matches1 = matcher.processData(
+        'Some output\nDo you want to proceed?\nYes',
+      )
+      expect(matches1).toHaveLength(1)
+      expect(matches1[0].lastLineNumber).toBe(2)
+
+      // Same content scrolled up (with new content below) should not trigger
+      const matches2 = matcher.processData(
+        'Do you want to proceed?\nYes\nNew content below',
+      )
+      expect(matches2).toHaveLength(0)
+    })
+
+    it('should capture full matched content including intermediate lines', () => {
+      const config: PatternConfig = {
+        id: 'full-content',
+        pattern: ['first', 'last'],
+        action: { type: 'input', response: 'found' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData(
+        'first line\nintermediate line 1\nintermediate line 2\nlast line',
+      )
+      expect(matches).toHaveLength(1)
+      expect(matches[0].firstLineNumber).toBe(0)
+      expect(matches[0].lastLineNumber).toBe(3)
+      expect(matches[0].fullMatchedContent).toBe(
+        'first line\nintermediate line 1\nintermediate line 2\nlast line',
+      )
+      expect(matches[0].matchedText).toBe(
+        'first line\nintermediate line 1\nintermediate line 2\nlast line',
+      )
     })
   })
 })

@@ -12,12 +12,16 @@ export interface MatchResult {
   patternId: string
   action: PatternAction
   matchedText: string
+  fullMatchedContent: string
+  firstLineNumber: number
+  lastLineNumber: number
   bufferContent: string
   strippedBufferContent: string
 }
 
 export class PatternMatcher {
   private patterns: Map<string, CompiledPattern> = new Map()
+  private previousMatch: MatchResult | null = null
 
   constructor() {}
 
@@ -33,7 +37,7 @@ export class PatternMatcher {
   processData(data: string): MatchResult[] {
     const content = data
     const strippedContent = stripAnsi(content)
-    const matches: MatchResult[] = []
+    const allMatches: MatchResult[] = []
 
     for (const [id, pattern] of this.patterns) {
       const sequenceMatch = this.matchSequence(
@@ -42,17 +46,37 @@ export class PatternMatcher {
       )
 
       if (sequenceMatch) {
-        matches.push({
+        allMatches.push({
           patternId: id,
           action: pattern.config.action,
           matchedText: sequenceMatch.text,
+          fullMatchedContent: sequenceMatch.fullMatchedContent,
+          firstLineNumber: sequenceMatch.firstLineNumber,
+          lastLineNumber: sequenceMatch.lastLineNumber,
           bufferContent: content,
           strippedBufferContent: strippedContent,
         })
       }
     }
 
-    return matches
+    if (allMatches.length === 0) {
+      return []
+    }
+
+    const bottomMostMatch = allMatches.reduce((bottomMost, current) =>
+      current.lastLineNumber > bottomMost.lastLineNumber ? current : bottomMost,
+    )
+
+    if (
+      this.previousMatch &&
+      this.previousMatch.fullMatchedContent ===
+        bottomMostMatch.fullMatchedContent
+    ) {
+      return []
+    }
+
+    this.previousMatch = bottomMostMatch
+    return [bottomMostMatch]
   }
 
   private compilePattern(config: PatternConfig): CompiledPattern {
@@ -65,7 +89,12 @@ export class PatternMatcher {
   private matchSequence(
     content: string,
     sequence: string[],
-  ): { text: string } | null {
+  ): {
+    text: string
+    firstLineNumber: number
+    lastLineNumber: number
+    fullMatchedContent: string
+  } | null {
     if (sequence.length === 0) {
       return null
     }
@@ -93,7 +122,15 @@ export class PatternMatcher {
 
         if (sequenceIndex === sequence.length) {
           const text = lines.slice(firstMatchLine, lastMatchLine + 1).join('\n')
-          return { text }
+          const fullMatchedContent = lines
+            .slice(firstMatchLine, lastMatchLine + 1)
+            .join('\n')
+          return {
+            text,
+            firstLineNumber: firstMatchLine,
+            lastLineNumber: lastMatchLine,
+            fullMatchedContent,
+          }
         }
       }
     }
