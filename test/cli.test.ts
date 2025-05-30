@@ -131,14 +131,14 @@ describe('CLI Wrapper', () => {
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(
           () => reject(new Error('Timeout waiting for prompt')),
-          1000,
+          800,
         )
         const checkOutput = () => {
           if (output.includes('mock>')) {
             clearTimeout(timeout)
             resolve()
           } else {
-            setTimeout(checkOutput, 10)
+            setTimeout(checkOutput, 25)
           }
         }
         checkOutput()
@@ -152,7 +152,7 @@ describe('CLI Wrapper', () => {
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(
           () => reject(new Error('Timeout waiting for echo')),
-          500,
+          300,
         )
         const startLength = output.length
         const checkOutput = () => {
@@ -160,7 +160,7 @@ describe('CLI Wrapper', () => {
             clearTimeout(timeout)
             resolve()
           } else {
-            setTimeout(checkOutput, 10)
+            setTimeout(checkOutput, 25)
           }
         }
         checkOutput()
@@ -212,7 +212,7 @@ describe('CLI Wrapper', () => {
       expect(output).toContain('\x1b[0m')
     })
 
-    it('should handle terminal resize events', { timeout: 3000 }, async () => {
+    it('should handle terminal resize events', { timeout: 1500 }, async () => {
       const pty = await import('node-pty')
 
       const ptyProcess = pty.spawn(
@@ -243,18 +243,18 @@ describe('CLI Wrapper', () => {
         processExited = true
       })
 
-      // Wait for initial size output with shorter timeout
+      // Wait for initial size output with optimized polling
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(
           () => reject(new Error('Timeout waiting for initial output')),
-          2000,
+          1000,
         )
         const checkOutput = () => {
           if (output.includes('Watching for resize events...')) {
             clearTimeout(timeout)
             resolve()
           } else {
-            setTimeout(checkOutput, 10)
+            setTimeout(checkOutput, 25)
           }
         }
         checkOutput()
@@ -266,18 +266,18 @@ describe('CLI Wrapper', () => {
         try {
           ptyProcess.resize(100, 40)
 
-          // Wait for resize event with shorter timeout
+          // Wait for resize event with optimized polling
           await new Promise<void>((resolve, reject) => {
             const timeout = setTimeout(
               () => reject(new Error('Timeout waiting for resize')),
-              500,
+              300,
             )
             const checkOutput = () => {
               if (output.includes('Resized to: 100x40')) {
                 clearTimeout(timeout)
                 resolve()
               } else {
-                setTimeout(checkOutput, 10)
+                setTimeout(checkOutput, 25)
               }
             }
             checkOutput()
@@ -395,14 +395,14 @@ describe('CLI Wrapper', () => {
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(
           () => reject(new Error('Timeout waiting for pattern response')),
-          1000,
+          800,
         )
         const checkOutput = () => {
           if (output.includes('Received input: Test response')) {
             clearTimeout(timeout)
             resolve()
           } else {
-            setTimeout(checkOutput, 10)
+            setTimeout(checkOutput, 25)
           }
         }
         checkOutput()
@@ -416,7 +416,7 @@ describe('CLI Wrapper', () => {
       await new Promise(resolve => {
         ptyProcess.onExit(() => resolve(undefined))
       })
-    }, 3000)
+    }, 2000)
   })
 
   describe('Parent CLI options', () => {

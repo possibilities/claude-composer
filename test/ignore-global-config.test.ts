@@ -1,11 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { spawn } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
+import { runCli } from './test-utils'
 
 describe('--ignore-global-config flag', () => {
-  const cliPath = path.join(__dirname, '..', 'cli.ts')
   let tempConfigDir: string
   let originalConfigDir: string | undefined
 
@@ -43,42 +42,16 @@ dangerously_dismiss_bash_command_prompts: true
   })
 
   it('should ignore config file when --ignore-global-config is used', async () => {
-    const result = await new Promise<{
-      stdout: string
-      stderr: string
-      exitCode: number | null
-    }>(resolve => {
-      const child = spawn(
-        'tsx',
-        [
-          cliPath,
-          '--ignore-global-config',
-          '--dangerously-allow-without-version-control',
-          '--dangerously-allow-in-dirty-directory',
-        ],
-        {
-          env: {
-            ...process.env,
-            CLAUDE_COMPOSER_CONFIG_DIR: tempConfigDir,
-            CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-          },
-        },
-      )
-
-      let stdout = ''
-      let stderr = ''
-
-      child.stdout.on('data', data => {
-        stdout += data.toString()
-      })
-
-      child.stderr.on('data', data => {
-        stderr += data.toString()
-      })
-
-      child.on('exit', code => {
-        resolve({ stdout, stderr, exitCode: code })
-      })
+    const result = await runCli({
+      args: [
+        '--ignore-global-config',
+        '--dangerously-allow-without-version-control',
+        '--dangerously-allow-in-dirty-directory',
+      ],
+      env: {
+        CLAUDE_COMPOSER_CONFIG_DIR: tempConfigDir,
+      },
+      timeout: 2000,
     })
 
     // Should see the log message about ignoring config
@@ -97,41 +70,15 @@ dangerously_dismiss_bash_command_prompts: true
   })
 
   it('should load config file when --ignore-global-config is NOT used', async () => {
-    const result = await new Promise<{
-      stdout: string
-      stderr: string
-      exitCode: number | null
-    }>(resolve => {
-      const child = spawn(
-        'tsx',
-        [
-          cliPath,
-          '--dangerously-allow-without-version-control',
-          '--dangerously-allow-in-dirty-directory',
-        ],
-        {
-          env: {
-            ...process.env,
-            CLAUDE_COMPOSER_CONFIG_DIR: tempConfigDir,
-            CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-          },
-        },
-      )
-
-      let stdout = ''
-      let stderr = ''
-
-      child.stdout.on('data', data => {
-        stdout += data.toString()
-      })
-
-      child.stderr.on('data', data => {
-        stderr += data.toString()
-      })
-
-      child.on('exit', code => {
-        resolve({ stdout, stderr, exitCode: code })
-      })
+    const result = await runCli({
+      args: [
+        '--dangerously-allow-without-version-control',
+        '--dangerously-allow-in-dirty-directory',
+      ],
+      env: {
+        CLAUDE_COMPOSER_CONFIG_DIR: tempConfigDir,
+      },
+      timeout: 2000,
     })
 
     // Should NOT see the ignore message
@@ -150,43 +97,17 @@ dangerously_dismiss_bash_command_prompts: true
   })
 
   it('should still accept command line flags when --ignore-global-config is used', async () => {
-    const result = await new Promise<{
-      stdout: string
-      stderr: string
-      exitCode: number | null
-    }>(resolve => {
-      const child = spawn(
-        'tsx',
-        [
-          cliPath,
-          '--ignore-global-config',
-          '--show-notifications',
-          '--dangerously-allow-without-version-control',
-          '--dangerously-allow-in-dirty-directory',
-        ],
-        {
-          env: {
-            ...process.env,
-            CLAUDE_COMPOSER_CONFIG_DIR: tempConfigDir,
-            CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-          },
-        },
-      )
-
-      let stdout = ''
-      let stderr = ''
-
-      child.stdout.on('data', data => {
-        stdout += data.toString()
-      })
-
-      child.stderr.on('data', data => {
-        stderr += data.toString()
-      })
-
-      child.on('exit', code => {
-        resolve({ stdout, stderr, exitCode: code })
-      })
+    const result = await runCli({
+      args: [
+        '--ignore-global-config',
+        '--show-notifications',
+        '--dangerously-allow-without-version-control',
+        '--dangerously-allow-in-dirty-directory',
+      ],
+      env: {
+        CLAUDE_COMPOSER_CONFIG_DIR: tempConfigDir,
+      },
+      timeout: 2000,
     })
 
     // Should ignore config file
