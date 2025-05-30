@@ -506,6 +506,10 @@ async function main() {
       'Ignore configuration from ~/.claude-composer/config.yaml',
     )
     .option(
+      '--no-default-toolsets',
+      'Ignore default toolsets from the main config file',
+    )
+    .option(
       '--log-all-prompts',
       'Log all prompts (edit, create, bash command) to files in /tmp',
     )
@@ -561,6 +565,7 @@ async function main() {
   knownOptions.add('--no-log-all-prompts')
   knownOptions.add('--no-log-latest-buffer')
   knownOptions.add('--toolset')
+  knownOptions.add('--no-default-toolsets')
 
   // Process toolset early so we can use it in both print and interactive modes
   let toolsetArgs: string[] = []
@@ -570,9 +575,20 @@ async function main() {
   if (options.toolset) {
     // If --toolset is provided, only use that toolset
     toolsetsToLoad = [options.toolset]
-  } else if (appConfig.toolsets && appConfig.toolsets.length > 0) {
-    // Otherwise, use default toolsets from config
+  } else if (
+    appConfig.toolsets &&
+    appConfig.toolsets.length > 0 &&
+    options.defaultToolsets !== false
+  ) {
+    // Otherwise, use default toolsets from config unless --no-default-toolsets is specified
     toolsetsToLoad = appConfig.toolsets
+  } else if (
+    appConfig.toolsets &&
+    appConfig.toolsets.length > 0 &&
+    options.defaultToolsets === false
+  ) {
+    // Log message when ignoring default toolsets
+    log('※ Ignoring default toolsets from configuration')
   }
 
   // Load and merge all toolsets

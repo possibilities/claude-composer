@@ -419,4 +419,150 @@ mcp:
     expect(result).not.toContain('--allowedTools')
     expect(result).not.toContain('--disallowedTools')
   })
+
+  test('--no-default-toolsets ignores default toolsets from config', async () => {
+    const toolsetsDir = path.join(testConfigDir, 'toolsets')
+    fs.mkdirSync(toolsetsDir, { recursive: true })
+
+    // Create toolset files
+    fs.writeFileSync(
+      path.join(toolsetsDir, 'core.yaml'),
+      `allowed:
+  - tool1
+  - tool2
+`,
+    )
+
+    // Create config with default toolsets
+    fs.writeFileSync(
+      path.join(testConfigDir, 'config.yaml'),
+      `toolsets:
+  - core
+`,
+    )
+
+    const result = await new Promise<string>((resolve, reject) => {
+      let output = ''
+
+      const child = spawn(
+        'tsx',
+        [
+          CLI_PATH,
+          '--no-default-toolsets',
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+          '--echo-args',
+        ],
+        {
+          env: {
+            ...process.env,
+            CLAUDE_APP_PATH: MOCK_APP_PATH,
+            CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir,
+            CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          },
+        },
+      )
+
+      child.stdout.on('data', data => {
+        output += data.toString()
+      })
+
+      child.stderr.on('data', data => {
+        output += data.toString()
+      })
+
+      child.on('exit', code => {
+        if (code === 0) {
+          resolve(output)
+        } else {
+          reject(new Error(`Process exited with code ${code}: ${output}`))
+        }
+      })
+    })
+
+    // Should not load any default toolsets
+    expect(result).toContain('※ Ignoring default toolsets from configuration')
+    expect(result).not.toContain('※ Loaded toolset: core')
+    expect(result).toContain('ARGS:')
+    expect(result).not.toContain('--allowedTools')
+    expect(result).not.toContain('tool1')
+    expect(result).not.toContain('tool2')
+  })
+
+  test('--no-default-toolsets can be combined with --toolset', async () => {
+    const toolsetsDir = path.join(testConfigDir, 'toolsets')
+    fs.mkdirSync(toolsetsDir, { recursive: true })
+
+    // Create toolset files
+    fs.writeFileSync(
+      path.join(toolsetsDir, 'default-toolset.yaml'),
+      `allowed:
+  - default-tool
+`,
+    )
+
+    fs.writeFileSync(
+      path.join(toolsetsDir, 'explicit-toolset.yaml'),
+      `allowed:
+  - explicit-tool
+`,
+    )
+
+    // Create config with default toolsets
+    fs.writeFileSync(
+      path.join(testConfigDir, 'config.yaml'),
+      `toolsets:
+  - default-toolset
+`,
+    )
+
+    const result = await new Promise<string>((resolve, reject) => {
+      let output = ''
+
+      const child = spawn(
+        'tsx',
+        [
+          CLI_PATH,
+          '--no-default-toolsets',
+          '--toolset',
+          'explicit-toolset',
+          '--dangerously-allow-without-version-control',
+          '--dangerously-allow-in-dirty-directory',
+          '--echo-args',
+        ],
+        {
+          env: {
+            ...process.env,
+            CLAUDE_APP_PATH: MOCK_APP_PATH,
+            CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir,
+            CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          },
+        },
+      )
+
+      child.stdout.on('data', data => {
+        output += data.toString()
+      })
+
+      child.stderr.on('data', data => {
+        output += data.toString()
+      })
+
+      child.on('exit', code => {
+        if (code === 0) {
+          resolve(output)
+        } else {
+          reject(new Error(`Process exited with code ${code}: ${output}`))
+        }
+      })
+    })
+
+    // Should only load explicit toolset, not default
+    // When --toolset is explicitly provided, we don't show the ignoring message
+    expect(result).toContain('※ Loaded toolset: explicit-toolset')
+    expect(result).not.toContain('※ Loaded toolset: default-toolset')
+    expect(result).toContain('ARGS:')
+    expect(result).toContain('--allowedTools explicit-tool')
+    expect(result).not.toContain('default-tool')
+  })
 })
