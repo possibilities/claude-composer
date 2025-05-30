@@ -8,7 +8,6 @@ export interface PatternConfig {
   id: string
   pattern: string[]
   action: PatternAction
-  cooldown?: number
 }
 
 export interface MatchResult {

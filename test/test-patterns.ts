@@ -8,7 +8,6 @@ export const PATTERNS: PatternConfig[] = [
       type: 'input',
       response: 'Test response\n',
     },
-    cooldown: 100,
   },
   {
     id: 'test-log',
@@ -17,11 +16,9 @@ export const PATTERNS: PatternConfig[] = [
       type: 'log',
       path: '/tmp/test-pattern-match.log',
     },
-    cooldown: 100,
   },
 ]
 
 export const SETTINGS = {
   bufferSize: 2048,
-  defaultCooldown: 1000,
 }
