@@ -37,7 +37,9 @@ describe('Dirty Directory Check', () => {
     expect(result.output).not.toContain(
       'Running in directory with uncommitted changes',
     )
-    expect(result.output).toContain('Ready, Passing off control to Claude CLI')
+    expect(result.output).toContain(
+      '※ Ready, Passing off control to Claude CLI',
+    )
   })
 
   it('should skip prompt when --dangerously-allow-in-dirty-directory flag is used', async () => {
@@ -53,7 +55,9 @@ describe('Dirty Directory Check', () => {
     expect(result.output).toContain(
       'Dangerously running in directory with uncommitted changes',
     )
-    expect(result.output).toContain('Ready, Passing off control to Claude CLI')
+    expect(result.output).toContain(
+      '※ Ready, Passing off control to Claude CLI',
+    )
   })
 })
 

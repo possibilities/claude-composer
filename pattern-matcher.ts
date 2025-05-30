@@ -1,8 +1,6 @@
 import stripAnsi from 'strip-ansi'
 
-export type PatternAction =
-  | { type: 'input'; response: string | string[] }
-  | { type: 'log'; path: string }
+export type PatternAction = { type: 'input'; response: string | string[] }
 
 export interface PatternConfig {
   id: string
