@@ -427,7 +427,10 @@ function handlePatternMatches(data: string): void {
       fs.appendFileSync(match.action.path, JSON.stringify(logEntry) + '\n')
     }
 
-    if (appConfig.show_notifications !== false) {
+    if (
+      appConfig.show_notifications !== false &&
+      match.action.type === 'input'
+    ) {
       showNotification(match)
     }
   }
