@@ -1,4 +1,7 @@
 import stripAnsi from 'strip-ansi'
+import * as fs from 'fs'
+import * as path from 'path'
+import * as os from 'os'
 
 export interface PatternConfig {
   id: string
@@ -21,8 +24,14 @@ export interface MatchResult {
 export class PatternMatcher {
   private patterns: Map<string, CompiledPattern> = new Map()
   private previousMatch: MatchResult | null = null
+  private logAllMatches: boolean = false
 
-  constructor() {}
+  constructor(logAllMatches: boolean = false) {
+    this.logAllMatches = logAllMatches
+    if (this.logAllMatches) {
+      this.ensureLogDirectory()
+    }
+  }
 
   addPattern(config: PatternConfig): void {
     const compiled = this.compilePattern(config)
@@ -76,6 +85,11 @@ export class PatternMatcher {
     }
 
     this.previousMatch = bottomMostMatch
+
+    if (this.logAllMatches) {
+      this.logMatch(bottomMostMatch)
+    }
+
     return [bottomMostMatch]
   }
 
@@ -416,6 +430,45 @@ export class PatternMatcher {
       }
     }
     return null
+  }
+
+  private getConfigDirectory(): string {
+    return (
+      process.env.CLAUDE_COMPOSER_CONFIG_DIR ||
+      path.join(os.homedir(), '.claude-composer')
+    )
+  }
+
+  private ensureLogDirectory(): void {
+    const logsDir = path.join(this.getConfigDirectory(), 'logs')
+    if (!fs.existsSync(logsDir)) {
+      fs.mkdirSync(logsDir, { recursive: true })
+    }
+  }
+
+  private logMatch(match: MatchResult): void {
+    try {
+      const logsDir = path.join(this.getConfigDirectory(), 'logs')
+      const logFile = path.join(
+        logsDir,
+        `pattern-matches-${match.patternId}.jsonl`,
+      )
+
+      const logEntry = {
+        timestamp: new Date().toISOString(),
+        patternId: match.patternId,
+        matchedText: match.matchedText,
+        fullMatchedContent: match.fullMatchedContent,
+        firstLineNumber: match.firstLineNumber,
+        lastLineNumber: match.lastLineNumber,
+        extractedData: match.extractedData,
+      }
+
+      const logLine = JSON.stringify(logEntry) + '\n'
+      fs.appendFileSync(logFile, logLine)
+    } catch (error) {
+      // Silently ignore logging errors to avoid disrupting the main flow
+    }
   }
 }
 

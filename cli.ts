@@ -109,7 +109,9 @@ async function initializePatterns(): Promise<boolean> {
   const patternsPath = process.env.CLAUDE_PATTERNS_PATH || './patterns'
   const { patterns } = await import(patternsPath)
 
-  patternMatcher = new PatternMatcher()
+  patternMatcher = new PatternMatcher(
+    appConfig?.log_all_pattern_matches || false,
+  )
   responseQueue = new ResponseQueue()
 
   let hasActivePatterns = false

@@ -41,6 +41,7 @@ export interface ParsedOptions {
   ignoreGlobalConfig?: boolean
   defaultToolsets?: boolean
   goOff?: boolean
+  logAllPatternMatches?: boolean
 }
 
 const debugLog = util.debuglog('claude-composer')
@@ -233,6 +234,10 @@ export function createClaudeComposerCommand(): Command {
       'Ignore default toolsets from the main config file',
     )
     .option('--go-off', 'Go off. YOLO. What could go wrong?')
+    .option(
+      '--log-all-pattern-matches',
+      'Log all pattern matches to ~/.claude-composer/logs/pattern-matches-<pattern.id>.jsonl',
+    )
     .allowUnknownOption()
     .argument('[args...]', 'Arguments to pass to `claude`')
 
@@ -303,6 +308,7 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--no-dangerously-allow-without-version-control')
   knownOptions.add('--toolset')
   knownOptions.add('--no-default-toolsets')
+  knownOptions.add('--log-all-pattern-matches')
 
   return knownOptions
 }
@@ -769,6 +775,9 @@ export async function runPreflight(
   if (parsedOptions.dangerouslyAllowWithoutVersionControl !== undefined) {
     appConfig.dangerously_allow_without_version_control =
       parsedOptions.dangerouslyAllowWithoutVersionControl
+  }
+  if (parsedOptions.logAllPatternMatches !== undefined) {
+    appConfig.log_all_pattern_matches = parsedOptions.logAllPatternMatches
   }
 
   let toolsetArgs: string[] = []

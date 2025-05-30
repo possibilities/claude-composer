@@ -29,8 +29,8 @@ export const patterns: PatternConfig[] = [
     response: '1',
     pattern: [
       'Bash command',
-      '{{ command }}',
-      '{{ description }}',
+      // '{{ command }}',
+      // '{{ description }}',
       'Do you want to proceed?',
       '❯ 1. Yes',
       "2. Yes, and don't ask again for",
