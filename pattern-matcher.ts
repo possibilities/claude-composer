@@ -82,7 +82,7 @@ export class PatternMatcher {
         return null
       }
 
-      const matches = line.toLowerCase().includes(searchString.toLowerCase())
+      const matches = line.includes(searchString)
 
       if (matches) {
         if (sequenceIndex === 0) {

@@ -205,10 +205,10 @@ describe('PatternMatcher', () => {
       expect(matches).toHaveLength(0)
     })
 
-    it('should match sequence case-insensitively by default', () => {
+    it('should match sequence case-sensitively', () => {
       const config: PatternConfig = {
         id: 'seq1',
-        pattern: ['HELLO', 'WORLD'],
+        pattern: ['hello', 'world'],
         action: { type: 'input', response: 'Hi!' },
       }
       matcher.addPattern(config)
