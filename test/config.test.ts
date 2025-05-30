@@ -1,16 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import * as fs from 'fs'
 import * as path from 'path'
-import { loadConfig, appConfig } from '../cli'
+import { loadConfigFile } from '../preflight'
 
 describe('Configuration Loading', () => {
   let testConfigDir: string
   let testConfigPath: string
 
   beforeEach(() => {
-    // Reset appConfig
-    Object.keys(appConfig).forEach(key => delete appConfig[key])
-
     // Create unique test directory
     testConfigDir = fs.mkdtempSync(
       path.join(require('os').tmpdir(), 'claude-composer-config-test-'),
@@ -31,17 +28,17 @@ describe('Configuration Loading', () => {
     const configContent = 'show_notifications: true'
     fs.writeFileSync(testConfigPath, configContent)
 
-    await loadConfig(testConfigPath)
+    const config = await loadConfigFile(testConfigPath)
 
-    expect(appConfig.show_notifications).toBe(true)
+    expect(config.show_notifications).toBe(true)
   })
 
   it('should handle missing config file gracefully', async () => {
     const nonExistentPath = path.join(testConfigDir, 'nonexistent.yaml')
 
-    await loadConfig(nonExistentPath)
+    const config = await loadConfigFile(nonExistentPath)
 
-    expect(appConfig.show_notifications).toBeUndefined()
+    expect(config.show_notifications).toBeUndefined()
   })
 
   it('should handle invalid YAML gracefully', async () => {
@@ -49,40 +46,30 @@ describe('Configuration Loading', () => {
     fs.writeFileSync(testConfigPath, invalidConfig)
 
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('process.exit called')
-    })
 
-    await expect(loadConfig(testConfigPath)).rejects.toThrow(
-      'process.exit called',
-    )
-
-    expect(consoleSpy).toHaveBeenCalledWith(
+    await expect(loadConfigFile(testConfigPath)).rejects.toThrow(
       'Error loading configuration file:',
-      expect.any(Error),
     )
-    expect(appConfig.show_notifications).toBeUndefined()
 
     consoleSpy.mockRestore()
-    exitSpy.mockRestore()
   })
 
   it('should handle false value correctly', async () => {
     const configContent = 'show_notifications: false'
     fs.writeFileSync(testConfigPath, configContent)
 
-    await loadConfig(testConfigPath)
+    const config = await loadConfigFile(testConfigPath)
 
-    expect(appConfig.show_notifications).toBe(false)
+    expect(config.show_notifications).toBe(false)
   })
 
   it('should load dangerously_dismiss_bash_command_prompts setting', async () => {
     const configContent = 'dangerously_dismiss_bash_command_prompts: true'
     fs.writeFileSync(testConfigPath, configContent)
 
-    await loadConfig(testConfigPath)
+    const config = await loadConfigFile(testConfigPath)
 
-    expect(appConfig.dangerously_dismiss_bash_command_prompts).toBe(true)
+    expect(config.dangerously_dismiss_bash_command_prompts).toBe(true)
   })
 
   it('should load all dangerous dismiss options from config', async () => {
@@ -95,13 +82,13 @@ dangerously_allow_in_dirty_directory: true
 dangerously_allow_without_version_control: true`
     fs.writeFileSync(testConfigPath, configContent)
 
-    await loadConfig(testConfigPath)
+    const config = await loadConfigFile(testConfigPath)
 
-    expect(appConfig.show_notifications).toBe(false)
-    expect(appConfig.dangerously_dismiss_edit_file_prompts).toBe(true)
-    expect(appConfig.dangerously_dismiss_create_file_prompts).toBe(true)
-    expect(appConfig.dangerously_dismiss_bash_command_prompts).toBe(true)
-    expect(appConfig.dangerously_allow_in_dirty_directory).toBe(true)
-    expect(appConfig.dangerously_allow_without_version_control).toBe(true)
+    expect(config.show_notifications).toBe(false)
+    expect(config.dangerously_dismiss_edit_file_prompts).toBe(true)
+    expect(config.dangerously_dismiss_create_file_prompts).toBe(true)
+    expect(config.dangerously_dismiss_bash_command_prompts).toBe(true)
+    expect(config.dangerously_allow_in_dirty_directory).toBe(true)
+    expect(config.dangerously_allow_without_version_control).toBe(true)
   })
 })
