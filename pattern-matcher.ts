@@ -46,7 +46,7 @@ export class CircularBuffer {
 
 export class PatternMatcher {
   private patterns: Map<string, CompiledPattern> = new Map()
-  private lastMatchTimes: Map<string, number> = new Map()
+  private lastMatches: Map<string, string> = new Map()
   private buffer: CircularBuffer
 
   constructor(bufferSize: number = 2048) {
@@ -60,7 +60,7 @@ export class PatternMatcher {
 
   removePattern(id: string): void {
     this.patterns.delete(id)
-    this.lastMatchTimes.delete(id)
+    this.lastMatches.delete(id)
   }
 
   getBufferContent(): string {
@@ -75,19 +75,20 @@ export class PatternMatcher {
     const content = this.buffer.getContent()
     const strippedContent = stripAnsi(content)
     const matches: MatchResult[] = []
-    const now = Date.now()
 
     for (const [id, pattern] of this.patterns) {
-      if (this.isInCooldown(id, now)) {
-        continue
-      }
-
       const sequenceMatch = this.matchSequence(
         strippedContent,
         pattern.sequence,
       )
 
       if (sequenceMatch) {
+        // Check if this exact match was the last match for this pattern
+        const lastMatch = this.lastMatches.get(id)
+        if (lastMatch === sequenceMatch.text) {
+          continue // Skip duplicate match
+        }
+
         matches.push({
           patternId: id,
           action: pattern.config.action,
@@ -95,7 +96,7 @@ export class PatternMatcher {
           bufferContent: content,
           strippedBufferContent: strippedContent,
         })
-        this.lastMatchTimes.set(id, now)
+        this.lastMatches.set(id, sequenceMatch.text)
       }
     }
 
@@ -107,16 +108,6 @@ export class PatternMatcher {
       sequence: config.pattern,
       config,
     }
-  }
-
-  private isInCooldown(patternId: string, now: number): boolean {
-    const lastMatch = this.lastMatchTimes.get(patternId)
-    if (!lastMatch) return false
-
-    const pattern = this.patterns.get(patternId)
-    const cooldown = pattern?.config.cooldown || 1000
-
-    return now - lastMatch < cooldown
   }
 
   private matchSequence(

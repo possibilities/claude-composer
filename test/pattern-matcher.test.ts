@@ -128,69 +128,89 @@ describe('PatternMatcher', () => {
     })
   })
 
-  describe('Cooldown Behavior', () => {
-    it('should respect cooldown period', () => {
+  describe('Duplicate Prevention Behavior', () => {
+    it('should prevent duplicate matches of the same text', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: ['trigger', 'response'],
         action: { type: 'input', response: 'Response' },
-        cooldown: 5000,
       }
       matcher.addPattern(config)
 
       const matches1 = matcher.processData('trigger\nresponse')
       expect(matches1).toHaveLength(1)
 
-      vi.advanceTimersByTime(3000)
-      const matches2 = matcher.processData(' trigger\nresponse')
+      // Same match should be prevented
+      const matches2 = matcher.processData('')
       expect(matches2).toHaveLength(0)
 
-      vi.advanceTimersByTime(2001)
-      const matches3 = matcher.processData(' trigger\nresponse')
-      expect(matches3).toHaveLength(1)
+      // Even with more data, same match text is prevented
+      const matches3 = matcher.processData('\nextra')
+      expect(matches3).toHaveLength(0)
     })
 
-    it('should use default cooldown of 1000ms when not specified', () => {
-      const config: PatternConfig = {
-        id: 'test1',
-        pattern: ['trigger', 'now'],
-        action: { type: 'input', response: 'Response' },
-      }
-      matcher.addPattern(config)
-
-      const matches1 = matcher.processData('trigger\nnow')
-      expect(matches1).toHaveLength(1)
-
-      vi.advanceTimersByTime(999)
-      const matches2 = matcher.processData(' trigger\nnow')
-      expect(matches2).toHaveLength(0)
-
-      vi.advanceTimersByTime(2)
-      const matches3 = matcher.processData(' trigger\nnow')
-      expect(matches3).toHaveLength(1)
-    })
-
-    it('should track cooldowns separately for different patterns', () => {
+    it('should track duplicates separately for different patterns', () => {
       matcher.addPattern({
         id: 'test1',
         pattern: ['pattern1', 'first'],
         action: { type: 'input', response: 'Response1' },
-        cooldown: 2000,
       })
       matcher.addPattern({
         id: 'test2',
         pattern: ['pattern2', 'second'],
         action: { type: 'input', response: 'Response2' },
-        cooldown: 3000,
       })
 
       const matches1 = matcher.processData('pattern1\nfirst\npattern2\nsecond')
       expect(matches1).toHaveLength(2)
 
-      vi.advanceTimersByTime(2500)
-      const matches2 = matcher.processData(' pattern1\nfirst\npattern2\nsecond')
-      expect(matches2).toHaveLength(1)
-      expect(matches2[0].patternId).toBe('test1')
+      // Both patterns should be prevented from matching again
+      const matches2 = matcher.processData('')
+      expect(matches2).toHaveLength(0)
+
+      // Clear buffer to test with fresh content
+      matcher = new PatternMatcher(2048)
+      matcher.addPattern({
+        id: 'test1',
+        pattern: ['pattern1', 'first'],
+        action: { type: 'input', response: 'Response1' },
+      })
+      matcher.addPattern({
+        id: 'test2',
+        pattern: ['pattern2', 'second'],
+        action: { type: 'input', response: 'Response2' },
+      })
+
+      // Fresh patterns match
+      const matches3 = matcher.processData('pattern1\nfirst')
+      expect(matches3).toHaveLength(1)
+      expect(matches3[0].patternId).toBe('test1')
+    })
+
+    it('should allow matching when the matched text changes', () => {
+      const config: PatternConfig = {
+        id: 'test1',
+        pattern: ['start', 'end'],
+        action: { type: 'input', response: 'Response' },
+      }
+      matcher.addPattern(config)
+
+      // First match
+      const matches1 = matcher.processData('start\nmiddle\nend')
+      expect(matches1).toHaveLength(1)
+      expect(matches1[0].matchedText).toBe('start\nmiddle\nend')
+
+      // Same match prevented
+      const matches2 = matcher.processData('')
+      expect(matches2).toHaveLength(0)
+
+      // Clear buffer and try different content
+      matcher = new PatternMatcher(2048)
+      matcher.addPattern(config)
+
+      const matches3 = matcher.processData('start\ndifferent\nend')
+      expect(matches3).toHaveLength(1)
+      expect(matches3[0].matchedText).toBe('start\ndifferent\nend')
     })
   })
 
@@ -405,25 +425,28 @@ describe('PatternMatcher', () => {
       expect(matches[0].patternId).toBe('seq1')
     })
 
-    it('should respect cooldown for sequence patterns', () => {
+    it('should prevent duplicate sequence matches', () => {
       const config: PatternConfig = {
         id: 'seq1',
         pattern: ['A', 'B'],
         action: { type: 'input', response: 'AB' },
-        cooldown: 2000,
       }
       matcher.addPattern(config)
 
       const matches1 = matcher.processData('A\nB')
       expect(matches1).toHaveLength(1)
 
-      vi.advanceTimersByTime(1000)
-      const matches2 = matcher.processData('A\nB')
+      // Same sequence should not match again
+      const matches2 = matcher.processData('')
       expect(matches2).toHaveLength(0)
 
-      vi.advanceTimersByTime(1001)
-      const matches3 = matcher.processData('A\nB')
+      // Clear buffer and try different sequence
+      matcher = new PatternMatcher(2048)
+      matcher.addPattern(config)
+
+      const matches3 = matcher.processData('A\nC\nB')
       expect(matches3).toHaveLength(1)
+      expect(matches3[0].matchedText).toBe('A\nC\nB')
     })
 
     it('should handle empty sequence array', () => {
@@ -506,40 +529,40 @@ describe('PatternMatcher', () => {
     })
   })
 
-  describe('Pattern Matching Without Duplicate Prevention', () => {
-    it('should match patterns repeatedly when cooldown expires', () => {
+  describe('Pattern Matching With Duplicate Prevention', () => {
+    it('should only match when content changes', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: ['prompt', '>'],
         action: { type: 'input', response: 'ok' },
-        cooldown: 100, // Short cooldown for testing
       }
       matcher.addPattern(config)
 
       const matches1 = matcher.processData('prompt\n>')
       expect(matches1).toHaveLength(1)
 
-      // Still in cooldown
+      // Same content, no match
       const matches2 = matcher.processData('')
       expect(matches2).toHaveLength(0)
 
-      // After cooldown expires, pattern matches again
-      vi.advanceTimersByTime(101)
-      const matches3 = matcher.processData('')
+      // Clear buffer for new test
+      matcher = new PatternMatcher(2048)
+      matcher.addPattern(config)
+
+      // New instance with different surrounding content
+      const matches3 = matcher.processData('prompt\n>\nnew line')
       expect(matches3).toHaveLength(1)
 
-      // And again after another cooldown
-      vi.advanceTimersByTime(101)
+      // Same content, no match
       const matches4 = matcher.processData('')
-      expect(matches4).toHaveLength(1)
+      expect(matches4).toHaveLength(0)
     })
 
-    it('should allow continuous matching when buffer changes', () => {
+    it('should match again when matched text differs', () => {
       const config: PatternConfig = {
         id: 'test1',
         pattern: ['test', 'data'],
         action: { type: 'input', response: 'found' },
-        cooldown: 50,
       }
       matcher.addPattern(config)
 
@@ -547,17 +570,21 @@ describe('PatternMatcher', () => {
       const matches1 = matcher.processData('test\ndata')
       expect(matches1).toHaveLength(1)
 
-      // Wait for cooldown
-      vi.advanceTimersByTime(51)
+      // Same match prevented
+      const matches2 = matcher.processData('')
+      expect(matches2).toHaveLength(0)
 
-      // Add more data - pattern still matches
-      const matches2 = matcher.processData(' more test\ndata')
-      expect(matches2).toHaveLength(1)
+      // Clear and test with different content
+      matcher = new PatternMatcher(2048)
+      matcher.addPattern(config)
 
-      // Wait and match again
-      vi.advanceTimersByTime(51)
-      const matches3 = matcher.processData('')
+      const matches3 = matcher.processData('test\nmiddle\ndata')
       expect(matches3).toHaveLength(1)
+      expect(matches3[0].matchedText).toBe('test\nmiddle\ndata')
+
+      // Same match prevented again
+      const matches4 = matcher.processData('')
+      expect(matches4).toHaveLength(0)
     })
   })
 })
