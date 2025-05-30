@@ -7,7 +7,6 @@ describe('Config Validation', () => {
       const result = validateAppConfig({
         show_notifications: true,
         dangerously_dismiss_edit_file_prompts: false,
-        log_all_prompts: true,
       })
 
       expect(result.success).toBe(true)
@@ -15,7 +14,6 @@ describe('Config Validation', () => {
         expect(result.data).toEqual({
           show_notifications: true,
           dangerously_dismiss_edit_file_prompts: false,
-          log_all_prompts: true,
         })
       }
     })
@@ -23,14 +21,16 @@ describe('Config Validation', () => {
     it('should reject config with invalid field types', () => {
       const result = validateAppConfig({
         show_notifications: 'yes', // should be boolean
-        log_all_prompts: 123, // should be boolean
+        dangerously_dismiss_edit_file_prompts: 123, // should be boolean
       })
 
       expect(result.success).toBe(false)
       if (!result.success) {
         expect(result.error.issues).toHaveLength(2)
         expect(result.error.issues[0].path).toEqual(['show_notifications'])
-        expect(result.error.issues[1].path).toEqual(['log_all_prompts'])
+        expect(result.error.issues[1].path).toEqual([
+          'dangerously_dismiss_edit_file_prompts',
+        ])
       }
     })
 

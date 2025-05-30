@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
+import * as util from 'node:util'
 import { execSync } from 'child_process'
 import { Command } from 'commander'
 import * as yaml from 'js-yaml'
@@ -39,10 +40,12 @@ export interface ParsedOptions {
   toolset?: string
   ignoreGlobalConfig?: boolean
   defaultToolsets?: boolean
-  logAllPrompts?: boolean
-  logLatestBuffer?: boolean
   goOff?: boolean
 }
+
+// Create a debug logger that only outputs when NODE_DEBUG=claude-composer is set
+// This ensures logs only appear in inspector/debug mode and not in the terminal
+const debugLog = util.debuglog('claude-composer')
 
 export function getConfigDirectory(): string {
   return (
@@ -146,6 +149,7 @@ export function createTempMcpConfig(mcp: Record<string, any>): string {
   }
 
   fs.writeFileSync(tempFilePath, JSON.stringify(mcpConfig, null, 2))
+  debugLog('Temp MCP config written to:', tempFilePath, mcpConfig)
 
   return tempFilePath
 }
@@ -239,16 +243,6 @@ export function parseCommandLineArgs(argv: string[]): {
       '--no-default-toolsets',
       'Ignore default toolsets from the main config file',
     )
-    .option(
-      '--log-all-prompts',
-      'Log all prompts (edit, create, bash command) to files in /tmp',
-    )
-    .option('--no-log-all-prompts', 'Do not log prompts')
-    .option(
-      '--log-latest-buffer',
-      'Log the current buffer to /tmp/claude-composer-buffer.log every 5 seconds',
-    )
-    .option('--no-log-latest-buffer', 'Do not log the buffer')
     .option('--go-off', 'Go off. YOLO. What could go wrong?')
     .allowUnknownOption()
     .argument('[args...]', 'Arguments to pass to `claude`')
@@ -300,8 +294,6 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--no-dangerously-dismiss-bash-command-prompts')
   knownOptions.add('--no-dangerously-allow-in-dirty-directory')
   knownOptions.add('--no-dangerously-allow-without-version-control')
-  knownOptions.add('--no-log-all-prompts')
-  knownOptions.add('--no-log-latest-buffer')
   knownOptions.add('--toolset')
   knownOptions.add('--no-default-toolsets')
 
@@ -674,8 +666,6 @@ export async function runPreflight(
     dangerously_dismiss_bash_command_prompts: false,
     dangerously_allow_in_dirty_directory: false,
     dangerously_allow_without_version_control: false,
-    log_all_prompts: false,
-    log_latest_buffer: false,
   }
 
   // Ensure config directory exists
@@ -747,12 +737,6 @@ export async function runPreflight(
   if (parsedOptions.dangerouslyAllowWithoutVersionControl !== undefined) {
     appConfig.dangerously_allow_without_version_control =
       parsedOptions.dangerouslyAllowWithoutVersionControl
-  }
-  if (parsedOptions.logAllPrompts !== undefined) {
-    appConfig.log_all_prompts = parsedOptions.logAllPrompts
-  }
-  if (parsedOptions.logLatestBuffer !== undefined) {
-    appConfig.log_latest_buffer = parsedOptions.logLatestBuffer
   }
 
   // Handle toolsets (needed for print option)
@@ -967,18 +951,6 @@ export async function runPreflight(
   // Display status messages
   if (appConfig.show_notifications !== false) {
     log('※ Notifications are enabled')
-  }
-
-  if (appConfig.log_all_prompts) {
-    const configPath = path.join(getConfigDirectory(), 'config.yaml')
-    log(`※ Logging all prompts to /tmp (config: ${configPath})`)
-  }
-
-  if (appConfig.log_latest_buffer) {
-    const configPath = path.join(getConfigDirectory(), 'config.yaml')
-    log(
-      `※ Logging latest buffer to /tmp/claude-composer-buffer.log every 5 seconds (config: ${configPath})`,
-    )
   }
 
   // Display dangerous warnings

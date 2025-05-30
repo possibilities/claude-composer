@@ -8,8 +8,6 @@ export const appConfigSchema = z
     dangerously_dismiss_bash_command_prompts: z.boolean().optional(),
     dangerously_allow_in_dirty_directory: z.boolean().optional(),
     dangerously_allow_without_version_control: z.boolean().optional(),
-    log_all_prompts: z.boolean().optional(),
-    log_latest_buffer: z.boolean().optional(),
     toolsets: z.array(z.string()).optional(),
   })
   .strict()

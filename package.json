@@ -5,8 +5,7 @@
   "scripts": {
     "format": "prettier --write \"**/*.{js,mjs,jsx,ts,tsx,json,md,mdx,css,yml,yaml}\"",
     "test": "vitest --reporter verbose --run",
-    "test:watch": "vitest --watch",
-    "debug": "tsx --inspect-brk ./cli.ts"
+    "test:watch": "vitest --watch"
   },
   "type": "module",
   "bin": {

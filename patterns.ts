@@ -49,30 +49,6 @@ export const PATTERNS: PatternConfig[] = [
       response: '1',
     },
   },
-  {
-    id: 'edit-file-log',
-    pattern: editFilePattern,
-    action: {
-      type: 'log',
-      path: '/tmp/claude-edit-file-prompts.log',
-    },
-  },
-  {
-    id: 'create-file-log',
-    pattern: createFilePattern,
-    action: {
-      type: 'log',
-      path: '/tmp/claude-create-file-prompts.log',
-    },
-  },
-  {
-    id: 'bash-command-log',
-    pattern: bashCommandPattern,
-    action: {
-      type: 'log',
-      path: '/tmp/claude-bash-command-prompts.log',
-    },
-  },
 ]
 
 export const SETTINGS = {

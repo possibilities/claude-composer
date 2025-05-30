@@ -6,6 +6,7 @@ import { spawn, ChildProcess } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
+import * as util from 'node:util'
 import notifier from 'node-notifier'
 import { PatternMatcher, MatchResult } from './pattern-matcher'
 import { ResponseQueue } from './response-queue'
@@ -23,9 +24,12 @@ let terminal: any | undefined
 let serializeAddon: any | undefined
 let screenReadInterval: NodeJS.Timeout | undefined
 let appConfig: AppConfig | undefined
-let bufferLogInterval: NodeJS.Timeout | undefined
 let stdinBuffer: PassThrough | undefined
 let isStdinPaused = false
+
+// Create a debug logger that only outputs when NODE_DEBUG=claude-composer is set
+// This ensures logs only appear in inspector/debug mode and not in the terminal
+const debugLog = util.debuglog('claude-composer')
 
 function getBackupDirectory(): string {
   return path.join(getConfigDirectory(), 'backups')
@@ -101,38 +105,6 @@ function createBackup(md5: string): void {
   log(`※ Backup created successfully`)
 }
 
-function startBufferLogging() {
-  if (!appConfig.log_latest_buffer || !patternMatcher) return
-
-  const logPath = '/tmp/claude-composer-buffer.log'
-
-  bufferLogInterval = setInterval(() => {
-    try {
-      if (
-        patternMatcher &&
-        typeof patternMatcher.getBufferContent === 'function'
-      ) {
-        const content = patternMatcher.getBufferContent()
-        const logEntry = {
-          timestamp: new Date().toISOString(),
-          bufferSize: content.length,
-          content: content,
-        }
-        fs.writeFileSync(logPath, JSON.stringify(logEntry, null, 2))
-      }
-    } catch (error) {
-      // Silently ignore errors to avoid disrupting the main process
-    }
-  }, 5000)
-}
-
-function stopBufferLogging() {
-  if (bufferLogInterval) {
-    clearInterval(bufferLogInterval)
-    bufferLogInterval = undefined
-  }
-}
-
 export { appConfig }
 
 async function initializePatterns() {
@@ -162,16 +134,8 @@ async function initializePatterns() {
       return
     }
 
-    const isLogPattern = pattern.action.type === 'log'
-    if (isLogPattern && !appConfig.log_all_prompts) {
-      return
-    }
-
     patternMatcher.addPattern(pattern)
   })
-
-  // Start buffer logging after pattern matcher is initialized
-  startBufferLogging()
 }
 
 function cleanup() {
@@ -212,8 +176,6 @@ function cleanup() {
     stdinBuffer.destroy()
     stdinBuffer = undefined
   }
-
-  stopBufferLogging()
 }
 
 process.on('SIGINT', () => {
@@ -259,14 +221,6 @@ function handlePatternMatches(data: string): void {
   for (const match of matches) {
     if (match.action.type === 'input') {
       responseQueue.enqueue(match.action.response)
-    } else if (match.action.type === 'log') {
-      const logEntry = {
-        timestamp: new Date().toISOString(),
-        patternId: match.patternId,
-        matchedText: match.matchedText,
-        bufferContent: match.strippedBufferContent,
-      }
-      fs.appendFileSync(match.action.path, JSON.stringify(logEntry) + '\n')
     }
 
     if (
