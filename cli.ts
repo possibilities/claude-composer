@@ -216,16 +216,6 @@ function showNotification(match: MatchResult): void {
     message += `\nExtracted: ${extractedInfo}`
   }
 
-  // Log full match information for debugging
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-  const logFile = path.join('/tmp', `claude-composer-match-${timestamp}.json`)
-  try {
-    fs.writeFileSync(logFile, JSON.stringify(match, null, 2))
-    debugLog(`Match data logged to: ${logFile}`)
-  } catch (error) {
-    debugLog(`Failed to write match log: ${error}`)
-  }
-
   notifier.notify({
     title,
     message,

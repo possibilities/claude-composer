@@ -655,4 +655,230 @@ describe('PatternMatcher', () => {
       expect(matches[0].extractedData).toEqual({ fileName: 'config.json' })
     })
   })
+
+  describe('Multiline Placeholder Extraction', () => {
+    it('should extract content between two concrete patterns', () => {
+      const config: PatternConfig = {
+        id: 'multiline-test',
+        pattern: [
+          'Edit file',
+          '{{ diffContent | multiline }}',
+          'Do you want to make this edit to {{ fileName }}?',
+        ],
+        action: { type: 'input', response: '1' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData(
+        'Edit file\n' +
+          'line 1 of diff\n' +
+          'line 2 of diff\n' +
+          'line 3 of diff\n' +
+          'Do you want to make this edit to config.json?',
+      )
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({
+        diffContent: 'line 1 of diff\nline 2 of diff\nline 3 of diff',
+        fileName: 'config.json',
+      })
+    })
+
+    it('should extract multiple multiline sections', () => {
+      const config: PatternConfig = {
+        id: 'multiple-multiline',
+        pattern: [
+          'Start',
+          '{{ section1 | multiline }}',
+          'Middle',
+          '{{ section2 | multiline }}',
+          'End',
+        ],
+        action: { type: 'input', response: 'ok' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData(
+        'Start\n' +
+          'content A\n' +
+          'content B\n' +
+          'Middle\n' +
+          'content C\n' +
+          'content D\n' +
+          'End',
+      )
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({
+        section1: 'content A\ncontent B',
+        section2: 'content C\ncontent D',
+      })
+    })
+
+    it('should handle empty multiline sections', () => {
+      const config: PatternConfig = {
+        id: 'empty-multiline',
+        pattern: ['Start', '{{ empty | multiline }}', 'End'],
+        action: { type: 'input', response: 'ok' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData('Start\nEnd')
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({
+        empty: '',
+      })
+    })
+
+    it('should handle multiline at beginning of pattern', () => {
+      const config: PatternConfig = {
+        id: 'multiline-start',
+        pattern: ['{{ header | multiline }}', 'Important line'],
+        action: { type: 'input', response: 'ok' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData(
+        'Header line 1\n' + 'Header line 2\n' + 'Important line',
+      )
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({
+        header: 'Header line 1\nHeader line 2',
+      })
+    })
+
+    it('should handle multiline at end of pattern', () => {
+      const config: PatternConfig = {
+        id: 'multiline-end',
+        pattern: ['Important line', '{{ footer | multiline }}'],
+        action: { type: 'input', response: 'ok' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData(
+        'Important line\n' + 'Footer line 1\n' + 'Footer line 2',
+      )
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({
+        footer: 'Footer line 1\nFooter line 2',
+      })
+    })
+
+    it('should mix regular and multiline placeholders', () => {
+      const config: PatternConfig = {
+        id: 'mixed-placeholders',
+        pattern: [
+          'Process {{ action }} file',
+          '{{ diffContent | multiline }}',
+          'Save to {{ fileName }}?',
+          '{{ options | multiline }}',
+          '❯ 1. {{ choice }}',
+        ],
+        action: { type: 'input', response: '1' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData(
+        'Process edit file\n' +
+          'diff line 1\n' +
+          'diff line 2\n' +
+          'Save to test.txt?\n' +
+          'option 1\n' +
+          'option 2\n' +
+          '❯ 1. Yes',
+      )
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({
+        action: 'edit',
+        diffContent: 'diff line 1\ndiff line 2',
+        fileName: 'test.txt',
+        options: 'option 1\noption 2',
+        choice: 'Yes',
+      })
+    })
+
+    it('should handle real-world Claude edit file prompt with diff', () => {
+      const config: PatternConfig = {
+        id: 'claude-edit-with-diff',
+        pattern: [
+          'Edit file',
+          '{{ diffContent | multiline }}',
+          'Do you want to make this edit to {{ fileName }}?',
+          '❯ 1. Yes',
+        ],
+        action: { type: 'input', response: '1' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData(
+        'Edit file\n' +
+          '  1  - old line\n' +
+          '  2  + new line\n' +
+          '  3    unchanged line\n' +
+          'Do you want to make this edit to app.js?\n' +
+          '❯ 1. Yes\n' +
+          "  2. Yes, and don't ask again this session\n" +
+          '  3. No, and tell Claude what to do differently',
+      )
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({
+        diffContent: '  1  - old line\n  2  + new line\n  3    unchanged line',
+        fileName: 'app.js',
+      })
+    })
+
+    it('should handle multiline placeholders with ANSI codes', () => {
+      const config: PatternConfig = {
+        id: 'ansi-multiline',
+        pattern: [
+          'Edit file',
+          '{{ diffContent | multiline }}',
+          'Do you want to proceed?',
+        ],
+        action: { type: 'input', response: '1' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData(
+        '\x1b[1mEdit file\x1b[0m\n' +
+          '\x1b[32m+ added line\x1b[0m\n' +
+          '\x1b[31m- removed line\x1b[0m\n' +
+          'Do you want to proceed?',
+      )
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({
+        diffContent: '+ added line\n- removed line',
+      })
+    })
+
+    it('should not match if concrete patterns are missing', () => {
+      const config: PatternConfig = {
+        id: 'missing-concrete',
+        pattern: ['Start pattern', '{{ content | multiline }}', 'End pattern'],
+        action: { type: 'input', response: 'ok' },
+      }
+      matcher.addPattern(config)
+
+      // Missing the end pattern
+      const matches = matcher.processData(
+        'Start pattern\n' + 'some content\n' + 'more content',
+      )
+      expect(matches).toHaveLength(0)
+    })
+
+    it('should handle whitespace in multiline placeholder names', () => {
+      const config: PatternConfig = {
+        id: 'whitespace-name',
+        pattern: ['Begin', '{{ diff content | multiline }}', 'End'],
+        action: { type: 'input', response: 'ok' },
+      }
+      matcher.addPattern(config)
+
+      const matches = matcher.processData(
+        'Begin\n' + 'line 1\n' + 'line 2\n' + 'End',
+      )
+      expect(matches).toHaveLength(1)
+      expect(matches[0].extractedData).toEqual({
+        'diff content': 'line 1\nline 2',
+      })
+    })
+  })
 })

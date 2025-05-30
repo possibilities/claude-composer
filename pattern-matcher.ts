@@ -108,6 +108,7 @@ export class PatternMatcher {
       lineIndex: number
       patternIndex: number
       lineResult: any
+      isMultilinePlaceholder: boolean
     }> = []
 
     // For each pattern in sequence, find the first line that matches it
@@ -116,6 +117,19 @@ export class PatternMatcher {
 
     for (let patternIndex = 0; patternIndex < sequence.length; patternIndex++) {
       const pattern = sequence[patternIndex]
+
+      // Check if this is a multiline placeholder pattern
+      if (this.isMultilinePlaceholderPattern(pattern)) {
+        // This is a multiline placeholder - we'll handle it after finding concrete patterns
+        matchedLines.push({
+          lineIndex: -1, // Will be filled in later
+          patternIndex,
+          lineResult: { matches: true, extractedData: {} },
+          isMultilinePlaceholder: true,
+        })
+        continue
+      }
+
       let found = false
 
       for (
@@ -131,6 +145,7 @@ export class PatternMatcher {
             lineIndex,
             patternIndex,
             lineResult: matchResult,
+            isMultilinePlaceholder: false,
           })
           startSearchFrom = lineIndex + 1 // Next pattern must come after this line
           found = true
@@ -138,23 +153,81 @@ export class PatternMatcher {
         }
       }
 
-      // If we couldn't find this pattern, the sequence doesn't match
+      // If we couldn't find this concrete pattern, the sequence doesn't match
       if (!found) {
         return null
       }
     }
 
-    // All patterns found! Now build the result
-    const firstLineNumber = matchedLines[0].lineIndex
-    const lastLineNumber = matchedLines[matchedLines.length - 1].lineIndex
+    // Now process multiline placeholders by capturing content between concrete patterns
+    const extractedData: Record<string, string> = {}
+    let firstLineNumber = -1
+    let lastLineNumber = -1
+
+    for (let i = 0; i < matchedLines.length; i++) {
+      const match = matchedLines[i]
+
+      if (!match.isMultilinePlaceholder) {
+        // This is a concrete pattern match
+        if (firstLineNumber === -1) {
+          firstLineNumber = match.lineIndex
+        }
+        lastLineNumber = match.lineIndex
+
+        // Collect extracted data from concrete patterns
+        Object.assign(extractedData, match.lineResult.extractedData)
+      } else {
+        // This is a multiline placeholder - capture content between patterns
+        const pattern = sequence[match.patternIndex]
+        const multilinePlaceholderInfo = this.parseMultilinePlaceholder(pattern)
+
+        if (multilinePlaceholderInfo) {
+          // Find the previous and next concrete patterns
+          const prevMatch = this.findPreviousConcreteMatch(matchedLines, i)
+          const nextMatch = this.findNextConcreteMatch(matchedLines, i)
+
+          if (prevMatch !== null && nextMatch !== null) {
+            // Capture content between the two concrete patterns
+            const startLine = prevMatch.lineIndex + 1
+            const endLine = nextMatch.lineIndex - 1
+
+            if (startLine <= endLine) {
+              const capturedContent = lines
+                .slice(startLine, endLine + 1)
+                .join('\n')
+              extractedData[multilinePlaceholderInfo.name] = capturedContent
+            } else {
+              extractedData[multilinePlaceholderInfo.name] = ''
+            }
+          } else if (prevMatch !== null && nextMatch === null) {
+            // Capture from previous match to end
+            const startLine = prevMatch.lineIndex + 1
+            if (startLine < lines.length) {
+              const capturedContent = lines.slice(startLine).join('\n')
+              extractedData[multilinePlaceholderInfo.name] = capturedContent
+            } else {
+              extractedData[multilinePlaceholderInfo.name] = ''
+            }
+          } else if (prevMatch === null && nextMatch !== null) {
+            // Capture from beginning to next match
+            const endLine = nextMatch.lineIndex - 1
+            if (endLine >= 0) {
+              const capturedContent = lines.slice(0, endLine + 1).join('\n')
+              extractedData[multilinePlaceholderInfo.name] = capturedContent
+            } else {
+              extractedData[multilinePlaceholderInfo.name] = ''
+            }
+          }
+        }
+      }
+    }
+
+    if (firstLineNumber === -1 || lastLineNumber === -1) {
+      return null
+    }
+
     const text = lines.slice(firstLineNumber, lastLineNumber + 1).join('\n')
     const fullMatchedContent = text
-
-    // Collect extracted data from all matched lines
-    const extractedData: Record<string, string> = {}
-    for (const match of matchedLines) {
-      Object.assign(extractedData, match.lineResult.extractedData)
-    }
 
     return {
       text,
@@ -174,12 +247,34 @@ export class PatternMatcher {
 
     // Check if pattern contains placeholders
     const placeholderRegex = /\{\{\s*([^}]+)\s*\}\}/g
-    const placeholders: Array<{ name: string; start: number; end: number }> = []
+    const placeholders: Array<{
+      name: string
+      type: 'simple' | 'multiline'
+      start: number
+      end: number
+    }> = []
     let match
 
     while ((match = placeholderRegex.exec(pattern)) !== null) {
+      const content = match[1].trim()
+      let name: string
+      let type: 'simple' | 'multiline' = 'simple'
+
+      // Check for pipe syntax: {{ name | type }}
+      if (content.includes('|')) {
+        const parts = content.split('|').map(p => p.trim())
+        name = parts[0]
+        const typeStr = parts[1]
+        if (typeStr === 'multiline') {
+          type = 'multiline'
+        }
+      } else {
+        name = content
+      }
+
       placeholders.push({
-        name: match[1].trim(),
+        name,
+        type,
         start: match.index,
         end: match.index + match[0].length,
       })
@@ -249,6 +344,80 @@ export class PatternMatcher {
       matches: false,
       extractedData: {},
     }
+  }
+
+  private isMultilinePlaceholderPattern(pattern: string): boolean {
+    const placeholderRegex = /\{\{\s*([^}]+)\s*\}\}/g
+    let match
+
+    while ((match = placeholderRegex.exec(pattern)) !== null) {
+      const content = match[1].trim()
+      if (
+        content.includes('|') &&
+        content.split('|')[1]?.trim() === 'multiline'
+      ) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  private parseMultilinePlaceholder(pattern: string): { name: string } | null {
+    const placeholderRegex = /\{\{\s*([^}]+)\s*\}\}/g
+    let match
+
+    while ((match = placeholderRegex.exec(pattern)) !== null) {
+      const content = match[1].trim()
+      if (content.includes('|')) {
+        const parts = content.split('|').map(p => p.trim())
+        if (parts[1] === 'multiline') {
+          return { name: parts[0] }
+        }
+      }
+    }
+
+    return null
+  }
+
+  private findPreviousConcreteMatch(
+    matchedLines: Array<{
+      lineIndex: number
+      patternIndex: number
+      lineResult: any
+      isMultilinePlaceholder: boolean
+    }>,
+    currentIndex: number,
+  ): { lineIndex: number; patternIndex: number } | null {
+    for (let i = currentIndex - 1; i >= 0; i--) {
+      if (!matchedLines[i].isMultilinePlaceholder) {
+        return {
+          lineIndex: matchedLines[i].lineIndex,
+          patternIndex: matchedLines[i].patternIndex,
+        }
+      }
+    }
+    return null
+  }
+
+  private findNextConcreteMatch(
+    matchedLines: Array<{
+      lineIndex: number
+      patternIndex: number
+      lineResult: any
+      isMultilinePlaceholder: boolean
+    }>,
+    currentIndex: number,
+  ): { lineIndex: number; patternIndex: number } | null {
+    for (let i = currentIndex + 1; i < matchedLines.length; i++) {
+      if (!matchedLines[i].isMultilinePlaceholder) {
+        return {
+          lineIndex: matchedLines[i].lineIndex,
+          patternIndex: matchedLines[i].patternIndex,
+        }
+      }
+    }
+    return null
   }
 }
 

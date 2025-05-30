@@ -2,6 +2,7 @@ import { PatternConfig } from './pattern-matcher'
 
 const editFilePattern = [
   'Edit file',
+  // '{{ editDiff | multiline }}',
   'Do you want to make this edit to {{ fileName }}?',
   '❯ 1. Yes',
   "2. Yes, and don't ask again this session (shift+tab)",
