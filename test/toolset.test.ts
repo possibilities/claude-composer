@@ -4,7 +4,7 @@ import path from 'path'
 import fs from 'fs'
 import os from 'os'
 
-const CLI_PATH = path.join(__dirname, '..', 'cli.ts')
+const CLI_PATH = path.join(__dirname, '..', 'src', 'index.ts')
 const TEST_ID = `test-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 const CONFIG_DIR = path.join(os.tmpdir(), TEST_ID, '.claude-composer')
 const TOOLSETS_DIR = path.join(CONFIG_DIR, 'toolsets')

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import * as fs from 'fs'
 import * as path from 'path'
-import { loadConfigFile } from '../preflight'
+import { loadConfigFile } from '../src/config/loader'
 
 describe('Configuration Loading', () => {
   let testConfigDir: string

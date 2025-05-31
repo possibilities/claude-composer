@@ -1,4 +1,4 @@
-import { PatternConfig } from '../pattern-matcher'
+import { PatternConfig } from '../src/patterns/matcher'
 
 export const patterns: PatternConfig[] = [
   {

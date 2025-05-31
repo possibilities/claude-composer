@@ -9,11 +9,16 @@ import * as crypto from 'crypto'
 import * as util from 'node:util'
 import notifier from 'node-notifier'
 import clipboardy from 'clipboardy'
-import { PatternMatcher, MatchResult } from './pattern-matcher'
-import { ResponseQueue } from './response-queue'
-import { type AppConfig } from './config-schemas.js'
+import { PatternMatcher, MatchResult } from './patterns/matcher'
+import { ResponseQueue } from './core/response-queue'
+import { type AppConfig } from './config/schemas.js'
 import { PassThrough } from 'stream'
-import { runPreflight, getConfigDirectory, log, warn } from './preflight.js'
+import {
+  runPreflight,
+  getConfigDirectory,
+  log,
+  warn,
+} from './core/preflight.js'
 
 let ptyProcess: pty.IPty | undefined
 let childProcess: ChildProcess | undefined
@@ -171,8 +176,13 @@ function createBackup(md5: string): void {
 export { appConfig }
 
 async function initializePatterns(): Promise<boolean> {
-  const patternsPath = process.env.CLAUDE_PATTERNS_PATH || './patterns'
-  const { patterns } = await import(patternsPath)
+  const patternsPath = process.env.CLAUDE_PATTERNS_PATH || './patterns/registry'
+  // Adjust path if it's a relative path and we're in src/
+  const adjustedPatternsPath =
+    patternsPath.startsWith('./') && !patternsPath.includes('patterns/registry')
+      ? '../' + patternsPath.slice(2)
+      : patternsPath
+  const { patterns } = await import(adjustedPatternsPath)
 
   patternMatcher = new PatternMatcher(
     appConfig?.log_all_pattern_matches || false,

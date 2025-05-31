@@ -23,7 +23,7 @@ export interface InteractiveRunOptions extends RunCliOptions {
   }>
 }
 
-const CLI_PATH = path.join(process.cwd(), 'cli.ts')
+const CLI_PATH = path.join(process.cwd(), 'src/index.ts')
 const DEFAULT_MOCK_APP_PATH = path.join(
   process.cwd(),
   'test',

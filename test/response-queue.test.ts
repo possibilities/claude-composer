@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, MockedFunction } from 'vitest'
-import { ResponseQueue } from '../response-queue'
+import { ResponseQueue } from '../src/core/response-queue'
 import * as pty from 'node-pty'
 import { ChildProcess } from 'child_process'
 import { Writable } from 'stream'

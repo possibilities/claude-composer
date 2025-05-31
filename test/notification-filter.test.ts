@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { MatchResult } from '../pattern-matcher'
+import { MatchResult } from '../src/patterns/matcher'
 import stripAnsi from 'strip-ansi'
 
 vi.mock('node-notifier', () => ({
