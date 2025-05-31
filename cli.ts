@@ -8,6 +8,7 @@ import * as path from 'path'
 import * as crypto from 'crypto'
 import * as util from 'node:util'
 import notifier from 'node-notifier'
+import clipboardy from 'clipboardy'
 import { PatternMatcher, MatchResult } from './pattern-matcher'
 import { ResponseQueue } from './response-queue'
 import { type AppConfig } from './config-schemas.js'
@@ -40,7 +41,7 @@ function ensureLogsDirectory(): void {
   }
 }
 
-function saveTerminalSnapshot(): void {
+async function saveTerminalSnapshot(): Promise<void> {
   if (!appConfig?.allow_buffer_snapshots || !terminal || !serializeAddon) {
     return
   }
@@ -76,12 +77,19 @@ function saveTerminalSnapshot(): void {
 
     fs.writeFileSync(filepath, JSON.stringify(snapshot, null, 2))
 
+    // Copy full file path to clipboard
+    try {
+      await clipboardy.write(filepath)
+    } catch (clipboardError) {
+      // Silently fail if clipboard operation fails
+    }
+
     // Show notification if enabled
     if (appConfig.show_notifications !== false) {
       const projectName = path.basename(process.cwd())
       notifier.notify({
         title: '📸 Claude Composer',
-        message: `Terminal snapshot saved\nProject: ${projectName}\nLog location: ${logpath}`,
+        message: `Terminal snapshot saved\nProject: ${projectName}\nPath to snapshot copied to clipboard`,
         wait: false,
         sound: false,
         timeout: 5000,
