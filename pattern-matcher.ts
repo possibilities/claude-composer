@@ -5,12 +5,14 @@ import * as os from 'os'
 
 export interface PatternConfig {
   id: string
+  title: string
   pattern: string[]
   response: string
 }
 
 export interface MatchResult {
   patternId: string
+  patternTitle: string
   response: string
   matchedText: string
   fullMatchedContent: string
@@ -34,6 +36,9 @@ export class PatternMatcher {
   }
 
   addPattern(config: PatternConfig): void {
+    if (!config.title) {
+      throw new Error(`Pattern ${config.id} is missing required title field`)
+    }
     const compiled = this.compilePattern(config)
     this.patterns.set(config.id, compiled)
   }
@@ -56,6 +61,7 @@ export class PatternMatcher {
       if (sequenceMatch) {
         allMatches.push({
           patternId: id,
+          patternTitle: pattern.config.title || `Unknown Pattern (${id})`,
           response: pattern.config.response,
           matchedText: sequenceMatch.text,
           fullMatchedContent: sequenceMatch.fullMatchedContent,

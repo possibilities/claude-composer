@@ -136,8 +136,13 @@ async function initializePatterns(): Promise<boolean> {
       return
     }
 
-    patternMatcher.addPattern(pattern)
-    hasActivePatterns = true
+    try {
+      patternMatcher.addPattern(pattern)
+      hasActivePatterns = true
+    } catch (error) {
+      console.error(`Failed to add pattern: ${error.message}`)
+      throw error
+    }
   })
 
   return hasActivePatterns
@@ -209,13 +214,10 @@ process.on('uncaughtException', error => {
 function showNotification(match: MatchResult): void {
   const projectName = path.basename(process.cwd())
   const title = '🤖 Claude Composer'
-  let message = `Project: ${projectName}\nPattern triggered: ${match.patternId}`
+  let message = `Action: ${match.patternTitle}\nProject: ${projectName}`
 
-  if (match.extractedData && Object.keys(match.extractedData).length > 0) {
-    const extractedInfo = Object.entries(match.extractedData)
-      .map(([key, value]) => `${key}: ${value}`)
-      .join(', ')
-    message += `\nExtracted: ${extractedInfo}`
+  if (match.extractedData && match.extractedData.fileName) {
+    message += `\nFile: ${match.extractedData.fileName}`
   }
 
   notifier.notify({

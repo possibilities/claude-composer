@@ -19,6 +19,7 @@ describe('Notification functionality', () => {
   it('should call notifier.notify with correct parameters', () => {
     const match: MatchResult = {
       patternId: 'test-pattern',
+      patternTitle: 'Test Notification',
       response: { type: 'log', path: '/tmp/test.log' },
       matchedText: 'Welcome to Claude Code!',
       bufferContent: 'Some buffer content with Welcome to Claude Code! in it',
@@ -56,6 +57,7 @@ describe('Notification functionality', () => {
     const longText = 'A'.repeat(150)
     const match: MatchResult = {
       patternId: 'long-pattern',
+      patternTitle: 'Long Text Pattern',
       response: 'test',
       matchedText: longText,
       bufferContent: 'buffer content',
@@ -89,6 +91,7 @@ describe('Notification functionality', () => {
   it('should handle different pattern action types', () => {
     const inputMatch: MatchResult = {
       patternId: 'input-pattern',
+      patternTitle: 'Input Test Pattern',
       response: ['response1', 'response2'],
       matchedText: 'trigger text',
       bufferContent: 'buffer',
@@ -97,6 +100,7 @@ describe('Notification functionality', () => {
 
     const logMatch: MatchResult = {
       patternId: 'log-pattern',
+      patternTitle: 'Log Test Pattern',
       response: { type: 'log', path: '/tmp/log.json' },
       matchedText: 'log trigger',
       bufferContent: 'buffer',
@@ -141,6 +145,7 @@ describe('Notification functionality', () => {
       '\x1b[36mColored text\x1b[0m with \x1b[31mred\x1b[0m content'
     const match: MatchResult = {
       patternId: 'ansi-pattern',
+      patternTitle: 'ANSI Color Pattern',
       response: { type: 'log', path: '/tmp/test.log' },
       matchedText: coloredText,
       bufferContent: 'buffer',

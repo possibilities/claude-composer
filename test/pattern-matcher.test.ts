@@ -18,6 +18,7 @@ describe('PatternMatcher', () => {
     it('should add pattern', () => {
       const config: PatternConfig = {
         id: 'test1',
+        title: 'Test Pattern',
         pattern: ['hello', 'world'],
         response: 'matched',
       }
@@ -31,6 +32,7 @@ describe('PatternMatcher', () => {
     it('should remove pattern', () => {
       const config: PatternConfig = {
         id: 'test1',
+        title: 'Test Pattern',
         pattern: ['hello', 'world'],
         response: 'matched',
       }
@@ -45,11 +47,13 @@ describe('PatternMatcher', () => {
     it('should return only bottommost match when multiple patterns match', () => {
       matcher.addPattern({
         id: 'test1',
+        title: 'Error Pattern',
         pattern: ['error', 'occurred'],
         response: 'Error found',
       })
       matcher.addPattern({
         id: 'test2',
+        title: 'Warning Pattern',
         pattern: ['warning', 'issued'],
         response: 'Warning found',
       })
@@ -62,6 +66,7 @@ describe('PatternMatcher', () => {
     it('should handle array responses', () => {
       const config: PatternConfig = {
         id: 'test1',
+        title: 'Help Pattern',
         pattern: ['help', 'needed'],
         response: ['Sure!', 'How can I help?'],
       }
@@ -76,6 +81,7 @@ describe('PatternMatcher', () => {
     it('should match patterns in complete screen content', () => {
       const config: PatternConfig = {
         id: 'test1',
+        title: 'Complete Message',
         pattern: ['complete', 'message'],
         response: 'Found it!',
       }
@@ -89,6 +95,7 @@ describe('PatternMatcher', () => {
     it('should process each data call independently', () => {
       const config: PatternConfig = {
         id: 'test1',
+        title: 'Old Data Pattern',
         pattern: ['old', 'data'],
         response: 'Found old',
       }
@@ -109,6 +116,7 @@ describe('PatternMatcher', () => {
       const matcher = new PatternMatcher()
       matcher.addPattern({
         id: 'test-ansi',
+        title: 'ANSI Test Pattern',
         pattern: ['Edit', 'file'],
         response: 'yes',
       })
@@ -130,6 +138,7 @@ describe('PatternMatcher', () => {
       const matcher = new PatternMatcher()
       matcher.addPattern({
         id: 'bash-pattern',
+        title: 'Bash Command Pattern',
         pattern: ['Bash', 'command'],
         response: { type: 'log', path: '/tmp/test.log' },
       })
@@ -151,6 +160,7 @@ describe('PatternMatcher', () => {
     it('should match basic sequence pattern', () => {
       const config: PatternConfig = {
         id: 'seq1',
+        title: 'Basic Sequence Pattern',
         pattern: ['First line', 'Second line', 'Third line'],
         response: 'Sequence found!',
       }
@@ -171,6 +181,7 @@ describe('PatternMatcher', () => {
     it('should match sequence with lines in between', () => {
       const config: PatternConfig = {
         id: 'seq1',
+        title: 'Start Middle End Pattern',
         pattern: ['Start', 'Middle', 'End'],
         response: 'Found it',
       }
@@ -188,6 +199,7 @@ describe('PatternMatcher', () => {
     it('should not match incomplete sequence', () => {
       const config: PatternConfig = {
         id: 'seq1',
+        title: 'Incomplete Sequence Test',
         pattern: ['First', 'Second', 'Third'],
         response: 'Complete',
       }
@@ -200,6 +212,7 @@ describe('PatternMatcher', () => {
     it('should not match sequence in wrong order', () => {
       const config: PatternConfig = {
         id: 'seq1',
+        title: 'ABC Order Test Pattern',
         pattern: ['A', 'B', 'C'],
         response: 'ABC',
       }
@@ -212,6 +225,7 @@ describe('PatternMatcher', () => {
     it('should match sequence case-sensitively', () => {
       const config: PatternConfig = {
         id: 'seq1',
+        title: 'Case Sensitive Hello World',
         pattern: ['hello', 'world'],
         response: 'Hi!',
       }
@@ -225,6 +239,7 @@ describe('PatternMatcher', () => {
       const largeMatcher = new PatternMatcher()
       const config: PatternConfig = {
         id: 'edit-prompt',
+        title: 'Edit File Prompt with ANSI',
         pattern: ['Edit file', 'Do you want to make this edit', '❯ 1. Yes'],
         response: '1',
       }
@@ -245,6 +260,7 @@ describe('PatternMatcher', () => {
       const largeMatcher = new PatternMatcher()
       const config: PatternConfig = {
         id: 'complex-prompt',
+        title: 'Complex UI Prompt Sequence',
         pattern: [
           'Edit file',
           'Do you want to make this edit to',
@@ -279,6 +295,7 @@ describe('PatternMatcher', () => {
     it('should match complete sequence in single data input', () => {
       const config: PatternConfig = {
         id: 'seq1',
+        title: 'Complete Sequence in Single Input',
         pattern: ['Beginning', 'Middle part', 'The end'],
         response: 'Complete sequence',
       }
@@ -295,6 +312,7 @@ describe('PatternMatcher', () => {
     it('should handle empty sequence array', () => {
       const config: PatternConfig = {
         id: 'empty',
+        title: 'Empty Sequence Test',
         pattern: [],
         response: 'Empty',
       }
@@ -307,6 +325,7 @@ describe('PatternMatcher', () => {
     it('should match partial strings within lines', () => {
       const config: PatternConfig = {
         id: 'partial',
+        title: 'Partial String Match Pattern',
         pattern: ['file', 'edit', 'Yes'],
         response: '1',
       }
@@ -326,6 +345,7 @@ describe('PatternMatcher', () => {
 
       const config: PatternConfig = {
         id: 'optimized',
+        title: 'Optimization Test Pattern',
         pattern: ['Start of sequence', 'Middle part', 'Final line'],
         response: 'Found',
       }
@@ -353,6 +373,7 @@ describe('PatternMatcher', () => {
       )
       const config: PatternConfig = {
         id: 'long-seq',
+        title: 'Long Sequence Efficiency Test',
         pattern: longSequence,
         response: 'Long sequence found',
       }
@@ -374,6 +395,7 @@ describe('PatternMatcher', () => {
     it('should prevent duplicate matches on same content', () => {
       const config: PatternConfig = {
         id: 'test-dup',
+        title: 'Deduplication Test Pattern',
         pattern: ['hello', 'world'],
         response: 'matched',
       }
@@ -392,6 +414,7 @@ describe('PatternMatcher', () => {
     it('should allow new matches when content changes', () => {
       const config: PatternConfig = {
         id: 'test-change',
+        title: 'Content Change Test Pattern',
         pattern: ['edit', 'file'],
         response: '1',
       }
@@ -411,11 +434,13 @@ describe('PatternMatcher', () => {
     it('should select bottommost match when multiple patterns match', () => {
       matcher.addPattern({
         id: 'upper',
+        title: 'Upper Match Pattern',
         pattern: ['start', 'middle'],
         response: 'upper',
       })
       matcher.addPattern({
         id: 'lower',
+        title: 'Lower Match Pattern',
         pattern: ['middle', 'end'],
         response: 'lower',
       })
@@ -430,6 +455,7 @@ describe('PatternMatcher', () => {
     it('should handle scrolled content with deduplication', () => {
       const config: PatternConfig = {
         id: 'scroll-test',
+        title: 'Scrolled Content Test',
         pattern: ['Do you want', 'Yes'],
         response: '1',
       }
@@ -452,6 +478,7 @@ describe('PatternMatcher', () => {
     it('should capture full matched content including intermediate lines', () => {
       const config: PatternConfig = {
         id: 'full-content',
+        title: 'Full Content Capture Test',
         pattern: ['first', 'last'],
         response: 'found',
       }
@@ -476,6 +503,7 @@ describe('PatternMatcher', () => {
     it('should extract data from simple placeholder', () => {
       const config: PatternConfig = {
         id: 'file-edit',
+        title: 'File Edit Placeholder Test',
         pattern: [
           'Edit file',
           'Do you want to make this edit to {{ fileName }}',
@@ -494,6 +522,7 @@ describe('PatternMatcher', () => {
     it('should extract multiple placeholders from same line', () => {
       const config: PatternConfig = {
         id: 'multiple-placeholders',
+        title: 'Multiple Placeholders Test',
         pattern: ['Process {{ action }} on {{ fileName }} at {{ timestamp }}'],
         response: 'ok',
       }
@@ -513,6 +542,7 @@ describe('PatternMatcher', () => {
     it('should extract placeholders from different lines in sequence', () => {
       const config: PatternConfig = {
         id: 'multi-line-extract',
+        title: 'Multi-line Extraction Test',
         pattern: [
           'Edit file',
           'Do you want to make this edit to {{ fileName }}',
@@ -536,6 +566,7 @@ describe('PatternMatcher', () => {
     it('should handle placeholders with spaces in variable names', () => {
       const config: PatternConfig = {
         id: 'spaced-placeholder',
+        title: 'Spaced Placeholder Name Test',
         pattern: ['File: {{ file name }}'],
         response: 'found',
       }
@@ -551,6 +582,7 @@ describe('PatternMatcher', () => {
     it('should work with patterns without placeholders', () => {
       const config: PatternConfig = {
         id: 'no-placeholders',
+        title: 'No Placeholders Test',
         pattern: ['Edit file', 'Do you want to proceed'],
         response: '1',
       }
@@ -564,6 +596,7 @@ describe('PatternMatcher', () => {
     it('should handle greedy matching for placeholders', () => {
       const config: PatternConfig = {
         id: 'greedy-match',
+        title: 'Greedy Matching Test',
         pattern: ['Path: {{ fullPath }}'],
         response: 'found',
       }
@@ -581,6 +614,7 @@ describe('PatternMatcher', () => {
     it('should handle special regex characters in non-placeholder text', () => {
       const config: PatternConfig = {
         id: 'special-chars',
+        title: 'Special Characters Test',
         pattern: ['Error: {{ message }} (code: {{ code }})'],
         response: 'error',
       }
@@ -597,6 +631,7 @@ describe('PatternMatcher', () => {
     it('should return empty extractedData when no placeholders match', () => {
       const config: PatternConfig = {
         id: 'no-match',
+        title: 'No Match Test Pattern',
         pattern: ['Expected: {{ value }}'],
         response: 'found',
       }
@@ -609,6 +644,7 @@ describe('PatternMatcher', () => {
     it('should handle empty placeholder values', () => {
       const config: PatternConfig = {
         id: 'empty-placeholder',
+        title: 'Empty Placeholder Test',
         pattern: ['Value: {{ data }}'],
         response: 'found',
       }
@@ -622,6 +658,7 @@ describe('PatternMatcher', () => {
     it('should extract file names from real Claude create file prompts', () => {
       const config: PatternConfig = {
         id: 'real-create-file',
+        title: 'Real Create File Prompt',
         pattern: ['Create file', 'Do you want to create {{ fileName }}?'],
         response: '1',
       }
@@ -637,6 +674,7 @@ describe('PatternMatcher', () => {
     it('should extract file names from real Claude edit file prompts', () => {
       const config: PatternConfig = {
         id: 'real-edit-file',
+        title: 'Real Edit File Prompt',
         pattern: [
           'Edit file',
           'Do you want to make this edit to {{ fileName }}?',
@@ -657,6 +695,7 @@ describe('PatternMatcher', () => {
     it('should extract content between two concrete patterns', () => {
       const config: PatternConfig = {
         id: 'multiline-test',
+        title: 'Multiline Content Test',
         pattern: [
           'Edit file',
           '{{ diffContent | multiline }}',
@@ -683,6 +722,7 @@ describe('PatternMatcher', () => {
     it('should extract multiple multiline sections', () => {
       const config: PatternConfig = {
         id: 'multiple-multiline',
+        title: 'Multiple Multiline Sections',
         pattern: [
           'Start',
           '{{ section1 | multiline }}',
@@ -713,6 +753,7 @@ describe('PatternMatcher', () => {
     it('should handle empty multiline sections', () => {
       const config: PatternConfig = {
         id: 'empty-multiline',
+        title: 'Empty Multiline Section',
         pattern: ['Start', '{{ empty | multiline }}', 'End'],
         response: 'ok',
       }
@@ -728,6 +769,7 @@ describe('PatternMatcher', () => {
     it('should handle multiline at beginning of pattern', () => {
       const config: PatternConfig = {
         id: 'multiline-start',
+        title: 'Multiline at Start Test',
         pattern: ['{{ header | multiline }}', 'Important line'],
         response: 'ok',
       }
@@ -745,6 +787,7 @@ describe('PatternMatcher', () => {
     it('should handle multiline at end of pattern', () => {
       const config: PatternConfig = {
         id: 'multiline-end',
+        title: 'Multiline at End Test',
         pattern: ['Important line', '{{ footer | multiline }}'],
         response: 'ok',
       }
@@ -762,6 +805,7 @@ describe('PatternMatcher', () => {
     it('should mix regular and multiline placeholders', () => {
       const config: PatternConfig = {
         id: 'mixed-placeholders',
+        title: 'Mixed Placeholder Types',
         pattern: [
           'Process {{ action }} file',
           '{{ diffContent | multiline }}',
@@ -795,6 +839,7 @@ describe('PatternMatcher', () => {
     it('should handle real-world Claude edit file prompt with diff', () => {
       const config: PatternConfig = {
         id: 'claude-edit-with-diff',
+        title: 'Claude Edit with Diff',
         pattern: [
           'Edit file',
           '{{ diffContent | multiline }}',
@@ -825,6 +870,7 @@ describe('PatternMatcher', () => {
     it('should handle multiline placeholders with ANSI codes', () => {
       const config: PatternConfig = {
         id: 'ansi-multiline',
+        title: 'ANSI Multiline Test',
         pattern: [
           'Edit file',
           '{{ diffContent | multiline }}',
@@ -849,6 +895,7 @@ describe('PatternMatcher', () => {
     it('should not match if concrete patterns are missing', () => {
       const config: PatternConfig = {
         id: 'missing-concrete',
+        title: 'Missing Concrete Pattern Test',
         pattern: ['Start pattern', '{{ content | multiline }}', 'End pattern'],
         response: 'ok',
       }
@@ -864,6 +911,7 @@ describe('PatternMatcher', () => {
     it('should handle whitespace in multiline placeholder names', () => {
       const config: PatternConfig = {
         id: 'whitespace-name',
+        title: 'Whitespace in Name Test',
         pattern: ['Begin', '{{ diff content | multiline }}', 'End'],
         response: 'ok',
       }

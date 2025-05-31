@@ -20,6 +20,7 @@ describe('Notification filtering by action type', () => {
     // Test matches with different action types
     const inputMatch: MatchResult = {
       patternId: 'edit-file-prompt',
+      patternTitle: 'Edit File',
       response: '1',
       matchedText: 'Edit file prompt',
       bufferContent: 'buffer',
@@ -28,6 +29,7 @@ describe('Notification filtering by action type', () => {
 
     const logMatch: MatchResult = {
       patternId: 'edit-file-log',
+      patternTitle: 'Edit File Log',
       response: { type: 'log', path: '/tmp/test.log' },
       matchedText: 'Edit file prompt',
       bufferContent: 'buffer',
@@ -86,6 +88,7 @@ describe('Notification filtering by action type', () => {
     const matches: MatchResult[] = [
       {
         patternId: 'edit-file-prompt',
+        patternTitle: 'Edit File',
         response: '1',
         matchedText: 'Edit file',
         bufferContent: 'buffer',
@@ -93,6 +96,7 @@ describe('Notification filtering by action type', () => {
       },
       {
         patternId: 'create-file-prompt',
+        patternTitle: 'Create File',
         response: '1',
         matchedText: 'Create file',
         bufferContent: 'buffer',
@@ -100,6 +104,7 @@ describe('Notification filtering by action type', () => {
       },
       {
         patternId: 'edit-file-log',
+        patternTitle: 'Edit File Log',
         response: { type: 'log', path: '/tmp/edit.log' },
         matchedText: 'Edit file',
         bufferContent: 'buffer',
@@ -107,6 +112,7 @@ describe('Notification filtering by action type', () => {
       },
       {
         patternId: 'create-file-log',
+        patternTitle: 'Create File Log',
         response: { type: 'log', path: '/tmp/create.log' },
         matchedText: 'Create file',
         bufferContent: 'buffer',

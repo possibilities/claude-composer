@@ -3,10 +3,11 @@ import { PatternConfig } from './pattern-matcher'
 export const patterns: PatternConfig[] = [
   {
     id: 'edit-file-prompt',
+    title: 'Edit file',
     response: '1',
     pattern: [
       'Edit file',
-      // '{{ editDiff | multiline }}',
+      '{{ editDiff | multiline }}',
       'Do you want to make this edit to {{ fileName }}?',
       '❯ 1. Yes',
       "2. Yes, and don't ask again this session (shift+tab)",
@@ -15,6 +16,7 @@ export const patterns: PatternConfig[] = [
   },
   {
     id: 'create-file-prompt',
+    title: 'Create file',
     response: '1',
     pattern: [
       'Create file',
@@ -26,11 +28,12 @@ export const patterns: PatternConfig[] = [
   },
   {
     id: 'bash-command-prompt',
+    title: 'Bash command',
     response: '1',
     pattern: [
       'Bash command',
-      // '{{ command }}',
-      // '{{ description }}',
+      '{{ command }}',
+      '{{ description }}',
       'Do you want to proceed?',
       '❯ 1. Yes',
       "2. Yes, and don't ask again for",
@@ -39,6 +42,7 @@ export const patterns: PatternConfig[] = [
   },
   {
     id: 'read-files-prompt',
+    title: 'Read files',
     response: '1',
     pattern: [
       'Read files',
