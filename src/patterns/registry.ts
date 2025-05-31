@@ -5,6 +5,12 @@ function followedByCursor(str: string): string {
   return `${str}\x1b[7m \x1b[0m`
 }
 
+const backspaceKey = '\x7f'
+
+function pressKeyNTimes(key: string, n: number): string[] {
+  return Array(n).fill(key).flat()
+}
+
 function buildTriggerPattern(
   tag: string,
   trigger: string,
@@ -12,7 +18,7 @@ function buildTriggerPattern(
 ): PatternConfig {
   return {
     response: () => [
-      ...Array(trigger.length).fill('\x7f').flat(),
+      ...pressKeyNTimes(backspaceKey, trigger.length),
       `<${tag}>\n▶ ${command}${execSync(command, {
         encoding: 'utf8',
       }).trim()}\n<\/${tag}>\n`,
