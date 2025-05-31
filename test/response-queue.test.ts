@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi, MockedFunction } from 'vitest'
 import { ResponseQueue } from '../src/core/response-queue'
-import * as pty from 'node-pty'
+import * as pty from '@homebridge/node-pty-prebuilt-multiarch'
 import { ChildProcess } from 'child_process'
 import { Writable } from 'stream'
 
-vi.mock('node-pty')
+vi.mock('@homebridge/node-pty-prebuilt-multiarch')
 
 describe('ResponseQueue', () => {
   let queue: ResponseQueue

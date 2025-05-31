@@ -104,7 +104,7 @@ describe('CLI Wrapper', () => {
 
   describe('TTY mode', () => {
     it('should handle interactive input/output in TTY mode', async () => {
-      const pty = await import('node-pty')
+      const pty = await import('@homebridge/node-pty-prebuilt-multiarch')
 
       const ptyProcess = pty.spawn(
         'tsx',
@@ -182,7 +182,7 @@ describe('CLI Wrapper', () => {
     })
 
     it('should preserve color output from child app', async () => {
-      const pty = await import('node-pty')
+      const pty = await import('@homebridge/node-pty-prebuilt-multiarch')
 
       const ptyProcess = pty.spawn(
         'tsx',
@@ -217,7 +217,7 @@ describe('CLI Wrapper', () => {
     })
 
     it('should handle terminal resize events', { timeout: 5000 }, async () => {
-      const pty = await import('node-pty')
+      const pty = await import('@homebridge/node-pty-prebuilt-multiarch')
 
       const ptyProcess = pty.spawn(
         'tsx',
@@ -367,7 +367,7 @@ describe('CLI Wrapper', () => {
 
   describe('Pattern matching integration', () => {
     it('should trigger pattern response when child outputs "Welcome to"', async () => {
-      const pty = await import('node-pty')
+      const pty = await import('@homebridge/node-pty-prebuilt-multiarch')
       const testPatternsPath = path.resolve(
         __dirname,
         '..',

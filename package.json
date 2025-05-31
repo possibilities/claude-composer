@@ -6,8 +6,8 @@
     "build": "tsup",
     "build:watch": "tsup --watch",
     "format": "prettier --write \"**/*.{js,mjs,jsx,ts,tsx,json,md,mdx,css,yml,yaml}\"",
-    "test": "vitest --reporter verbose --run",
-    "test:watch": "vitest --watch"
+    "test": "npm run build && vitest --reporter verbose --run",
+    "test:watch": "npm run build && vitest --watch"
   },
   "type": "module",
   "bin": {
@@ -22,7 +22,7 @@
     "commander": "^14.0.0",
     "js-yaml": "^4.1.0",
     "node-notifier": "^10.0.1",
-    "node-pty": "^1.0.0",
+    "@homebridge/node-pty-prebuilt-multiarch": "^0.12.0",
     "strip-ansi": "^7.1.0",
     "zod": "^3.25.39"
   },

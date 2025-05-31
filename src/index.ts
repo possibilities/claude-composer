@@ -1,5 +1,5 @@
 import * as os from 'node:os'
-import * as pty from 'node-pty'
+import * as pty from '@homebridge/node-pty-prebuilt-multiarch'
 import { spawn, ChildProcess } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
