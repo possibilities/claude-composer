@@ -42,6 +42,7 @@ export interface ParsedOptions {
   defaultToolsets?: boolean
   goOff?: boolean
   logAllPatternMatches?: boolean
+  allowBufferSnapshots?: boolean
 }
 
 const debugLog = util.debuglog('claude-composer')
@@ -238,6 +239,10 @@ export function createClaudeComposerCommand(): Command {
       '--log-all-pattern-matches',
       'Log all pattern matches to ~/.claude-composer/logs/pattern-matches-<pattern.id>.jsonl',
     )
+    .option(
+      '--allow-buffer-snapshots',
+      'Enable Ctrl+Shift+S to save terminal buffer snapshots to ~/.claude-composer/logs/',
+    )
     .allowUnknownOption()
     .argument('[args...]', 'Arguments to pass to `claude`')
 
@@ -309,6 +314,7 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--toolset')
   knownOptions.add('--no-default-toolsets')
   knownOptions.add('--log-all-pattern-matches')
+  knownOptions.add('--allow-buffer-snapshots')
 
   return knownOptions
 }
@@ -884,6 +890,9 @@ export async function runPreflight(
   }
   if (parsedOptions.logAllPatternMatches !== undefined) {
     appConfig.log_all_pattern_matches = parsedOptions.logAllPatternMatches
+  }
+  if (parsedOptions.allowBufferSnapshots !== undefined) {
+    appConfig.allow_buffer_snapshots = parsedOptions.allowBufferSnapshots
   }
 
   let toolsetArgs: string[] = []

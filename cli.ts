@@ -33,6 +33,63 @@ function getBackupDirectory(): string {
   return path.join(getConfigDirectory(), 'backups')
 }
 
+function ensureLogsDirectory(): void {
+  const logsDir = path.join(getConfigDirectory(), 'logs')
+  if (!fs.existsSync(logsDir)) {
+    fs.mkdirSync(logsDir, { recursive: true })
+  }
+}
+
+function saveTerminalSnapshot(): void {
+  if (!appConfig?.allow_buffer_snapshots || !terminal || !serializeAddon) {
+    return
+  }
+
+  try {
+    ensureLogsDirectory()
+
+    const timestamp = new Date().toISOString()
+    const timestampForFilename = timestamp.replace(/[:.]/g, '-')
+    const filename = `snapshot-${timestampForFilename}.json`
+    const logpath = path.join(getConfigDirectory(), 'logs')
+    const filepath = path.join(logpath, filename)
+
+    const terminalContent = serializeAddon.serialize()
+
+    const snapshot = {
+      patternId: 'buffer-snapshot',
+      patternTitle: 'Terminal Buffer Snapshot',
+      timestamp,
+      terminalContent,
+      strippedTerminalContent: terminalContent,
+      bufferContent: terminalContent,
+      strippedBufferContent: terminalContent,
+      metadata: {
+        cols: terminal.cols,
+        rows: terminal.rows,
+        scrollback: terminal.scrollback || 0,
+        cwd: process.cwd(),
+        projectName: path.basename(process.cwd()),
+        snapshotType: 'manual-buffer-save',
+      },
+    }
+
+    fs.writeFileSync(filepath, JSON.stringify(snapshot, null, 2))
+
+    // Show notification if enabled
+    if (appConfig.show_notifications !== false) {
+      const projectName = path.basename(process.cwd())
+      notifier.notify({
+        title: '📸 Claude Composer',
+        message: `Terminal snapshot saved\nProject: ${projectName}\nLog location: ${logpath}`,
+        wait: false,
+        sound: false,
+        timeout: 5000,
+      })
+    }
+  } catch (error) {}
+}
+
 function calculateMd5(filePath: string): string {
   const content = fs.readFileSync(filePath)
   return crypto.createHash('md5').update(content).digest('hex')
@@ -206,7 +263,6 @@ process.on('SIGHUP', () => {
 process.on('exit', cleanup)
 
 process.on('uncaughtException', error => {
-  // Silently handle uncaught exceptions to avoid interrupting child app output
   cleanup()
   process.exit(1)
 })
@@ -242,9 +298,7 @@ function handlePatternMatches(data: string): void {
 }
 
 async function main() {
-  // Handle --help and --version early to avoid preflight messages
   if (process.argv.includes('--help') || process.argv.includes('-h')) {
-    // First show the wrapper's help using the shared command setup
     const { createClaudeComposerCommand } = await import('./preflight.js')
     const program = createClaudeComposerCommand()
 
@@ -425,9 +479,7 @@ async function main() {
 
         serializeAddon = new SerializeAddon()
         terminal.loadAddon(serializeAddon)
-      } catch (error) {
-        // Silently ignore xterm initialization errors
-      }
+      } catch (error) {}
 
       ptyProcess.onData((data: string) => {
         try {
@@ -435,9 +487,7 @@ async function main() {
           if (terminal) {
             terminal.write(data)
           }
-        } catch (error) {
-          // Silently ignore xterm parsing errors
-        }
+        } catch (error) {}
       })
 
       if (terminal && serializeAddon) {
@@ -450,9 +500,7 @@ async function main() {
                 handlePatternMatches(currentScreenContent)
                 lastScreenContent = currentScreenContent
               }
-            } catch (error) {
-              // Silently ignore xterm parsing errors
-            }
+            } catch (error) {}
           }
         }, 100)
       }
@@ -469,10 +517,17 @@ async function main() {
 
     process.stdin.on('data', (data: Buffer) => {
       try {
+        if (
+          appConfig?.allow_buffer_snapshots &&
+          data.length === 1 &&
+          data[0] === 19
+        ) {
+          saveTerminalSnapshot()
+          return
+        }
+
         ptyProcess.write(data.toString())
-      } catch (error) {
-        // Silently ignore stdin write errors
-      }
+      } catch (error) {}
     })
 
     ptyProcess.onExit(exitCode => {
@@ -480,7 +535,6 @@ async function main() {
         cleanup()
         process.exit(exitCode.exitCode || 0)
       } catch (error) {
-        // Silently ignore exit errors
         process.exit(1)
       }
     })
@@ -493,9 +547,7 @@ async function main() {
         if (terminal) {
           terminal.resize(newCols, newRows)
         }
-      } catch (error) {
-        // Silently ignore resize errors
-      }
+      } catch (error) {}
     })
   } else {
     childProcess = spawn(childAppPath, childArgs, {
@@ -522,9 +574,7 @@ async function main() {
 
         serializeAddon = new SerializeAddon()
         terminal.loadAddon(serializeAddon)
-      } catch (error) {
-        // Silently ignore xterm initialization errors
-      }
+      } catch (error) {}
 
       if (stdinBuffer) {
         if (isStdinPaused) {
@@ -543,9 +593,7 @@ async function main() {
           if (terminal) {
             terminal.write(dataStr)
           }
-        } catch (error) {
-          // Silently ignore xterm parsing errors
-        }
+        } catch (error) {}
       })
 
       if (terminal && serializeAddon) {
@@ -558,9 +606,7 @@ async function main() {
                 handlePatternMatches(currentScreenContent)
                 lastScreenContent = currentScreenContent
               }
-            } catch (error) {
-              // Silently ignore xterm parsing errors
-            }
+            } catch (error) {}
           }
         }, 100)
       }
@@ -578,9 +624,7 @@ async function main() {
       childProcess.stdout!.on('data', (data: Buffer) => {
         try {
           process.stdout.write(data)
-        } catch (error) {
-          // Silently ignore stdout write errors
-        }
+        } catch (error) {}
       })
     }
 
@@ -591,7 +635,6 @@ async function main() {
         cleanup()
         process.exit(code || 0)
       } catch (error) {
-        // Silently ignore exit errors
         process.exit(1)
       }
     })
