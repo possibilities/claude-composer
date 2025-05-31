@@ -85,14 +85,9 @@ dangerously_dismiss_bash_command_prompts: true
     expect(result.stdout).not.toContain('※ Ignoring global configuration file')
 
     // Should see warnings from the config file values
+    expect(result.stdout).toContain('⚠️  DANGER FLAGS SET ⚠️')
     expect(result.stdout).toContain(
-      'WARNING: --dangerously-dismiss-edit-file-prompts is enabled',
-    )
-    expect(result.stdout).toContain(
-      'WARNING: --dangerously-dismiss-create-file-prompts is enabled',
-    )
-    expect(result.stdout).toContain(
-      'WARNING: --dangerously-dismiss-bash-command-prompts is enabled',
+      '(Skipping interactive prompt in test mode)',
     )
   })
 

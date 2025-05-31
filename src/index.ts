@@ -219,6 +219,12 @@ async function initializePatterns(): Promise<boolean> {
     if (pattern.id === 'add-tree' && !appConfig.allow_adding_project_tree) {
       return
     }
+    if (
+      pattern.id === 'add-changes' &&
+      !appConfig.allow_adding_project_changes
+    ) {
+      return
+    }
 
     try {
       patternMatcher.addPattern(pattern)

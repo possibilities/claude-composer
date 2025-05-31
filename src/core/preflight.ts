@@ -21,7 +21,7 @@ import {
   displayDangerousWarnings,
 } from '../safety/checker.js'
 import { parseCommandLineArgs, buildKnownOptionsSet } from '../cli/parser.js'
-import { log, warn } from '../utils/logging.js'
+import { log, warn, setQuietMode, clearScreen } from '../utils/logging.js'
 
 export async function runPreflight(
   argv: string[],
@@ -48,6 +48,11 @@ export async function runPreflight(
   } = parseCommandLineArgs(argv)
 
   const knownOptions = buildKnownOptionsSet(program)
+
+  // Set quiet mode based on parsed options
+  if (parsedOptions.quiet) {
+    setQuietMode(true)
+  }
 
   const isHelp = helpRequested
   const isVersion = versionRequested
@@ -121,6 +126,10 @@ export async function runPreflight(
   }
   if (parsedOptions.allowAddingProjectTree !== undefined) {
     appConfig.allow_adding_project_tree = parsedOptions.allowAddingProjectTree
+  }
+  if (parsedOptions.allowAddingProjectChanges !== undefined) {
+    appConfig.allow_adding_project_changes =
+      parsedOptions.allowAddingProjectChanges
   }
 
   let toolsetArgs: string[] = []
@@ -329,6 +338,11 @@ export async function runPreflight(
   displayDangerousWarnings(appConfig)
 
   log('※ Getting ready to launch Claude CLI')
+
+  // Clear screen if quiet mode is enabled
+  if (parsedOptions.quiet) {
+    clearScreen()
+  }
 
   return {
     appConfig,

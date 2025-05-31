@@ -31,6 +31,8 @@ export interface ParsedOptions {
   logAllPatternMatches?: boolean
   allowBufferSnapshots?: boolean
   allowAddingProjectTree?: boolean
+  allowAddingProjectChanges?: boolean
+  quiet?: boolean
 }
 
 // Re-export for convenience

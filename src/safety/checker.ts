@@ -7,6 +7,7 @@ import type {
   ParsedOptions,
 } from '../types/preflight.js'
 import { askYesNo } from '../cli/prompts.js'
+import { log, warn } from '../utils/logging.js'
 
 export function checkGitInstalled(): void {
   try {
@@ -45,7 +46,7 @@ export async function checkVersionControl(
 
   if (!fs.existsSync(gitDir)) {
     if (!allowWithoutVersionControl) {
-      console.error('※ Running in project without version control')
+      warn('※ Running in project without version control')
       const proceed = await askYesNo(
         '※ Do you want to continue?',
         true,
@@ -75,7 +76,7 @@ export async function checkDirtyDirectory(
 
     if (gitStatus !== '') {
       if (!allowInDirtyDirectory) {
-        console.error('※ Running in directory with uncommitted changes')
+        warn('※ Running in directory with uncommitted changes')
         const proceed = await askYesNo(
           '※ Do you want to continue?',
           true,
@@ -91,7 +92,7 @@ export async function checkDirtyDirectory(
 
     return false
   } catch (error) {
-    console.warn('※ Could not check git status')
+    warn('※ Could not check git status')
     return false
   }
 }
@@ -172,11 +173,11 @@ export async function handleGoOffMode(
   )
 
   if (!proceed) {
-    console.log('※ Good choice. Exiting safely.')
+    log('※ Good choice. Exiting safely.')
     return false
   }
 
-  console.warn('※ YOLO mode activated - All safety prompts disabled!')
+  warn('※ YOLO mode activated - All safety prompts disabled!')
   return true
 }
 
@@ -269,37 +270,25 @@ export async function handleDangerFlagsWarning(
   )
 
   if (!proceed) {
-    console.log('※ Wise choice. Exiting safely.')
+    log('※ Wise choice. Exiting safely.')
     return false
   }
 
-  console.warn('※ Continuing with dangerous flag settings active!')
+  warn('※ Continuing with dangerous flag settings active!')
   return true
 }
 
 export function displayDangerousWarnings(appConfig: AppConfig): void {
   if (appConfig.dangerously_dismiss_edit_file_prompts) {
-    console.log(
-      '\x1b[33m⚠️  WARNING: --dangerously-dismiss-edit-file-prompts is enabled\x1b[0m',
-    )
-    console.log(
-      '\x1b[33m   All file edit prompts will be automatically dismissed!\x1b[0m',
-    )
+    warn('⚠️  WARNING: --dangerously-dismiss-edit-file-prompts is enabled')
+    warn('   All file edit prompts will be automatically dismissed!')
   }
   if (appConfig.dangerously_dismiss_create_file_prompts) {
-    console.log(
-      '\x1b[33m⚠️  WARNING: --dangerously-dismiss-create-file-prompts is enabled\x1b[0m',
-    )
-    console.log(
-      '\x1b[33m   All file creation prompts will be automatically dismissed!\x1b[0m',
-    )
+    warn('⚠️  WARNING: --dangerously-dismiss-create-file-prompts is enabled')
+    warn('   All file creation prompts will be automatically dismissed!')
   }
   if (appConfig.dangerously_dismiss_bash_command_prompts) {
-    console.log(
-      '\x1b[33m⚠️  WARNING: --dangerously-dismiss-bash-command-prompts is enabled\x1b[0m',
-    )
-    console.log(
-      '\x1b[33m   All bash command prompts will be automatically dismissed!\x1b[0m',
-    )
+    warn('⚠️  WARNING: --dangerously-dismiss-bash-command-prompts is enabled')
+    warn('   All bash command prompts will be automatically dismissed!')
   }
 }

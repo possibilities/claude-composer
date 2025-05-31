@@ -76,6 +76,11 @@ export function createClaudeComposerCommand(): Command {
       '--allow-adding-project-tree',
       'Enable the add-tree pattern for project tree display',
     )
+    .option(
+      '--allow-adding-project-changes',
+      'Enable the add-changes pattern for git diff display',
+    )
+    .option('--quiet', 'Suppress preflight messages')
     .allowUnknownOption()
     .argument('[args...]', 'Arguments to pass to `claude`')
 
@@ -149,6 +154,8 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--log-all-pattern-matches')
   knownOptions.add('--allow-buffer-snapshots')
   knownOptions.add('--allow-adding-project-tree')
+  knownOptions.add('--allow-adding-project-changes')
+  knownOptions.add('--quiet')
 
   return knownOptions
 }

@@ -1,5 +1,6 @@
 import { spawn, ChildProcess } from 'child_process'
 import * as path from 'path'
+import { getTestEnv } from './test-setup'
 
 export interface CliResult {
   stdout: string
@@ -48,6 +49,7 @@ export function runCli(options: RunCliOptions = {}): Promise<CliResult> {
       cwd,
       env: {
         ...process.env,
+        ...getTestEnv(),
         CLAUDE_APP_PATH: mockAppPath,
         ...env,
       },
@@ -110,6 +112,7 @@ export function runCliInteractive(
       cwd,
       env: {
         ...process.env,
+        ...getTestEnv(),
         CLAUDE_APP_PATH: mockAppPath,
         ...env,
       },
@@ -195,6 +198,7 @@ export function runCliWithPnpm(
       cwd,
       env: {
         ...process.env,
+        ...getTestEnv(),
         CLAUDE_APP_PATH: mockAppPath,
         ...env,
       },

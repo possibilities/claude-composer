@@ -5,31 +5,32 @@ function followedByCursor(str: string): string {
   return `${str}\x1b[7m \x1b[0m`
 }
 
+function buildCommandResponse(
+  tag: string,
+  trigger: string,
+  command: string,
+): string[] {
+  return [
+    ...Array(trigger.length).fill('\x7f').flat(),
+    `<${tag}>\n▶ ${command}${execSync(command, {
+      encoding: 'utf8',
+    }).trim()}\n<\/${tag}>\n`,
+  ]
+}
+
 export const patterns: PatternConfig[] = [
   {
     id: 'add-tree',
     title: 'Add tree',
-    response: () => {
-      return [
-        ...Array('~tree '.length).fill('\x7f').flat(),
-        `<ProjectTree>\n▶ tree --gitignore${execSync('tree --gitignore', {
-          encoding: 'utf8',
-        }).trim()}\n<\/ProjectTree>\n`,
-      ]
-    },
+    response: () =>
+      buildCommandResponse('ProjectTree', '~tree ', 'tree --gitignore'),
     pattern: [followedByCursor('~tree ')],
   },
   {
     id: 'add-changes',
     title: 'Add changes',
-    response: () => {
-      return [
-        ...Array('~changes '.length).fill('\x7f').flat(),
-        `<ProjectChanges>\n▶ git diff HEAD${execSync('git diff HEAD', {
-          encoding: 'utf8',
-        }).trim()}\n<\/ProjectChanges>\n`,
-      ]
-    },
+    response: () =>
+      buildCommandResponse('ProjectChanges', '~changes ', 'git diff HEAD'),
     pattern: [followedByCursor('~changes ')],
   },
   {
