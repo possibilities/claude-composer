@@ -9,6 +9,7 @@ import notifier from 'node-notifier'
 import clipboardy from 'clipboardy'
 import { PatternMatcher, MatchResult } from './patterns/matcher'
 import { ResponseQueue } from './core/response-queue'
+import { patterns } from './patterns/registry'
 import { type AppConfig } from './config/schemas.js'
 import { PassThrough } from 'stream'
 import {
@@ -174,14 +175,21 @@ function createBackup(md5: string): void {
 export { appConfig }
 
 async function initializePatterns(): Promise<boolean> {
-  const patternsPath = process.env.CLAUDE_PATTERNS_PATH || './patterns/registry'
-  // Adjust path if it's a relative path and we're in src/
-  const adjustedPatternsPath =
-    patternsPath.startsWith('./') && !patternsPath.includes('patterns/registry')
-      ? '../' + patternsPath.slice(2)
-      : patternsPath
-  const { patterns } = await import(adjustedPatternsPath)
+  let patternsToUse = patterns
 
+  // Support custom patterns path for testing
+  if (process.env.CLAUDE_PATTERNS_PATH) {
+    try {
+      const customPatterns = await import(process.env.CLAUDE_PATTERNS_PATH)
+      patternsToUse = customPatterns.patterns
+    } catch (error) {
+      console.warn(
+        `Failed to load custom patterns from ${process.env.CLAUDE_PATTERNS_PATH}:`,
+        error,
+      )
+      // Fall back to default patterns
+    }
+  }
   patternMatcher = new PatternMatcher(
     appConfig?.log_all_pattern_matches || false,
   )
@@ -189,7 +197,7 @@ async function initializePatterns(): Promise<boolean> {
 
   let hasActivePatterns = false
 
-  patterns.forEach(pattern => {
+  patternsToUse.forEach(pattern => {
     if (
       pattern.id === 'edit-file-prompt' &&
       !appConfig.dangerously_dismiss_edit_file_prompts
@@ -487,8 +495,16 @@ export async function main() {
 
     if (hasActivePatterns) {
       try {
-        const { Terminal } = await import('@xterm/xterm')
-        const { SerializeAddon } = await import('@xterm/addon-serialize')
+        const xtermModule = await import('@xterm/xterm')
+        const Terminal =
+          xtermModule.Terminal ||
+          xtermModule.default?.Terminal ||
+          xtermModule.default
+        const addonModule = await import('@xterm/addon-serialize')
+        const SerializeAddon =
+          addonModule.SerializeAddon ||
+          addonModule.default?.SerializeAddon ||
+          addonModule.default
 
         terminal = new Terminal({
           cols: cols,
@@ -582,8 +598,16 @@ export async function main() {
 
     if (hasActivePatterns) {
       try {
-        const { Terminal } = await import('@xterm/xterm')
-        const { SerializeAddon } = await import('@xterm/addon-serialize')
+        const xtermModule = await import('@xterm/xterm')
+        const Terminal =
+          xtermModule.Terminal ||
+          xtermModule.default?.Terminal ||
+          xtermModule.default
+        const addonModule = await import('@xterm/addon-serialize')
+        const SerializeAddon =
+          addonModule.SerializeAddon ||
+          addonModule.default?.SerializeAddon ||
+          addonModule.default
 
         terminal = new Terminal({
           cols: 80,

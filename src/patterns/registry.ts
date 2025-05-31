@@ -1,4 +1,4 @@
-import { PatternConfig } from './src/patterns/matcher'
+import { PatternConfig } from './matcher'
 import { execSync } from 'child_process'
 
 export const patterns: PatternConfig[] = [

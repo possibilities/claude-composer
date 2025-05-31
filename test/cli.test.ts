@@ -4,7 +4,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
 
-const cliPath = path.join(__dirname, '..', 'src', 'index.ts')
+const cliPath = path.join(__dirname, '..', 'dist', 'cli.js')
 const mockAppPath = path.join(__dirname, 'mock-child-app.ts')
 
 describe('CLI Wrapper', () => {
@@ -30,7 +30,7 @@ describe('CLI Wrapper', () => {
     process: ChildProcess
   }> {
     return new Promise(resolve => {
-      const child = spawn('tsx', [cliPath, ...args], {
+      const child = spawn('node', [cliPath, ...args], {
         env: { ...process.env, ...options.env },
         ...options,
       })
@@ -368,10 +368,15 @@ describe('CLI Wrapper', () => {
   describe('Pattern matching integration', () => {
     it('should trigger pattern response when child outputs "Welcome to"', async () => {
       const pty = await import('node-pty')
-      const testPatternsPath = path.join(__dirname, 'test-patterns')
+      const testPatternsPath = path.resolve(
+        __dirname,
+        '..',
+        'dist',
+        'test-patterns.js',
+      )
 
       const ptyProcess = pty.spawn(
-        'tsx',
+        'node',
         [
           cliPath,
           '--dangerously-allow-without-version-control',
