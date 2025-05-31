@@ -37,7 +37,7 @@ export interface ParsedOptions {
   dangerouslyDismissBashCommandPrompts?: boolean
   dangerouslyAllowInDirtyDirectory?: boolean
   dangerouslyAllowWithoutVersionControl?: boolean
-  toolset?: string
+  toolset?: string[]
   ignoreGlobalConfig?: boolean
   defaultToolsets?: boolean
   goOff?: boolean
@@ -222,8 +222,8 @@ export function createClaudeComposerCommand(): Command {
       'Do not allow running in a directory not under version control',
     )
     .option(
-      '--toolset <name>',
-      'Use a predefined toolset from ~/.claude-composer/toolsets/ directory',
+      '--toolset <name...>',
+      'Use predefined toolsets from ~/.claude-composer/toolsets/ directory (can be specified multiple times)',
     )
     .option(
       '--ignore-global-config',
@@ -683,6 +683,15 @@ export async function mergeToolsets(
     }
   }
 
+  // Deduplicate arrays
+  if (mergedConfig.allowed) {
+    mergedConfig.allowed = [...new Set(mergedConfig.allowed)]
+  }
+
+  if (mergedConfig.disallowed) {
+    mergedConfig.disallowed = [...new Set(mergedConfig.disallowed)]
+  }
+
   return mergedConfig
 }
 
@@ -784,8 +793,8 @@ export async function runPreflight(
   let tempMcpConfigPath: string | undefined
 
   let toolsetsToLoad: string[] = []
-  if (parsedOptions.toolset) {
-    toolsetsToLoad = [parsedOptions.toolset]
+  if (parsedOptions.toolset && parsedOptions.toolset.length > 0) {
+    toolsetsToLoad = parsedOptions.toolset
   } else if (
     appConfig.toolsets &&
     appConfig.toolsets.length > 0 &&

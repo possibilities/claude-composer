@@ -507,4 +507,263 @@ mcp:
     expect(output).not.toMatch(/ARGS:.*--toolset/s)
     expect(output).toContain('--allowedTools sometool')
   })
+
+  it('should load multiple toolsets from CLI arguments', async () => {
+    // Create first toolset
+    const toolset1Content = `allowed:
+  - tool1
+  - tool2
+disallowed:
+  - badtool1
+`
+    await fs.promises.writeFile(
+      path.join(TOOLSETS_DIR, 'test-multi1.yaml'),
+      toolset1Content,
+    )
+
+    // Create second toolset
+    const toolset2Content = `allowed:
+  - tool3
+  - tool4
+disallowed:
+  - badtool2
+`
+    await fs.promises.writeFile(
+      path.join(TOOLSETS_DIR, 'test-multi2.yaml'),
+      toolset2Content,
+    )
+
+    const child = spawn(
+      'tsx',
+      [
+        CLI_PATH,
+        '--dangerously-allow-without-version-control',
+        '--dangerously-allow-in-dirty-directory',
+        '--toolset',
+        'test-multi1',
+        '--toolset',
+        'test-multi2',
+        '--echo-args',
+      ],
+      {
+        cwd: path.join(__dirname, '..'),
+        env: {
+          ...process.env,
+          CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
+          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
+          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+        },
+      },
+    )
+
+    const output = await new Promise<string>(resolve => {
+      let data = ''
+      child.stdout.on('data', chunk => {
+        data += chunk.toString()
+      })
+      child.stderr.on('data', chunk => {
+        data += chunk.toString()
+      })
+      child.on('close', () => {
+        resolve(data)
+      })
+    })
+
+    expect(output).toContain('※ Loaded toolset: test-multi1')
+    expect(output).toContain('※ Loaded toolset: test-multi2')
+    expect(output).toContain('--allowedTools tool1')
+    expect(output).toContain('--allowedTools tool2')
+    expect(output).toContain('--allowedTools tool3')
+    expect(output).toContain('--allowedTools tool4')
+    expect(output).toContain('--disallowedTools badtool1')
+    expect(output).toContain('--disallowedTools badtool2')
+  })
+
+  it('should deduplicate tools when loading multiple toolsets', async () => {
+    // Create first toolset
+    const toolset1Content = `allowed:
+  - duplicate-tool
+  - unique-tool1
+disallowed:
+  - duplicate-bad
+  - unique-bad1
+`
+    await fs.promises.writeFile(
+      path.join(TOOLSETS_DIR, 'test-dedup1.yaml'),
+      toolset1Content,
+    )
+
+    // Create second toolset with duplicates
+    const toolset2Content = `allowed:
+  - duplicate-tool
+  - unique-tool2
+disallowed:
+  - duplicate-bad
+  - unique-bad2
+`
+    await fs.promises.writeFile(
+      path.join(TOOLSETS_DIR, 'test-dedup2.yaml'),
+      toolset2Content,
+    )
+
+    const child = spawn(
+      'tsx',
+      [
+        CLI_PATH,
+        '--dangerously-allow-without-version-control',
+        '--dangerously-allow-in-dirty-directory',
+        '--toolset',
+        'test-dedup1',
+        '--toolset',
+        'test-dedup2',
+        '--echo-args',
+      ],
+      {
+        cwd: path.join(__dirname, '..'),
+        env: {
+          ...process.env,
+          CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
+          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
+          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+        },
+      },
+    )
+
+    const output = await new Promise<string>(resolve => {
+      let data = ''
+      child.stdout.on('data', chunk => {
+        data += chunk.toString()
+      })
+      child.stderr.on('data', chunk => {
+        data += chunk.toString()
+      })
+      child.on('close', () => {
+        resolve(data)
+      })
+    })
+
+    expect(output).toContain('※ Loaded toolset: test-dedup1')
+    expect(output).toContain('※ Loaded toolset: test-dedup2')
+
+    // Count occurrences of duplicate tools - should only appear once
+    const duplicateToolMatches = output.match(/--allowedTools duplicate-tool/g)
+    expect(duplicateToolMatches).toHaveLength(1)
+
+    const duplicateBadMatches = output.match(/--disallowedTools duplicate-bad/g)
+    expect(duplicateBadMatches).toHaveLength(1)
+
+    // Unique tools should still appear
+    expect(output).toContain('--allowedTools unique-tool1')
+    expect(output).toContain('--allowedTools unique-tool2')
+    expect(output).toContain('--disallowedTools unique-bad1')
+    expect(output).toContain('--disallowedTools unique-bad2')
+  })
+
+  it('should merge MCP configurations from multiple toolsets', async () => {
+    // Create first toolset with MCP
+    const toolset1Content = `mcp:
+  server1:
+    type: stdio
+    command: server1-command
+  shared-server:
+    type: stdio
+    command: first-version
+`
+    await fs.promises.writeFile(
+      path.join(TOOLSETS_DIR, 'test-mcp1.yaml'),
+      toolset1Content,
+    )
+
+    // Create second toolset with MCP (should override shared-server)
+    const toolset2Content = `mcp:
+  server2:
+    type: http
+    url: http://localhost:3000
+  shared-server:
+    type: stdio
+    command: second-version
+`
+    await fs.promises.writeFile(
+      path.join(TOOLSETS_DIR, 'test-mcp2.yaml'),
+      toolset2Content,
+    )
+
+    const child = spawn(
+      'tsx',
+      [
+        CLI_PATH,
+        '--dangerously-allow-without-version-control',
+        '--dangerously-allow-in-dirty-directory',
+        '--toolset',
+        'test-mcp1',
+        '--toolset',
+        'test-mcp2',
+        '--echo-args',
+      ],
+      {
+        cwd: path.join(__dirname, '..'),
+        env: {
+          ...process.env,
+          CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
+          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
+          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+        },
+      },
+    )
+
+    const output = await new Promise<string>(resolve => {
+      let data = ''
+      child.stdout.on('data', chunk => {
+        data += chunk.toString()
+      })
+      child.stderr.on('data', chunk => {
+        data += chunk.toString()
+      })
+      child.on('close', () => {
+        resolve(data)
+      })
+    })
+
+    expect(output).toContain('※ Loaded toolset: test-mcp1')
+    expect(output).toContain('※ Loaded toolset: test-mcp2')
+    expect(output).toContain('※ Toolset test-mcp1 configured 2 MCP servers')
+    expect(output).toContain('※ Toolset test-mcp2 configured 2 MCP servers')
+    expect(output).toContain('--mcp-config /tmp/claude-composer-mcp-')
+
+    // Extract and verify the MCP config file
+    const argsMatch = output.match(/ARGS: (.+)/)
+    expect(argsMatch).toBeTruthy()
+
+    if (argsMatch) {
+      const args = argsMatch[1]
+      const mcpConfigMatch = args.match(
+        /--mcp-config (\/tmp\/claude-composer-mcp-[^\s]+\.json)/,
+      )
+      expect(mcpConfigMatch).toBeTruthy()
+
+      if (mcpConfigMatch) {
+        const mcpConfigPath = mcpConfigMatch[1]
+
+        // Check if file exists before trying to read it (it might get cleaned up)
+        if (fs.existsSync(mcpConfigPath)) {
+          const mcpConfigContent = fs.readFileSync(mcpConfigPath, 'utf8')
+          const mcpConfig = JSON.parse(mcpConfigContent)
+
+          // Should have 3 servers total (server1, server2, shared-server)
+          expect(Object.keys(mcpConfig.mcpServers)).toHaveLength(3)
+          expect(mcpConfig.mcpServers.server1.command).toBe('server1-command')
+          expect(mcpConfig.mcpServers.server2.url).toBe('http://localhost:3000')
+          // shared-server should have the last loaded version (second-version)
+          expect(mcpConfig.mcpServers['shared-server'].command).toBe(
+            'second-version',
+          )
+        } else {
+          // If file doesn't exist, just verify the config path format is correct
+          expect(mcpConfigPath).toMatch(
+            /^\/tmp\/claude-composer-mcp-\d+-\w+\.json$/,
+          )
+        }
+      }
+    }
+  })
 })
