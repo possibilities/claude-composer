@@ -6,7 +6,7 @@ export const patterns: PatternConfig[] = [
   {
     id: 'add-tree',
     title: 'Add tree',
-    response: '\b\b\b\b\b\b\b\b\n<ProjectTree>\n</ProjectTree>\n\n',
+    response: () => '\b\b\b\b\b\b\b\b\n<ProjectTree>\n</ProjectTree>\n\n',
     pattern: ['~~tree~~ \x1b[7m \x1b[0m'],
   },
   {

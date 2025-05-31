@@ -7,7 +7,7 @@ export interface PatternConfig {
   id: string
   title: string
   pattern: string[]
-  response: string
+  response: string | (() => string)
 }
 
 export interface MatchResult {
@@ -62,10 +62,15 @@ export class PatternMatcher {
       const sequenceMatch = this.matchSequence(contentToMatch, pattern.sequence)
 
       if (sequenceMatch) {
+        const response =
+          typeof pattern.config.response === 'function'
+            ? pattern.config.response()
+            : pattern.config.response
+
         allMatches.push({
           patternId: id,
           patternTitle: pattern.config.title || `Unknown Pattern (${id})`,
-          response: pattern.config.response,
+          response,
           matchedText: sequenceMatch.text,
           fullMatchedContent: sequenceMatch.fullMatchedContent,
           firstLineNumber: sequenceMatch.firstLineNumber,
