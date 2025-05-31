@@ -14,6 +14,7 @@
     "claude-composer": "./dist/cli.js"
   },
   "dependencies": {
+    "@homebridge/node-pty-prebuilt-multiarch": "^0.12.0",
     "@types/js-yaml": "^4.0.9",
     "@xterm/addon-serialize": "^0.13.0",
     "@xterm/headless": "^5.5.0",
@@ -22,14 +23,13 @@
     "commander": "^14.0.0",
     "js-yaml": "^4.1.0",
     "node-notifier": "^10.0.1",
-    "@homebridge/node-pty-prebuilt-multiarch": "^0.12.0",
     "strip-ansi": "^7.1.0",
     "zod": "^3.25.39"
   },
   "devDependencies": {
     "@types/node": "^22.15.23",
     "prettier": "^3.5.3",
-    "tsup": "^8.5.0",
+    "tsup": "8.3.0",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "vitest": "^3.1.4"
