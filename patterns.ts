@@ -1,6 +1,14 @@
 import { PatternConfig } from './pattern-matcher'
 
+// ""
+
 export const patterns: PatternConfig[] = [
+  {
+    id: 'add-tree',
+    title: 'Add tree',
+    response: '',
+    pattern: ['~~tree~~ \x1b[7m \x1b[0m'],
+  },
   {
     id: 'edit-file-prompt',
     title: 'Edit file',
@@ -32,12 +40,11 @@ export const patterns: PatternConfig[] = [
     response: '1',
     pattern: [
       'Bash command',
-      '{{ command }}',
-      '{{ description }}',
+      // '{{ command }}',
+      // '{{ description }}',
       'Do you want to proceed?',
       '❯ 1. Yes',
-      "2. Yes, and don't ask again for",
-      '3. No, and tell Claude what to do differently (esc)',
+      'No, and tell Claude what to do differently (esc)',
     ],
   },
   {

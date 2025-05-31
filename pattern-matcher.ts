@@ -53,10 +53,13 @@ export class PatternMatcher {
     const allMatches: MatchResult[] = []
 
     for (const [id, pattern] of this.patterns) {
-      const sequenceMatch = this.matchSequence(
-        strippedContent,
-        pattern.sequence,
+      // Check if pattern contains ANSI sequences - if so, match against raw content
+      const hasAnsiPattern = pattern.sequence.some(p =>
+        this.containsAnsiSequence(p),
       )
+      const contentToMatch = hasAnsiPattern ? content : strippedContent
+
+      const sequenceMatch = this.matchSequence(contentToMatch, pattern.sequence)
 
       if (sequenceMatch) {
         allMatches.push({
@@ -104,6 +107,11 @@ export class PatternMatcher {
       sequence: config.pattern,
       config,
     }
+  }
+
+  private containsAnsiSequence(text: string): boolean {
+    // Check for ANSI escape sequences like \x1b[...m
+    return /\x1b\[[0-9;]*m/.test(text)
   }
 
   private matchSequence(
