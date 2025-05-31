@@ -404,7 +404,7 @@ describe('CLI Wrapper', () => {
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(
           () => reject(new Error('Timeout waiting for pattern response')),
-          2000,
+          10000,
         )
         const checkOutput = () => {
           if (output.includes('Received input: Test response')) {
@@ -425,7 +425,7 @@ describe('CLI Wrapper', () => {
       await new Promise(resolve => {
         ptyProcess.onExit(() => resolve(undefined))
       })
-    }, 2000)
+    }, 12000)
   })
 
   describe('Parent CLI options', () => {

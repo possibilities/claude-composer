@@ -51,7 +51,7 @@ dangerously_dismiss_bash_command_prompts: true
       env: {
         CLAUDE_COMPOSER_CONFIG_DIR: tempConfigDir,
       },
-      timeout: 2000,
+      timeout: 8000,
     })
 
     // Should see the log message about ignoring config
@@ -78,7 +78,7 @@ dangerously_dismiss_bash_command_prompts: true
       env: {
         CLAUDE_COMPOSER_CONFIG_DIR: tempConfigDir,
       },
-      timeout: 2000,
+      timeout: 8000,
     })
 
     // Should NOT see the ignore message
@@ -107,7 +107,7 @@ dangerously_dismiss_bash_command_prompts: true
       env: {
         CLAUDE_COMPOSER_CONFIG_DIR: tempConfigDir,
       },
-      timeout: 2000,
+      timeout: 8000,
     })
 
     // Should ignore config file

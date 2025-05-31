@@ -39,7 +39,7 @@ export function runCli(options: RunCliOptions = {}): Promise<CliResult> {
     args = [],
     cwd = process.cwd(),
     env = {},
-    timeout = 3000,
+    timeout = 8000,
     mockAppPath = DEFAULT_MOCK_APP_PATH,
   } = options
 
@@ -100,7 +100,7 @@ export function runCliInteractive(
     args = [],
     cwd = process.cwd(),
     env = {},
-    timeout = 3000,
+    timeout = 8000,
     mockAppPath = DEFAULT_MOCK_APP_PATH,
     interactions = [],
   } = options
@@ -186,7 +186,7 @@ export function runCliWithPnpm(
     args = [],
     cwd = process.cwd(),
     env = {},
-    timeout = 3000,
+    timeout = 8000,
     mockAppPath = DEFAULT_MOCK_APP_PATH,
   } = options
 

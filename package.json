@@ -24,13 +24,13 @@
     "node-notifier": "^10.0.1",
     "node-pty": "^1.0.0",
     "strip-ansi": "^7.1.0",
-    "tsx": "^4.7.0",
     "zod": "^3.25.39"
   },
   "devDependencies": {
     "@types/node": "^22.15.23",
     "prettier": "^3.5.3",
     "tsup": "^8.5.0",
+    "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "vitest": "^3.1.4"
   }
