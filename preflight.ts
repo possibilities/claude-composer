@@ -43,6 +43,7 @@ export interface ParsedOptions {
   goOff?: boolean
   logAllPatternMatches?: boolean
   allowBufferSnapshots?: boolean
+  allowAddingProjectTree?: boolean
 }
 
 const debugLog = util.debuglog('claude-composer')
@@ -243,6 +244,10 @@ export function createClaudeComposerCommand(): Command {
       '--allow-buffer-snapshots',
       'Enable Ctrl+Shift+S to save terminal buffer snapshots to ~/.claude-composer/logs/',
     )
+    .option(
+      '--allow-adding-project-tree',
+      'Enable the add-tree pattern for project tree display',
+    )
     .allowUnknownOption()
     .argument('[args...]', 'Arguments to pass to `claude`')
 
@@ -315,6 +320,7 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--no-default-toolsets')
   knownOptions.add('--log-all-pattern-matches')
   knownOptions.add('--allow-buffer-snapshots')
+  knownOptions.add('--allow-adding-project-tree')
 
   return knownOptions
 }
@@ -893,6 +899,9 @@ export async function runPreflight(
   }
   if (parsedOptions.allowBufferSnapshots !== undefined) {
     appConfig.allow_buffer_snapshots = parsedOptions.allowBufferSnapshots
+  }
+  if (parsedOptions.allowAddingProjectTree !== undefined) {
+    appConfig.allow_adding_project_tree = parsedOptions.allowAddingProjectTree
   }
 
   let toolsetArgs: string[] = []

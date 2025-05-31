@@ -11,6 +11,7 @@ export const appConfigSchema = z
     toolsets: z.array(z.string()).optional(),
     log_all_pattern_matches: z.boolean().optional(),
     allow_buffer_snapshots: z.boolean().optional(),
+    allow_adding_project_tree: z.boolean().optional(),
   })
   .strict()
 

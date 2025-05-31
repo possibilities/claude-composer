@@ -7,13 +7,13 @@ export interface PatternConfig {
   id: string
   title: string
   pattern: string[]
-  response: string | (() => string)
+  response: string | string[] | (() => string | string[])
 }
 
 export interface MatchResult {
   patternId: string
   patternTitle: string
-  response: string
+  response: string | string[]
   matchedText: string
   fullMatchedContent: string
   firstLineNumber: number

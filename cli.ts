@@ -200,6 +200,9 @@ async function initializePatterns(): Promise<boolean> {
     ) {
       return
     }
+    if (pattern.id === 'add-tree' && !appConfig.allow_adding_project_tree) {
+      return
+    }
 
     try {
       patternMatcher.addPattern(pattern)

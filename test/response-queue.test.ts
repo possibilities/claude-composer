@@ -52,33 +52,33 @@ describe('ResponseQueue', () => {
       expect(queue.isProcessing()).toBe(false)
     })
 
-    it('should set pty target', () => {
+    it('should set pty target', async () => {
       queue.setTargets(mockPty, undefined)
       queue.enqueue('test')
-      vi.runAllTimers()
+      await vi.runAllTimersAsync()
       expect(mockPty.write).toHaveBeenCalledWith('test')
     })
 
-    it('should set child process target', () => {
+    it('should set child process target', async () => {
       queue.setTargets(undefined, mockChildProcess)
       queue.enqueue('test')
-      vi.runAllTimers()
+      await vi.runAllTimersAsync()
       expect(mockStdin.write).toHaveBeenCalledWith('test')
     })
 
-    it('should update targets', () => {
+    it('should update targets', async () => {
       queue.setTargets(mockPty, undefined)
       queue.setTargets(undefined, mockChildProcess)
       queue.enqueue('test')
-      vi.runAllTimers()
+      await vi.runAllTimersAsync()
       expect(mockPty.write).not.toHaveBeenCalled()
       expect(mockStdin.write).toHaveBeenCalledWith('test')
     })
 
-    it('should handle initialization with targets', () => {
+    it('should handle initialization with targets', async () => {
       const queueWithTargets = new ResponseQueue(mockPty, mockChildProcess)
       queueWithTargets.enqueue('test')
-      vi.runAllTimers()
+      await vi.runAllTimersAsync()
       expect(mockPty.write).toHaveBeenCalledWith('test')
     })
   })
