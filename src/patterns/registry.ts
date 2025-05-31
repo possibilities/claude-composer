@@ -1,25 +1,36 @@
 import { PatternConfig } from './matcher'
 import { execSync } from 'child_process'
 
+function followedByCursor(str: string): string {
+  return `${str}\x1b[7m \x1b[0m`
+}
+
 export const patterns: PatternConfig[] = [
   {
     id: 'add-tree',
     title: 'Add tree',
     response: () => {
-      const treeOutput = execSync('tree --gitignore', {
-        encoding: 'utf8',
-      }).trim()
       return [
-        '\n',
-        `<ProjectTree>`,
-        `\n`,
-        `▶ tree --gitignore`,
-        `\n`,
-        treeOutput,
-        `\n</ProjectTree>\n`,
+        ...Array('~tree '.length).fill('\x7f').flat(),
+        `<ProjectTree>\n▶ tree --gitignore${execSync('tree --gitignore', {
+          encoding: 'utf8',
+        }).trim()}\n<\/ProjectTree>\n`,
       ]
     },
-    pattern: ['~~tree~~ \x1b[7m \x1b[0m'],
+    pattern: [followedByCursor('~tree ')],
+  },
+  {
+    id: 'add-changes',
+    title: 'Add changes',
+    response: () => {
+      return [
+        ...Array('~changes '.length).fill('\x7f').flat(),
+        `<ProjectChanges>\n▶ git diff HEAD${execSync('git diff HEAD', {
+          encoding: 'utf8',
+        }).trim()}\n<\/ProjectChanges>\n`,
+      ]
+    },
+    pattern: [followedByCursor('~changes ')],
   },
   {
     id: 'edit-file-prompt',
