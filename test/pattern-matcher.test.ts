@@ -694,7 +694,7 @@ describe('PatternMatcher', () => {
   describe('Tree Pattern Matching', () => {
     it('should match ~~tree~~ followed by space and cursor', () => {
       const config: PatternConfig = {
-        id: 'add-tree',
+        id: 'add-tree-trigger',
         title: 'Add tree',
         pattern: ['~~tree~~ \x1b[7m \x1b[0m'],
         response: '',
@@ -704,13 +704,13 @@ describe('PatternMatcher', () => {
       // Test with the actual cursor pattern from terminal
       const matches = matcher.processData('~~tree~~ \x1b[7m \x1b[0m')
       expect(matches).toHaveLength(1)
-      expect(matches[0].patternId).toBe('add-tree')
+      expect(matches[0].patternId).toBe('add-tree-trigger')
       expect(matches[0].response).toBe('')
     })
 
     it('should not match ~~tree~~ without cursor', () => {
       const config: PatternConfig = {
-        id: 'add-tree',
+        id: 'add-tree-trigger',
         title: 'Add tree',
         pattern: ['~~tree~~ \x1b[7m \x1b[0m'],
         response: '',
@@ -728,7 +728,7 @@ describe('PatternMatcher', () => {
 
     it('should handle ~~tree~~ pattern with other text around it', () => {
       const config: PatternConfig = {
-        id: 'add-tree',
+        id: 'add-tree-trigger',
         title: 'Add tree',
         pattern: ['~~tree~~ \x1b[7m \x1b[0m'],
         response: '',
@@ -740,12 +740,12 @@ describe('PatternMatcher', () => {
         'Some text\n~~tree~~ \x1b[7m \x1b[0m\nMore text',
       )
       expect(matches).toHaveLength(1)
-      expect(matches[0].patternId).toBe('add-tree')
+      expect(matches[0].patternId).toBe('add-tree-trigger')
     })
 
     it('should not match ~~tree~~ when user continues typing after space', () => {
       const config: PatternConfig = {
-        id: 'add-tree',
+        id: 'add-tree-trigger',
         title: 'Add tree',
         pattern: ['~~tree~~ \x1b[7m \x1b[0m'],
         response: '',

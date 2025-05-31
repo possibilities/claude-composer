@@ -216,11 +216,14 @@ async function initializePatterns(): Promise<boolean> {
     ) {
       return
     }
-    if (pattern.id === 'add-tree' && !appConfig.allow_adding_project_tree) {
+    if (
+      pattern.id === 'add-tree-trigger' &&
+      !appConfig.allow_adding_project_tree
+    ) {
       return
     }
     if (
-      pattern.id === 'add-changes' &&
+      pattern.id === 'add-changes-trigger' &&
       !appConfig.allow_adding_project_changes
     ) {
       return

@@ -5,33 +5,32 @@ function followedByCursor(str: string): string {
   return `${str}\x1b[7m \x1b[0m`
 }
 
-function buildCommandResponse(
+function buildTriggerPattern(
   tag: string,
   trigger: string,
   command: string,
-): string[] {
-  return [
-    ...Array(trigger.length).fill('\x7f').flat(),
-    `<${tag}>\n▶ ${command}${execSync(command, {
-      encoding: 'utf8',
-    }).trim()}\n<\/${tag}>\n`,
-  ]
+): PatternConfig {
+  return {
+    response: () => [
+      ...Array(trigger.length).fill('\x7f').flat(),
+      `<${tag}>\n▶ ${command}${execSync(command, {
+        encoding: 'utf8',
+      }).trim()}\n<\/${tag}>\n`,
+    ],
+    pattern: [followedByCursor(trigger)],
+  }
 }
 
 export const patterns: PatternConfig[] = [
   {
-    id: 'add-tree',
+    id: 'add-tree-trigger',
     title: 'Add tree',
-    response: () =>
-      buildCommandResponse('ProjectTree', '~tree ', 'tree --gitignore'),
-    pattern: [followedByCursor('~tree ')],
+    ...buildTriggerPattern('ProjectTree', '~tree ', 'tree --gitignore'),
   },
   {
-    id: 'add-changes',
+    id: 'add-changes-trigger',
     title: 'Add changes',
-    response: () =>
-      buildCommandResponse('ProjectChanges', '~changes ', 'git diff HEAD'),
-    pattern: [followedByCursor('~changes ')],
+    ...buildTriggerPattern('ProjectChanges', '~changes ', 'git diff HEAD'),
   },
   {
     id: 'edit-file-prompt',

@@ -74,11 +74,11 @@ export function createClaudeComposerCommand(): Command {
     )
     .option(
       '--allow-adding-project-tree',
-      'Enable the add-tree pattern for project tree display',
+      'Enable the add-tree-trigger pattern for project tree display',
     )
     .option(
       '--allow-adding-project-changes',
-      'Enable the add-changes pattern for git diff display',
+      'Enable the add-changes-trigger pattern for git diff display',
     )
     .option('--quiet', 'Suppress preflight messages')
     .allowUnknownOption()
