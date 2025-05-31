@@ -597,6 +597,103 @@ export async function handleGoOffMode(
   return true
 }
 
+export async function handleDangerFlagsWarning(
+  appConfig: AppConfig,
+  preflightOptions?: PreflightOptions,
+): Promise<boolean> {
+  const hasDangerFlags =
+    appConfig.dangerously_dismiss_edit_file_prompts ||
+    appConfig.dangerously_dismiss_create_file_prompts ||
+    appConfig.dangerously_dismiss_bash_command_prompts
+
+  if (!hasDangerFlags) {
+    return true
+  }
+
+  // Skip interactive prompt in test environment
+  if (process.env.NODE_ENV?.includes('test')) {
+    console.log(
+      '\x1b[33m╔════════════════════════════════════════════════════════════════╗\x1b[0m',
+    )
+    console.log(
+      '\x1b[33m║                      ⚠️  DANGER FLAGS SET ⚠️                   ║\x1b[0m',
+    )
+    console.log(
+      '\x1b[33m║ (Skipping interactive prompt in test mode)                     ║\x1b[0m',
+    )
+    console.log(
+      '\x1b[33m╚════════════════════════════════════════════════════════════════╝\x1b[0m',
+    )
+    return true
+  }
+
+  console.log(
+    '\x1b[33m╔═════════════════════════════════════════════════════════════════╗\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║                   ⚠️  DANGER FLAGS SET ⚠️                         ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m╠═════════════════════════════════════════════════════════════════╣\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║ You have enabled dangerous flags that will dismiss prompts:     ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║                                                                 ║\x1b[0m',
+  )
+
+  if (appConfig.dangerously_dismiss_edit_file_prompts) {
+    console.log(
+      '\x1b[33m║ • File edit prompts will be AUTO-DISMISSED                      ║\x1b[0m',
+    )
+  }
+  if (appConfig.dangerously_dismiss_create_file_prompts) {
+    console.log(
+      '\x1b[33m║ • File creation prompts will be AUTO-DISMISSED                  ║\x1b[0m',
+    )
+  }
+  if (appConfig.dangerously_dismiss_bash_command_prompts) {
+    console.log(
+      '\x1b[33m║ • Bash command prompts will be AUTO-DISMISSED                   ║\x1b[0m',
+    )
+  }
+
+  console.log(
+    '\x1b[33m║                                                                 ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║ Claude will modify files and run commands WITHOUT confirmation! ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║                                                                 ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║ Consider using --go-off instead for the full YOLO experience    ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║ if you want to dismiss ALL safety prompts at once.              ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m╚═════════════════════════════════════════════════════════════════╝\x1b[0m',
+  )
+
+  const proceed = await askYesNo(
+    'Do you want to continue with these dangerous settings?',
+    false,
+    preflightOptions?.stdin,
+    preflightOptions?.stdout,
+  )
+
+  if (!proceed) {
+    console.log('※ Wise choice. Exiting safely.')
+    return false
+  }
+
+  console.warn('※ Continuing with dangerous flag settings active!')
+  return true
+}
+
 export function displayDangerousWarnings(appConfig: AppConfig): void {
   if (appConfig.dangerously_dismiss_edit_file_prompts) {
     console.log(
@@ -973,6 +1070,23 @@ export async function runPreflight(
 
   if (appConfig.show_notifications !== false) {
     log('※ Notifications are enabled')
+  }
+
+  if (!parsedOptions.goOff) {
+    const dangerFlagsAccepted = await handleDangerFlagsWarning(
+      appConfig,
+      options,
+    )
+    if (!dangerFlagsAccepted) {
+      return {
+        appConfig,
+        toolsetArgs,
+        childArgs,
+        shouldExit: true,
+        exitCode: 0,
+        knownOptions,
+      }
+    }
   }
 
   displayDangerousWarnings(appConfig)

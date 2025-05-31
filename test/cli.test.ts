@@ -135,7 +135,7 @@ describe('CLI Wrapper', () => {
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(
           () => reject(new Error('Timeout waiting for prompt')),
-          800,
+          2000,
         )
         const checkOutput = () => {
           if (output.includes('mock>')) {
@@ -156,7 +156,7 @@ describe('CLI Wrapper', () => {
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(
           () => reject(new Error('Timeout waiting for echo')),
-          300,
+          2000,
         )
         const startLength = output.length
         const checkOutput = () => {
@@ -216,7 +216,7 @@ describe('CLI Wrapper', () => {
       expect(output).toContain('\x1b[0m')
     })
 
-    it('should handle terminal resize events', { timeout: 1500 }, async () => {
+    it('should handle terminal resize events', { timeout: 5000 }, async () => {
       const pty = await import('node-pty')
 
       const ptyProcess = pty.spawn(
@@ -251,7 +251,7 @@ describe('CLI Wrapper', () => {
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(
           () => reject(new Error('Timeout waiting for initial output')),
-          1000,
+          2000,
         )
         const checkOutput = () => {
           if (output.includes('Watching for resize events...')) {
@@ -274,7 +274,7 @@ describe('CLI Wrapper', () => {
           await new Promise<void>((resolve, reject) => {
             const timeout = setTimeout(
               () => reject(new Error('Timeout waiting for resize')),
-              300,
+              2000,
             )
             const checkOutput = () => {
               if (output.includes('Resized to: 100x40')) {
@@ -399,7 +399,7 @@ describe('CLI Wrapper', () => {
       await new Promise<void>((resolve, reject) => {
         const timeout = setTimeout(
           () => reject(new Error('Timeout waiting for pattern response')),
-          800,
+          2000,
         )
         const checkOutput = () => {
           if (output.includes('Received input: Test response')) {

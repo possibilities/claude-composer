@@ -1,55 +1,8 @@
 import { expect, test, describe, beforeEach } from 'vitest'
-import { spawn } from 'child_process'
+import { runCliInteractive } from './test-utils'
 import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
-
-const CLI_PATH = path.join(__dirname, '..', 'cli.ts')
-
-// Helper to capture output from spawned process
-async function runCliWithArgs(args: string[], env: any): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let output = ''
-    let warningsFound = false
-    const proc = spawn('tsx', [CLI_PATH, ...args], {
-      env,
-      stdio: ['ignore', 'pipe', 'pipe'],
-    })
-
-    const checkForWarnings = (data: string) => {
-      if (data.includes('⚠️  WARNING:') && data.includes('is enabled')) {
-        warningsFound = true
-        // Kill process once we've captured the warnings
-        setTimeout(() => proc.kill(), 100)
-      }
-    }
-
-    proc.stdout.on('data', data => {
-      const text = data.toString()
-      output += text
-      checkForWarnings(text)
-    })
-
-    proc.stderr.on('data', data => {
-      const text = data.toString()
-      output += text
-      checkForWarnings(text)
-    })
-
-    proc.on('close', code => {
-      resolve(output)
-    })
-
-    proc.on('error', reject)
-
-    // Safety timeout in case warnings aren't found
-    setTimeout(() => {
-      if (!warningsFound) {
-        proc.kill()
-      }
-    }, 500)
-  })
-}
 
 describe('Dangerous flags warnings', () => {
   let tmpDir: string
@@ -68,111 +21,139 @@ describe('Dangerous flags warnings', () => {
   })
 
   test('shows warning for --dangerously-dismiss-edit-file-prompts', async () => {
-    const env = {
-      ...process.env,
-      CLAUDE_COMPOSER_CONFIG_DIR: path.join(tmpDir, '.claude-composer'),
-      CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-      PWD: tmpDir,
-    }
-
-    const output = await runCliWithArgs(
-      [
+    const result = await runCliInteractive({
+      args: [
         '--dangerously-dismiss-edit-file-prompts',
         '--dangerously-allow-in-dirty-directory',
       ],
-      env,
-    )
+      env: {
+        CLAUDE_COMPOSER_CONFIG_DIR: path.join(tmpDir, '.claude-composer'),
+        PWD: tmpDir,
+      },
+      cwd: tmpDir,
+      interactions: [
+        {
+          waitFor: 'Do you want to continue with these dangerous settings?',
+          respond: 'y\n',
+        },
+      ],
+    })
 
-    expect(output).toContain(
+    expect(result.output).toContain('⚠️  DANGER FLAGS SET ⚠️')
+    expect(result.output).toContain(
+      '(Skipping interactive prompt in test mode)',
+    )
+    expect(result.output).toContain(
       '⚠️  WARNING: --dangerously-dismiss-edit-file-prompts is enabled',
     )
-    expect(output).toContain(
+    expect(result.output).toContain(
       'All file edit prompts will be automatically dismissed!',
     )
   })
 
   test('shows warning for --dangerously-dismiss-create-file-prompts', async () => {
-    const env = {
-      ...process.env,
-      CLAUDE_COMPOSER_CONFIG_DIR: path.join(tmpDir, '.claude-composer'),
-      CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-      PWD: tmpDir,
-    }
-
-    const output = await runCliWithArgs(
-      [
+    const result = await runCliInteractive({
+      args: [
         '--dangerously-dismiss-create-file-prompts',
         '--dangerously-allow-in-dirty-directory',
       ],
-      env,
-    )
+      env: {
+        CLAUDE_COMPOSER_CONFIG_DIR: path.join(tmpDir, '.claude-composer'),
+        PWD: tmpDir,
+      },
+      cwd: tmpDir,
+      interactions: [
+        {
+          waitFor: 'Do you want to continue with these dangerous settings?',
+          respond: 'y\n',
+        },
+      ],
+    })
 
-    expect(output).toContain(
+    expect(result.output).toContain('⚠️  DANGER FLAGS SET ⚠️')
+    expect(result.output).toContain(
+      '(Skipping interactive prompt in test mode)',
+    )
+    expect(result.output).toContain(
       '⚠️  WARNING: --dangerously-dismiss-create-file-prompts is enabled',
     )
-    expect(output).toContain(
+    expect(result.output).toContain(
       'All file creation prompts will be automatically dismissed!',
     )
   })
 
   test('shows warning for --dangerously-dismiss-bash-command-prompts', async () => {
-    const env = {
-      ...process.env,
-      CLAUDE_COMPOSER_CONFIG_DIR: path.join(tmpDir, '.claude-composer'),
-      CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-      PWD: tmpDir,
-    }
-
-    const output = await runCliWithArgs(
-      [
+    const result = await runCliInteractive({
+      args: [
         '--dangerously-dismiss-bash-command-prompts',
         '--dangerously-allow-in-dirty-directory',
       ],
-      env,
-    )
+      env: {
+        CLAUDE_COMPOSER_CONFIG_DIR: path.join(tmpDir, '.claude-composer'),
+        PWD: tmpDir,
+      },
+      cwd: tmpDir,
+      interactions: [
+        {
+          waitFor: 'Do you want to continue with these dangerous settings?',
+          respond: 'y\n',
+        },
+      ],
+    })
 
-    expect(output).toContain(
+    expect(result.output).toContain('⚠️  DANGER FLAGS SET ⚠️')
+    expect(result.output).toContain(
+      '(Skipping interactive prompt in test mode)',
+    )
+    expect(result.output).toContain(
       '⚠️  WARNING: --dangerously-dismiss-bash-command-prompts is enabled',
     )
-    expect(output).toContain(
+    expect(result.output).toContain(
       'All bash command prompts will be automatically dismissed!',
     )
   })
 
   test('shows all warnings when multiple dangerous flags are set', async () => {
-    const env = {
-      ...process.env,
-      CLAUDE_COMPOSER_CONFIG_DIR: path.join(tmpDir, '.claude-composer'),
-      CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-      PWD: tmpDir,
-    }
-
-    const output = await runCliWithArgs(
-      [
+    const result = await runCliInteractive({
+      args: [
         '--dangerously-dismiss-edit-file-prompts',
         '--dangerously-dismiss-create-file-prompts',
         '--dangerously-dismiss-bash-command-prompts',
         '--dangerously-allow-in-dirty-directory',
       ],
-      env,
-    )
+      env: {
+        CLAUDE_COMPOSER_CONFIG_DIR: path.join(tmpDir, '.claude-composer'),
+        PWD: tmpDir,
+      },
+      cwd: tmpDir,
+      interactions: [
+        {
+          waitFor: 'Do you want to continue with these dangerous settings?',
+          respond: 'y\n',
+        },
+      ],
+    })
 
-    expect(output).toContain(
+    expect(result.output).toContain('⚠️  DANGER FLAGS SET ⚠️')
+    expect(result.output).toContain(
+      '(Skipping interactive prompt in test mode)',
+    )
+    expect(result.output).toContain(
       '⚠️  WARNING: --dangerously-dismiss-edit-file-prompts is enabled',
     )
-    expect(output).toContain(
+    expect(result.output).toContain(
       'All file edit prompts will be automatically dismissed!',
     )
-    expect(output).toContain(
+    expect(result.output).toContain(
       '⚠️  WARNING: --dangerously-dismiss-create-file-prompts is enabled',
     )
-    expect(output).toContain(
+    expect(result.output).toContain(
       'All file creation prompts will be automatically dismissed!',
     )
-    expect(output).toContain(
+    expect(result.output).toContain(
       '⚠️  WARNING: --dangerously-dismiss-bash-command-prompts is enabled',
     )
-    expect(output).toContain(
+    expect(result.output).toContain(
       'All bash command prompts will be automatically dismissed!',
     )
   })
@@ -185,35 +166,88 @@ dangerously_dismiss_bash_command_prompts: true
 `
     fs.writeFileSync(configFile, config)
 
-    const env = {
-      ...process.env,
-      CLAUDE_COMPOSER_CONFIG_DIR: path.join(tmpDir, '.claude-composer'),
-      CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-      PWD: tmpDir,
-    }
+    const result = await runCliInteractive({
+      args: ['--dangerously-allow-in-dirty-directory'],
+      env: {
+        CLAUDE_COMPOSER_CONFIG_DIR: path.join(tmpDir, '.claude-composer'),
+        PWD: tmpDir,
+      },
+      cwd: tmpDir,
+      interactions: [
+        {
+          waitFor: 'Do you want to continue with these dangerous settings?',
+          respond: 'y\n',
+        },
+      ],
+    })
 
-    const output = await runCliWithArgs(
-      ['--dangerously-allow-in-dirty-directory'],
-      env,
+    expect(result.output).toContain('⚠️  DANGER FLAGS SET ⚠️')
+    expect(result.output).toContain(
+      '(Skipping interactive prompt in test mode)',
     )
-
-    expect(output).toContain(
+    expect(result.output).toContain(
       '⚠️  WARNING: --dangerously-dismiss-edit-file-prompts is enabled',
     )
-    expect(output).toContain(
+    expect(result.output).toContain(
       'All file edit prompts will be automatically dismissed!',
     )
-    expect(output).toContain(
+    expect(result.output).toContain(
       '⚠️  WARNING: --dangerously-dismiss-create-file-prompts is enabled',
     )
-    expect(output).toContain(
+    expect(result.output).toContain(
       'All file creation prompts will be automatically dismissed!',
     )
-    expect(output).toContain(
+    expect(result.output).toContain(
       '⚠️  WARNING: --dangerously-dismiss-bash-command-prompts is enabled',
     )
-    expect(output).toContain(
+    expect(result.output).toContain(
       'All bash command prompts will be automatically dismissed!',
     )
+  })
+
+  test('does not show danger flags warning when --go-off is used', async () => {
+    const result = await runCliInteractive({
+      args: ['--dangerously-allow-in-dirty-directory', '--go-off'],
+      env: {
+        CLAUDE_COMPOSER_CONFIG_DIR: path.join(tmpDir, '.claude-composer'),
+        PWD: tmpDir,
+      },
+      cwd: tmpDir,
+      interactions: [
+        {
+          waitFor: 'Are you ABSOLUTELY SURE you want to continue?',
+          respond: 'y\n',
+        },
+      ],
+    })
+
+    // Should show the --go-off warning but not the danger flags warning
+    expect(result.output).toContain('🚨 DANGER ZONE 🚨')
+    expect(result.output).toContain('You have enabled --go-off')
+    expect(result.output).not.toContain('⚠️  DANGER FLAGS SET ⚠️')
+  })
+
+  test('skips interactive prompt in test mode and continues', async () => {
+    const result = await runCliInteractive({
+      args: [
+        '--dangerously-dismiss-edit-file-prompts',
+        '--dangerously-allow-in-dirty-directory',
+      ],
+      env: {
+        CLAUDE_COMPOSER_CONFIG_DIR: path.join(tmpDir, '.claude-composer'),
+        PWD: tmpDir,
+      },
+      cwd: tmpDir,
+      interactions: [],
+    })
+
+    expect(result.output).toContain('⚠️  DANGER FLAGS SET ⚠️')
+    expect(result.output).toContain(
+      '(Skipping interactive prompt in test mode)',
+    )
+    expect(result.output).toContain(
+      '⚠️  WARNING: --dangerously-dismiss-edit-file-prompts is enabled',
+    )
+    expect(result.exitCode).toBe(0)
   })
 })
