@@ -413,41 +413,49 @@ async function main() {
     responseQueue.setTargets(ptyProcess, undefined)
 
     if (hasActivePatterns) {
-      const { Terminal } = await import('@xterm/xterm')
-      const { SerializeAddon } = await import('@xterm/addon-serialize')
+      try {
+        const { Terminal } = await import('@xterm/xterm')
+        const { SerializeAddon } = await import('@xterm/addon-serialize')
 
-      terminal = new Terminal({
-        cols: cols,
-        rows: rows,
-        scrollback: 5000,
-      })
+        terminal = new Terminal({
+          cols: cols,
+          rows: rows,
+          scrollback: 5000,
+        })
 
-      serializeAddon = new SerializeAddon()
-      terminal.loadAddon(serializeAddon)
+        serializeAddon = new SerializeAddon()
+        terminal.loadAddon(serializeAddon)
+      } catch (error) {
+        // Silently ignore xterm initialization errors
+      }
 
       ptyProcess.onData((data: string) => {
-        process.stdout.write(data)
         try {
-          terminal.write(data)
+          process.stdout.write(data)
+          if (terminal) {
+            terminal.write(data)
+          }
         } catch (error) {
           // Silently ignore xterm parsing errors
         }
       })
 
-      let lastScreenContent = ''
-      screenReadInterval = setInterval(() => {
-        if (terminal && serializeAddon) {
-          try {
-            const currentScreenContent = serializeAddon.serialize()
-            if (currentScreenContent !== lastScreenContent) {
-              handlePatternMatches(currentScreenContent)
-              lastScreenContent = currentScreenContent
+      if (terminal && serializeAddon) {
+        let lastScreenContent = ''
+        screenReadInterval = setInterval(() => {
+          if (terminal && serializeAddon) {
+            try {
+              const currentScreenContent = serializeAddon.serialize()
+              if (currentScreenContent !== lastScreenContent) {
+                handlePatternMatches(currentScreenContent)
+                lastScreenContent = currentScreenContent
+              }
+            } catch (error) {
+              // Silently ignore xterm parsing errors
             }
-          } catch (error) {
-            // Silently ignore xterm parsing errors
           }
-        }
-      }, 100)
+        }, 100)
+      }
     } else {
       ptyProcess.onData((data: string) => {
         process.stdout.write(data)
@@ -460,20 +468,33 @@ async function main() {
     isRawMode = true
 
     process.stdin.on('data', (data: Buffer) => {
-      ptyProcess.write(data.toString())
+      try {
+        ptyProcess.write(data.toString())
+      } catch (error) {
+        // Silently ignore stdin write errors
+      }
     })
 
     ptyProcess.onExit(exitCode => {
-      cleanup()
-      process.exit(exitCode.exitCode || 0)
+      try {
+        cleanup()
+        process.exit(exitCode.exitCode || 0)
+      } catch (error) {
+        // Silently ignore exit errors
+        process.exit(1)
+      }
     })
 
     process.stdout.on('resize', () => {
-      const newCols = process.stdout.columns || 80
-      const newRows = process.stdout.rows || 30
-      ptyProcess.resize(newCols, newRows)
-      if (terminal) {
-        terminal.resize(newCols, newRows)
+      try {
+        const newCols = process.stdout.columns || 80
+        const newRows = process.stdout.rows || 30
+        ptyProcess.resize(newCols, newRows)
+        if (terminal) {
+          terminal.resize(newCols, newRows)
+        }
+      } catch (error) {
+        // Silently ignore resize errors
       }
     })
   } else {
@@ -489,17 +510,21 @@ async function main() {
     responseQueue.setTargets(undefined, childProcess)
 
     if (hasActivePatterns) {
-      const { Terminal } = await import('@xterm/xterm')
-      const { SerializeAddon } = await import('@xterm/addon-serialize')
+      try {
+        const { Terminal } = await import('@xterm/xterm')
+        const { SerializeAddon } = await import('@xterm/addon-serialize')
 
-      terminal = new Terminal({
-        cols: 80,
-        rows: 30,
-        scrollback: 5000,
-      })
+        terminal = new Terminal({
+          cols: 80,
+          rows: 30,
+          scrollback: 5000,
+        })
 
-      serializeAddon = new SerializeAddon()
-      terminal.loadAddon(serializeAddon)
+        serializeAddon = new SerializeAddon()
+        terminal.loadAddon(serializeAddon)
+      } catch (error) {
+        // Silently ignore xterm initialization errors
+      }
 
       if (stdinBuffer) {
         if (isStdinPaused) {
@@ -512,29 +537,33 @@ async function main() {
       }
 
       childProcess.stdout!.on('data', (data: Buffer) => {
-        const dataStr = data.toString()
-        process.stdout.write(data)
         try {
-          terminal.write(dataStr)
+          const dataStr = data.toString()
+          process.stdout.write(data)
+          if (terminal) {
+            terminal.write(dataStr)
+          }
         } catch (error) {
           // Silently ignore xterm parsing errors
         }
       })
 
-      let lastScreenContent = ''
-      screenReadInterval = setInterval(() => {
-        if (terminal && serializeAddon) {
-          try {
-            const currentScreenContent = serializeAddon.serialize()
-            if (currentScreenContent !== lastScreenContent) {
-              handlePatternMatches(currentScreenContent)
-              lastScreenContent = currentScreenContent
+      if (terminal && serializeAddon) {
+        let lastScreenContent = ''
+        screenReadInterval = setInterval(() => {
+          if (terminal && serializeAddon) {
+            try {
+              const currentScreenContent = serializeAddon.serialize()
+              if (currentScreenContent !== lastScreenContent) {
+                handlePatternMatches(currentScreenContent)
+                lastScreenContent = currentScreenContent
+              }
+            } catch (error) {
+              // Silently ignore xterm parsing errors
             }
-          } catch (error) {
-            // Silently ignore xterm parsing errors
           }
-        }
-      }, 100)
+        }, 100)
+      }
     } else {
       if (stdinBuffer) {
         if (isStdinPaused) {
@@ -547,15 +576,24 @@ async function main() {
       }
 
       childProcess.stdout!.on('data', (data: Buffer) => {
-        process.stdout.write(data)
+        try {
+          process.stdout.write(data)
+        } catch (error) {
+          // Silently ignore stdout write errors
+        }
       })
     }
 
     childProcess.stderr!.pipe(process.stderr)
 
     childProcess.on('exit', (code: number | null) => {
-      cleanup()
-      process.exit(code || 0)
+      try {
+        cleanup()
+        process.exit(code || 0)
+      } catch (error) {
+        // Silently ignore exit errors
+        process.exit(1)
+      }
     })
   }
 }
