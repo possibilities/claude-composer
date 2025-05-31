@@ -3,13 +3,15 @@
   "version": "0.1.0",
   "description": "Claude Composer",
   "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
     "format": "prettier --write \"**/*.{js,mjs,jsx,ts,tsx,json,md,mdx,css,yml,yaml}\"",
     "test": "vitest --reporter verbose --run",
     "test:watch": "vitest --watch"
   },
   "type": "module",
   "bin": {
-    "claude-composer": "./src/index.ts"
+    "claude-composer": "./dist/cli.js"
   },
   "dependencies": {
     "@types/js-yaml": "^4.0.9",
@@ -28,6 +30,8 @@
   "devDependencies": {
     "@types/node": "^22.15.23",
     "prettier": "^3.5.3",
+    "tsup": "^8.5.0",
+    "typescript": "^5.8.3",
     "vitest": "^3.1.4"
   }
 }

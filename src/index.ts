@@ -1,5 +1,3 @@
-#!/usr/bin/env tsx
-
 import * as os from 'node:os'
 import * as pty from 'node-pty'
 import { spawn, ChildProcess } from 'child_process'
@@ -318,9 +316,9 @@ function handlePatternMatches(data: string): void {
   }
 }
 
-async function main() {
+export async function main() {
   if (process.argv.includes('--help') || process.argv.includes('-h')) {
-    const { createClaudeComposerCommand } = await import('./preflight.js')
+    const { createClaudeComposerCommand } = await import('./cli/parser.js')
     const program = createClaudeComposerCommand()
 
     program.outputHelp()
