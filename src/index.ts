@@ -591,7 +591,7 @@ export async function main() {
               }
             } catch (error) {}
           }
-        }, 100)
+        }, 1)
       }
     } else {
       ptyProcess.onData((data: string) => {
@@ -705,7 +705,7 @@ export async function main() {
               }
             } catch (error) {}
           }
-        }, 100)
+        }, 1)
       }
     } else {
       if (stdinBuffer) {
