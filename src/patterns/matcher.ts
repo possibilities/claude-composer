@@ -8,7 +8,7 @@ export interface PatternConfig {
   title: string
   pattern: string[]
   response: string | string[] | (() => string | string[])
-  selfClearing?: boolean
+  type?: 'completion' | 'prompt'
   notification?: string
 }
 
@@ -96,7 +96,8 @@ export class PatternMatcher {
 
     // Get the pattern config for the bottom-most match
     const matchedPattern = this.patterns.get(bottomMostMatch.patternId)
-    const isSelfClearing = matchedPattern?.config.selfClearing || false
+    const patternType = matchedPattern?.config.type
+    const isSelfClearing = patternType === 'completion'
 
     // Skip duplicate check for self-clearing patterns
     if (

@@ -25,7 +25,7 @@ function buildTriggerPattern(
       }).trim()}\n<\/${tag}>\n`,
     ],
     pattern: [followedByCursor(trigger)],
-    selfClearing: true,
+    type: 'completion' as const,
   }
 }
 
@@ -43,6 +43,7 @@ export const patterns: PatternConfig[] = [
   {
     id: 'edit-file-prompt',
     title: 'Edit file',
+    type: 'prompt' as const,
     response: '1',
     pattern: [
       'Edit file',
@@ -60,6 +61,7 @@ export const patterns: PatternConfig[] = [
   {
     id: 'create-file-prompt',
     title: 'Create file',
+    type: 'prompt' as const,
     response: '1',
     pattern: ['Create file', 'Do you want to create {{ fileName }}?'],
     notification: dedent(
@@ -73,6 +75,7 @@ export const patterns: PatternConfig[] = [
   {
     id: 'bash-command-prompt',
     title: 'Bash command',
+    type: 'prompt' as const,
     response: '1',
     pattern: [
       'Bash command',
@@ -96,6 +99,7 @@ export const patterns: PatternConfig[] = [
   {
     id: 'read-files-prompt',
     title: 'Read file',
+    type: 'prompt' as const,
     response: '1',
     pattern: ['Read files', 'Read({{ fileName }})', '1. Yes'],
     notification: dedent(
