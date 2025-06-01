@@ -18,6 +18,7 @@ import {
   log,
   warn,
 } from './core/preflight.js'
+import { stripBoxChars } from './utils/strip-box-chars.js'
 
 let ptyProcess: pty.IPty | undefined
 let childProcess: ChildProcess | undefined
@@ -303,21 +304,43 @@ process.on('uncaughtException', error => {
   process.exit(1)
 })
 
-function showNotification(match: MatchResult): void {
-  const projectName = path.basename(process.cwd())
-  const title = '🤖 Claude Composer'
-  let message = `Action: ${match.patternTitle}\nProject: ${projectName}`
+function replacePlaceholders(template: string, match: MatchResult): string {
+  let result = template
 
-  if (match.extractedData && match.extractedData.fileName) {
-    message += `\nFile: ${match.extractedData.fileName}`
+  // Replace standard placeholders
+  const projectName = path.basename(process.cwd())
+  result = result.replace(/\{\{\s*title\s*\}\}/gi, match.patternTitle)
+  result = result.replace(/\{\{\s*project\s*\}\}/gi, projectName)
+
+  // Replace placeholders from extractedData
+  if (match.extractedData) {
+    for (const [key, value] of Object.entries(match.extractedData)) {
+      const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'gi')
+      // Strip box chars, then remove empty lines and trim whitespace
+      const strippedValue = stripBoxChars(value)
+      const cleanValue = strippedValue
+        .split('\n')
+        .map(line => line.trim())
+        .filter(line => line.length > 0)
+        .join('\n')
+        .trim()
+      result = result.replace(regex, cleanValue)
+    }
   }
+
+  return result
+}
+
+function showNotification(match: MatchResult): void {
+  const title = '🤖 Claude Composer'
+  const message = replacePlaceholders(match.notification || '', match)
 
   notifier.notify({
     title,
     message,
     wait: false,
     sound: false,
-    timeout: 22222,
+    timeout: 5000,
   })
 }
 
@@ -327,7 +350,7 @@ function handlePatternMatches(data: string): void {
   for (const match of matches) {
     responseQueue.enqueue(match.response)
 
-    if (appConfig.show_notifications !== false) {
+    if (appConfig.show_notifications !== false && match.notification) {
       showNotification(match)
     }
   }

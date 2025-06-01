@@ -9,6 +9,7 @@ export interface PatternConfig {
   pattern: string[]
   response: string | string[] | (() => string | string[])
   selfClearing?: boolean
+  notification?: string
 }
 
 export interface MatchResult {
@@ -22,6 +23,7 @@ export interface MatchResult {
   bufferContent: string
   strippedBufferContent: string
   extractedData?: Record<string, string>
+  notification?: string
 }
 
 export class PatternMatcher {
@@ -79,6 +81,7 @@ export class PatternMatcher {
           bufferContent: content,
           strippedBufferContent: strippedContent,
           extractedData: sequenceMatch.extractedData,
+          notification: pattern.config.notification,
         })
       }
     }

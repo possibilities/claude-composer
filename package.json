@@ -21,6 +21,7 @@
     "@xterm/xterm": "^5.5.0",
     "clipboardy": "^4.0.0",
     "commander": "^14.0.0",
+    "dedent": "^1.6.0",
     "js-yaml": "^4.1.0",
     "node-notifier": "^10.0.1",
     "strip-ansi": "^7.1.0",

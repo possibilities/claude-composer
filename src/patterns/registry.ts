@@ -1,5 +1,6 @@
 import { PatternConfig } from './matcher'
 import { execSync } from 'child_process'
+import dedent from 'dedent'
 
 function followedByCursor(str: string): string {
   return `${str}\x1b[7m \x1b[0m`
@@ -48,12 +49,26 @@ export const patterns: PatternConfig[] = [
       '{{ editDiff | multiline }}',
       'Do you want to make this edit to {{ fileName }}?',
     ],
+    notification: dedent(
+      `
+      Action: {{ title }}
+      Project: {{ project }}
+      File: {{ fileName }}
+      `,
+    ),
   },
   {
     id: 'create-file-prompt',
     title: 'Create file',
     response: '1',
     pattern: ['Create file', 'Do you want to create {{ fileName }}?'],
+    notification: dedent(
+      `
+      Action: {{ title }}
+      Project: {{ project }}
+      File: {{ fileName }}
+      `,
+    ),
   },
   {
     id: 'bash-command-prompt',
@@ -61,15 +76,33 @@ export const patterns: PatternConfig[] = [
     response: '1',
     pattern: [
       'Bash command',
+      '{{ emptyLine }}',
       '{{ command }}',
-      '{{ description }}',
+      '{{ reason }}',
       'Do you want to proceed?',
+      "2. Yes, and don't ask again for {{ commandWithoutArguments }} in {{ commandDir }}",
     ],
+    notification: dedent(
+      `
+      Action: {{ title }}
+      Project: {{ project }}
+      Command: {{ command }}
+      Reason: {{ reason }}
+      Directory: {{ commandDir }}
+      `,
+    ),
   },
   {
     id: 'read-files-prompt',
-    title: 'Read files',
+    title: 'Read file',
     response: '1',
-    pattern: ['Read files', 'Read({{ fileName }})'],
+    pattern: ['Read files', 'Read({{ fileName }})', '1. Yes'],
+    notification: dedent(
+      `
+      Action: {{ title }}
+      Project: {{ project }}
+      File: {{ fileName }}
+      `,
+    ),
   },
 ]

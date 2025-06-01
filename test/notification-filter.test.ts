@@ -54,7 +54,7 @@ describe('Notification filtering by action type', () => {
           message,
           wait: false,
           sound: false,
-          timeout: 22222,
+          timeout: 5000,
         })
       }
     }
@@ -70,7 +70,7 @@ describe('Notification filtering by action type', () => {
       message: 'Project: test-project\nPattern triggered: edit-file-prompt',
       wait: false,
       sound: false,
-      timeout: 22222,
+      timeout: 5000,
     })
 
     // Clear mocks
@@ -139,7 +139,7 @@ describe('Notification filtering by action type', () => {
             message,
             wait: false,
             sound: false,
-            timeout: 22222,
+            timeout: 5000,
           })
         }
       }
@@ -154,14 +154,14 @@ describe('Notification filtering by action type', () => {
       message: 'Project: test-project\nPattern triggered: edit-file-prompt',
       wait: false,
       sound: false,
-      timeout: 22222,
+      timeout: 5000,
     })
     expect(mockNotify).toHaveBeenNthCalledWith(2, {
       title: '🤖 Claude Composer',
       message: 'Project: test-project\nPattern triggered: create-file-prompt',
       wait: false,
       sound: false,
-      timeout: 22222,
+      timeout: 5000,
     })
   })
 })
