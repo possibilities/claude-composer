@@ -4,6 +4,20 @@ import * as readline from 'readline'
 
 const args = process.argv.slice(2)
 
+if (args.includes('--version') || args.includes('-v')) {
+  console.log('1.0.7 (Claude Code)')
+  process.exit(0)
+}
+
+if (args.includes('--help') || args.includes('-h')) {
+  console.log('Claude - An AI assistant')
+  console.log('Usage: claude [options]')
+  console.log('Options:')
+  console.log('  --version, -v    Show version')
+  console.log('  --help, -h       Show help')
+  process.exit(0)
+}
+
 if (args.includes('--echo-args')) {
   console.log('ARGS:', args.join(' '))
   process.exit(0)

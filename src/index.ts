@@ -334,6 +334,51 @@ function handlePatternMatches(data: string): void {
 }
 
 export async function main() {
+  // Handle --safe flag early - bypass all claude-composer functionality
+  if (process.argv.includes('--safe')) {
+    // Check for conflicting claude-composer flags
+    const { createClaudeComposerCommand } = await import('./cli/parser.js')
+    const { buildKnownOptionsSet } = await import('./cli/parser.js')
+    const program = createClaudeComposerCommand()
+    const knownOptions = buildKnownOptionsSet(program)
+
+    const usedOptions = process.argv.filter(
+      arg => arg.startsWith('--') && arg !== '--safe',
+    )
+    const knownUsedOptions = usedOptions.filter(
+      opt => knownOptions.has(opt) || knownOptions.has(opt.split('=')[0]),
+    )
+
+    if (knownUsedOptions.length > 0) {
+      console.error(
+        `※ Error: --safe flag cannot be used with other claude-composer flags: ${knownUsedOptions.join(', ')}`,
+      )
+      process.exit(1)
+    }
+
+    const defaultChildAppPath = path.join(
+      os.homedir(),
+      '.claude',
+      'local',
+      'claude',
+    )
+    const childAppPath = process.env.CLAUDE_APP_PATH || defaultChildAppPath
+
+    // Remove --safe from args before passing to child
+    const childArgs = process.argv.slice(2).filter(arg => arg !== '--safe')
+
+    const safeProcess = spawn(childAppPath, childArgs, {
+      stdio: 'inherit',
+      env: process.env,
+    })
+
+    safeProcess.on('exit', code => {
+      process.exit(code || 0)
+    })
+
+    return
+  }
+
   if (process.argv.includes('--help') || process.argv.includes('-h')) {
     const { createClaudeComposerCommand } = await import('./cli/parser.js')
     const program = createClaudeComposerCommand()

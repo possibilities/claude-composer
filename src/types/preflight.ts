@@ -33,6 +33,7 @@ export interface ParsedOptions {
   allowAddingProjectTree?: boolean
   allowAddingProjectChanges?: boolean
   quiet?: boolean
+  safe?: boolean
 }
 
 // Re-export for convenience

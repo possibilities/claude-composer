@@ -47,6 +47,31 @@ export async function runPreflight(
     hasPrintOption,
   } = parseCommandLineArgs(argv)
 
+  // Check if --safe is used with other known flags
+  if (parsedOptions.safe) {
+    const knownOptions = buildKnownOptionsSet(program)
+    const usedOptions = argv.filter(
+      arg => arg.startsWith('--') && arg !== '--safe',
+    )
+    const knownUsedOptions = usedOptions.filter(
+      opt => knownOptions.has(opt) || knownOptions.has(opt.split('=')[0]),
+    )
+
+    if (knownUsedOptions.length > 0) {
+      console.error(
+        `※ Error: --safe flag cannot be used with other claude-composer flags: ${knownUsedOptions.join(', ')}`,
+      )
+      return {
+        appConfig,
+        toolsetArgs: [],
+        childArgs: [],
+        shouldExit: true,
+        exitCode: 1,
+        knownOptions,
+      }
+    }
+  }
+
   const knownOptions = buildKnownOptionsSet(program)
 
   // Set quiet mode based on parsed options

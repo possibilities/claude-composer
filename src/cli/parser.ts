@@ -81,6 +81,10 @@ export function createClaudeComposerCommand(): Command {
       'Enable the add-changes-trigger pattern for git diff display',
     )
     .option('--quiet', 'Suppress preflight messages')
+    .option(
+      '--safe',
+      'Bypass all claude-composer functionality and shell out directly to claude',
+    )
     .allowUnknownOption()
     .argument('[args...]', 'Arguments to pass to `claude`')
 
@@ -156,6 +160,7 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--allow-adding-project-tree')
   knownOptions.add('--allow-adding-project-changes')
   knownOptions.add('--quiet')
+  knownOptions.add('--safe')
 
   return knownOptions
 }
