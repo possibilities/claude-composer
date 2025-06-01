@@ -110,4 +110,25 @@ export const patterns: PatternConfig[] = [
       `,
     ),
   },
+  {
+    id: 'fetch-content-prompt',
+    title: 'Fetch content',
+    type: 'prompt' as const,
+    response: '1',
+    pattern: [
+      'Fetch',
+      '{{ emptyLine }}',
+      '{{ url }}',
+      'Claude wants to fetch content from {{ domain }}',
+      'No, and tell Claude what to do differently',
+    ],
+    notification: dedent(
+      `
+      Action: {{ title }}
+      Project: {{ project }}
+      Domain: {{ domain }}
+      URL: {{ url }}
+      `,
+    ),
+  },
 ]
