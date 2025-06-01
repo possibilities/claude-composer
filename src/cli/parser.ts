@@ -93,6 +93,10 @@ export function createClaudeComposerCommand(): Command {
       '--safe',
       'Bypass all claude-composer functionality and shell out directly to claude',
     )
+    .option(
+      '--config-help',
+      'Display all available configuration file options and exit',
+    )
     .allowUnknownOption()
     .argument('[args...]', 'Arguments to pass to `claude`')
 
@@ -106,10 +110,12 @@ export function parseCommandLineArgs(argv: string[]): {
   helpRequested: boolean
   versionRequested: boolean
   hasPrintOption: boolean
+  configHelpRequested: boolean
 } {
   const helpRequested = argv.includes('--help') || argv.includes('-h')
   const versionRequested = argv.includes('--version') || argv.includes('-v')
   const hasPrintOption = argv.includes('--print')
+  const configHelpRequested = argv.includes('--config-help')
 
   const program = createClaudeComposerCommand()
 
@@ -127,6 +133,7 @@ export function parseCommandLineArgs(argv: string[]): {
           helpRequested: true,
           versionRequested: false,
           hasPrintOption,
+          configHelpRequested: false,
         }
       }
       throw err
@@ -145,6 +152,7 @@ export function parseCommandLineArgs(argv: string[]): {
     helpRequested,
     versionRequested,
     hasPrintOption,
+    configHelpRequested,
   }
 }
 
@@ -171,6 +179,7 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--allow-adding-project-changes')
   knownOptions.add('--quiet')
   knownOptions.add('--safe')
+  knownOptions.add('--config-help')
 
   return knownOptions
 }

@@ -313,6 +313,13 @@ function handlePatternMatches(data: string): void {
 }
 
 export async function main() {
+  // Handle --config-help flag early - print config help and exit
+  if (process.argv.includes('--config-help')) {
+    const { getConfigHelp } = await import('./cli/config-help.js')
+    console.log(getConfigHelp())
+    process.exit(0)
+  }
+
   // Handle --safe flag early - bypass all claude-composer functionality
   if (process.argv.includes('--safe')) {
     // Check for conflicting claude-composer flags
