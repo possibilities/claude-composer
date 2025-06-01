@@ -80,7 +80,8 @@ export const patterns: PatternConfig[] = [
       '{{ command }}',
       '{{ reason }}',
       'Do you want to proceed?',
-      "2. Yes, and don't ask again for {{ commandWithoutArguments }} in {{ commandDir }}",
+      "2. Yes, and don't ask again for {{ commandWithoutArguments }} commands in {{ commandDir }}",
+      'No, and tell Claude what to do differently',
     ],
     notification: dedent(
       `

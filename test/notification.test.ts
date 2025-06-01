@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { MatchResult } from '../src/patterns/matcher'
-import stripAnsi from 'strip-ansi'
+import { showPatternNotification, notifier } from '../src/utils/notifications'
+import { createMatchWithNotification } from './test-notification-utils'
 
 vi.mock('node-notifier', () => ({
   default: {
@@ -8,7 +9,6 @@ vi.mock('node-notifier', () => ({
   },
 }))
 
-import notifier from 'node-notifier'
 const mockNotify = vi.mocked(notifier.notify)
 
 describe('Notification functionality', () => {
@@ -25,29 +25,17 @@ describe('Notification functionality', () => {
       bufferContent: 'Some buffer content with Welcome to Claude Code! in it',
       strippedBufferContent:
         'Some buffer content with Welcome to Claude Code! in it',
+      notification: 'Pattern triggered: {{title}}\nMatched: {{matchedText}}',
     }
 
-    const showNotification = (match: MatchResult) => {
-      const title = '🤖 Claude Composer'
-      const message = `Pattern triggered: ${match.patternId}\nMatched: ${match.matchedText.substring(0, 100)}`
-
-      notifier.notify({
-        title,
-        message,
-        timeout: false,
-        wait: false,
-        sound: false,
-      })
-    }
-
-    showNotification(match)
+    showPatternNotification(match)
 
     expect(mockNotify).toHaveBeenCalledOnce()
     expect(mockNotify).toHaveBeenCalledWith({
       title: '🤖 Claude Composer',
       message:
-        'Pattern triggered: test-pattern\nMatched: Welcome to Claude Code!',
-      timeout: false,
+        'Pattern triggered: Test Notification\nMatched: Welcome to Claude Code!',
+      timeout: undefined,
       wait: false,
       sound: false,
     })
@@ -55,86 +43,69 @@ describe('Notification functionality', () => {
 
   it('should truncate long matched text to 100 characters', () => {
     const longText = 'A'.repeat(150)
-    const match: MatchResult = {
-      patternId: 'long-pattern',
-      patternTitle: 'Long Text Pattern',
-      response: 'test',
-      matchedText: longText,
-      bufferContent: 'buffer content',
-      strippedBufferContent: 'buffer content',
-    }
+    const match = createMatchWithNotification(
+      {
+        patternId: 'long-pattern',
+        patternTitle: 'Long Text Pattern',
+        response: 'test',
+        matchedText: longText,
+        bufferContent: 'buffer content',
+        strippedBufferContent: 'buffer content',
+      },
+      'Pattern triggered: {{title}}\nMatched: {{matchedText}}',
+    )
 
-    const showNotification = (match: MatchResult) => {
-      const title = '🤖 Claude Composer'
-      const message = `Pattern triggered: ${match.patternId}\nMatched: ${match.matchedText.substring(0, 100)}`
-
-      notifier.notify({
-        title,
-        message,
-        timeout: false,
-        wait: false,
-        sound: false,
-      })
-    }
-
-    showNotification(match)
+    showPatternNotification(match)
 
     expect(mockNotify).toHaveBeenCalledWith({
       title: '🤖 Claude Composer',
-      message: `Pattern triggered: long-pattern\nMatched: ${'A'.repeat(100)}`,
-      timeout: false,
+      message: `Pattern triggered: Long Text Pattern\nMatched: ${'A'.repeat(150)}`,
+      timeout: undefined,
       wait: false,
       sound: false,
     })
   })
 
   it('should handle different pattern action types', () => {
-    const inputMatch: MatchResult = {
-      patternId: 'input-pattern',
-      patternTitle: 'Input Test Pattern',
-      response: ['response1', 'response2'],
-      matchedText: 'trigger text',
-      bufferContent: 'buffer',
-      strippedBufferContent: 'buffer',
-    }
+    const inputMatch = createMatchWithNotification(
+      {
+        patternId: 'input-pattern',
+        patternTitle: 'Input Test Pattern',
+        response: ['response1', 'response2'],
+        matchedText: 'trigger text',
+        bufferContent: 'buffer',
+        strippedBufferContent: 'buffer',
+      },
+      'Pattern triggered: {{title}}\nAction: Input',
+    )
 
-    const logMatch: MatchResult = {
-      patternId: 'log-pattern',
-      patternTitle: 'Log Test Pattern',
-      response: { type: 'log', path: '/tmp/log.json' },
-      matchedText: 'log trigger',
-      bufferContent: 'buffer',
-      strippedBufferContent: 'buffer',
-    }
+    const logMatch = createMatchWithNotification(
+      {
+        patternId: 'log-pattern',
+        patternTitle: 'Log Test Pattern',
+        response: { type: 'log', path: '/tmp/log.json' },
+        matchedText: 'log trigger',
+        bufferContent: 'buffer',
+        strippedBufferContent: 'buffer',
+      },
+      'Pattern triggered: {{title}}\nAction: Log',
+    )
 
-    const showNotification = (match: MatchResult) => {
-      const title = '🤖 Claude Composer'
-      const message = `Pattern triggered: ${match.patternId}\nMatched: ${match.matchedText.substring(0, 100)}`
-
-      notifier.notify({
-        title,
-        message,
-        timeout: false,
-        wait: false,
-        sound: false,
-      })
-    }
-
-    showNotification(inputMatch)
-    showNotification(logMatch)
+    showPatternNotification(inputMatch)
+    showPatternNotification(logMatch)
 
     expect(mockNotify).toHaveBeenCalledTimes(2)
     expect(mockNotify).toHaveBeenNthCalledWith(1, {
       title: '🤖 Claude Composer',
-      message: 'Pattern triggered: input-pattern\nMatched: trigger text',
-      timeout: false,
+      message: 'Pattern triggered: Input Test Pattern\nAction: Input',
+      timeout: undefined,
       wait: false,
       sound: false,
     })
     expect(mockNotify).toHaveBeenNthCalledWith(2, {
       title: '🤖 Claude Composer',
-      message: 'Pattern triggered: log-pattern\nMatched: log trigger',
-      timeout: false,
+      message: 'Pattern triggered: Log Test Pattern\nAction: Log',
+      timeout: undefined,
       wait: false,
       sound: false,
     })
@@ -143,37 +114,44 @@ describe('Notification functionality', () => {
   it('should strip ANSI color codes from matched text', () => {
     const coloredText =
       '\x1b[36mColored text\x1b[0m with \x1b[31mred\x1b[0m content'
-    const match: MatchResult = {
-      patternId: 'ansi-pattern',
-      patternTitle: 'ANSI Color Pattern',
-      response: { type: 'log', path: '/tmp/test.log' },
-      matchedText: coloredText,
-      bufferContent: 'buffer',
-      strippedBufferContent: 'buffer',
-    }
+    const match = createMatchWithNotification(
+      {
+        patternId: 'ansi-pattern',
+        patternTitle: 'ANSI Color Pattern',
+        response: { type: 'log', path: '/tmp/test.log' },
+        matchedText: coloredText,
+        bufferContent: 'buffer',
+        strippedBufferContent: 'buffer',
+      },
+      'Pattern triggered: {{title}}\nMatched: {{matchedText}}',
+    )
 
-    const showNotification = (match: MatchResult) => {
-      const title = '🤖 Claude Composer'
-      const message = `Pattern triggered: ${match.patternId}\nMatched: ${stripAnsi(match.matchedText).substring(0, 100)}`
+    showPatternNotification(match)
 
-      notifier.notify({
-        title,
-        message,
-        timeout: false,
-        wait: false,
-        sound: false,
-      })
-    }
-
-    showNotification(match)
-
+    // The template utils should handle stripping ANSI codes
     expect(mockNotify).toHaveBeenCalledWith({
       title: '🤖 Claude Composer',
       message:
-        'Pattern triggered: ansi-pattern\nMatched: Colored text with red content',
-      timeout: false,
+        'Pattern triggered: ANSI Color Pattern\nMatched: Colored text with red content',
+      timeout: undefined,
       wait: false,
       sound: false,
     })
+  })
+
+  it('should not show notification when notification property is not set', () => {
+    const match: MatchResult = {
+      patternId: 'no-notification',
+      patternTitle: 'No Notification Pattern',
+      response: 'test',
+      matchedText: 'some text',
+      bufferContent: 'buffer',
+      strippedBufferContent: 'buffer',
+      // No notification property
+    }
+
+    showPatternNotification(match)
+
+    expect(mockNotify).not.toHaveBeenCalled()
   })
 })

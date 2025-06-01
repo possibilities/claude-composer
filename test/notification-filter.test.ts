@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { MatchResult } from '../src/patterns/matcher'
-import stripAnsi from 'strip-ansi'
+import { showPatternNotification, notifier } from '../src/utils/notifications'
+import { createMatchWithNotification } from './test-notification-utils'
 
 vi.mock('node-notifier', () => ({
   default: {
@@ -8,7 +9,6 @@ vi.mock('node-notifier', () => ({
   },
 }))
 
-import notifier from 'node-notifier'
 const mockNotify = vi.mocked(notifier.notify)
 
 describe('Notification filtering by action type', () => {
@@ -16,92 +16,94 @@ describe('Notification filtering by action type', () => {
     vi.clearAllMocks()
   })
 
-  it('should only show notifications for input action type patterns', () => {
+  it('should only show notifications for patterns with notification property', () => {
     // Test matches with different action types
-    const inputMatch: MatchResult = {
-      patternId: 'edit-file-prompt',
-      patternTitle: 'Edit File',
-      response: '1',
-      matchedText: 'Edit file prompt',
-      bufferContent: 'buffer',
-      strippedBufferContent: 'buffer',
-    }
-
-    const logMatch: MatchResult = {
-      patternId: 'edit-file-log',
-      patternTitle: 'Edit File Log',
-      response: { type: 'log', path: '/tmp/test.log' },
-      matchedText: 'Edit file prompt',
-      bufferContent: 'buffer',
-      strippedBufferContent: 'buffer',
-    }
-
-    // Simulate the notification logic from cli.ts
-    const showNotificationForMatch = (
-      match: MatchResult,
-      showNotifications: boolean,
-    ) => {
-      // Check if response is a simple string/array (input type) vs object (log type)
-      const isInputPattern =
-        typeof match.response === 'string' || Array.isArray(match.response)
-      if (showNotifications && isInputPattern) {
-        const projectName = 'test-project'
-        const title = '🤖 Claude Composer'
-        const message = `Project: ${projectName}\nPattern triggered: ${match.patternId}`
-
-        notifier.notify({
-          title,
-          message,
-          wait: false,
-          sound: false,
-          timeout: 5000,
-        })
-      }
-    }
-
-    // Test with notifications enabled
-    showNotificationForMatch(inputMatch, true)
-    showNotificationForMatch(logMatch, true)
-
-    // Should only have been called once for the input match
-    expect(mockNotify).toHaveBeenCalledTimes(1)
-    expect(mockNotify).toHaveBeenCalledWith({
-      title: '🤖 Claude Composer',
-      message: 'Project: test-project\nPattern triggered: edit-file-prompt',
-      wait: false,
-      sound: false,
-      timeout: 5000,
-    })
-
-    // Clear mocks
-    mockNotify.mockClear()
-
-    // Test with notifications disabled
-    showNotificationForMatch(inputMatch, false)
-    showNotificationForMatch(logMatch, false)
-
-    // Should not have been called when notifications are disabled
-    expect(mockNotify).not.toHaveBeenCalled()
-  })
-
-  it('should handle multiple input patterns correctly', () => {
-    const matches: MatchResult[] = [
+    const inputMatchWithNotification = createMatchWithNotification(
       {
         patternId: 'edit-file-prompt',
         patternTitle: 'Edit File',
         response: '1',
-        matchedText: 'Edit file',
+        matchedText: 'Edit file prompt',
         bufferContent: 'buffer',
         strippedBufferContent: 'buffer',
       },
+      'Project: {{project}}\nPattern triggered: {{title}}',
+    )
+
+    const logMatchWithNotification = createMatchWithNotification(
       {
-        patternId: 'create-file-prompt',
-        patternTitle: 'Create File',
-        response: '1',
-        matchedText: 'Create file',
+        patternId: 'edit-file-log',
+        patternTitle: 'Edit File Log',
+        response: { type: 'log', path: '/tmp/test.log' },
+        matchedText: 'Edit file prompt',
         bufferContent: 'buffer',
         strippedBufferContent: 'buffer',
       },
+      'Log created: {{title}}',
+    )
+
+    const inputMatchWithoutNotification: MatchResult = {
+      patternId: 'no-notification-pattern',
+      patternTitle: 'No Notification',
+      response: '2',
+      matchedText: 'Some prompt',
+      bufferContent: 'buffer',
+      strippedBufferContent: 'buffer',
+      // No notification property
+    }
+
+    // Test with notifications
+    showPatternNotification(inputMatchWithNotification)
+    showPatternNotification(logMatchWithNotification)
+    showPatternNotification(inputMatchWithoutNotification)
+
+    // Should be called twice (only for matches with notification property)
+    expect(mockNotify).toHaveBeenCalledTimes(2)
+
+    // Verify the first call has project name from template
+    expect(mockNotify).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        title: '🤖 Claude Composer',
+        message: expect.stringContaining('Pattern triggered: Edit File'),
+      }),
+    )
+
+    expect(mockNotify).toHaveBeenNthCalledWith(2, {
+      title: '🤖 Claude Composer',
+      message: 'Log created: Edit File Log',
+      wait: false,
+      sound: false,
+      timeout: undefined,
+    })
+  })
+
+  it('should handle multiple patterns correctly', () => {
+    const matches: Array<
+      MatchResult | ReturnType<typeof createMatchWithNotification>
+    > = [
+      createMatchWithNotification(
+        {
+          patternId: 'edit-file-prompt',
+          patternTitle: 'Edit File',
+          response: '1',
+          matchedText: 'Edit file',
+          bufferContent: 'buffer',
+          strippedBufferContent: 'buffer',
+        },
+        'Project: {{project}}\nPattern triggered: {{title}}',
+      ),
+      createMatchWithNotification(
+        {
+          patternId: 'create-file-prompt',
+          patternTitle: 'Create File',
+          response: '1',
+          matchedText: 'Create file',
+          bufferContent: 'buffer',
+          strippedBufferContent: 'buffer',
+        },
+        'Project: {{project}}\nPattern triggered: {{title}}',
+      ),
       {
         patternId: 'edit-file-log',
         patternTitle: 'Edit File Log',
@@ -109,6 +111,7 @@ describe('Notification filtering by action type', () => {
         matchedText: 'Edit file',
         bufferContent: 'buffer',
         strippedBufferContent: 'buffer',
+        // No notification
       },
       {
         patternId: 'create-file-log',
@@ -117,51 +120,55 @@ describe('Notification filtering by action type', () => {
         matchedText: 'Create file',
         bufferContent: 'buffer',
         strippedBufferContent: 'buffer',
+        // No notification
       },
     ]
 
-    // Simulate processing matches
-    const processMatches = (
-      matches: MatchResult[],
-      showNotifications: boolean,
-    ) => {
-      for (const match of matches) {
-        // Check if response is a simple string/array (input type) vs object (log type)
-        const isInputPattern =
-          typeof match.response === 'string' || Array.isArray(match.response)
-        if (showNotifications && isInputPattern) {
-          const projectName = 'test-project'
-          const title = '🤖 Claude Composer'
-          const message = `Project: ${projectName}\nPattern triggered: ${match.patternId}`
+    // Process all matches
+    matches.forEach(match => showPatternNotification(match))
 
-          notifier.notify({
-            title,
-            message,
-            wait: false,
-            sound: false,
-            timeout: 5000,
-          })
-        }
-      }
-    }
-
-    processMatches(matches, true)
-
-    // Should only be called for the two input action matches
+    // Should only be called for the two matches with notification property
     expect(mockNotify).toHaveBeenCalledTimes(2)
-    expect(mockNotify).toHaveBeenNthCalledWith(1, {
+    expect(mockNotify).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        title: '🤖 Claude Composer',
+        message: expect.stringContaining('Pattern triggered: Edit File'),
+      }),
+    )
+    expect(mockNotify).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        title: '🤖 Claude Composer',
+        message: expect.stringContaining('Pattern triggered: Create File'),
+      }),
+    )
+  })
+
+  it('should respect appConfig.show_notifications setting', () => {
+    const match = createMatchWithNotification(
+      {
+        patternId: 'test-pattern',
+        patternTitle: 'Test Pattern',
+        response: '1',
+        matchedText: 'Test',
+        bufferContent: 'buffer',
+        strippedBufferContent: 'buffer',
+      },
+      'Test notification: {{title}}',
+    )
+
+    // The actual filtering by appConfig happens in index.ts
+    // This test just verifies our notification function works
+    showPatternNotification(match)
+
+    expect(mockNotify).toHaveBeenCalledOnce()
+    expect(mockNotify).toHaveBeenCalledWith({
       title: '🤖 Claude Composer',
-      message: 'Project: test-project\nPattern triggered: edit-file-prompt',
+      message: 'Test notification: Test Pattern',
       wait: false,
       sound: false,
-      timeout: 5000,
-    })
-    expect(mockNotify).toHaveBeenNthCalledWith(2, {
-      title: '🤖 Claude Composer',
-      message: 'Project: test-project\nPattern triggered: create-file-prompt',
-      wait: false,
-      sound: false,
-      timeout: 5000,
+      timeout: undefined,
     })
   })
 })

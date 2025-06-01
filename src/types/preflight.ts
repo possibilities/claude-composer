@@ -19,6 +19,7 @@ export interface PreflightResult {
 
 export interface ParsedOptions {
   showNotifications?: boolean
+  stickyNotifications?: boolean
   dangerouslyDismissEditFilePrompts?: boolean
   dangerouslyDismissCreateFilePrompts?: boolean
   dangerouslyDismissBashCommandPrompts?: boolean

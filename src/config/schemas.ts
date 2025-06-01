@@ -3,6 +3,7 @@ import { z } from 'zod'
 export const appConfigSchema = z
   .object({
     show_notifications: z.boolean().optional(),
+    sticky_notifications: z.boolean().optional(),
     dangerously_dismiss_edit_file_prompts: z.boolean().optional(),
     dangerously_dismiss_create_file_prompts: z.boolean().optional(),
     dangerously_dismiss_bash_command_prompts: z.boolean().optional(),

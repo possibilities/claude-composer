@@ -5,7 +5,6 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
 import * as util from 'node:util'
-import notifier from 'node-notifier'
 import clipboardy from 'clipboardy'
 import { PatternMatcher, MatchResult } from './patterns/matcher'
 import { ResponseQueue } from './core/response-queue'
@@ -18,7 +17,10 @@ import {
   log,
   warn,
 } from './core/preflight.js'
-import { stripBoxChars } from './utils/strip-box-chars.js'
+import {
+  showPatternNotification,
+  showSnapshotNotification,
+} from './utils/notifications.js'
 
 let ptyProcess: pty.IPty | undefined
 let childProcess: ChildProcess | undefined
@@ -92,13 +94,7 @@ async function saveTerminalSnapshot(): Promise<void> {
     // Show notification if enabled
     if (appConfig.show_notifications !== false) {
       const projectName = path.basename(process.cwd())
-      notifier.notify({
-        title: '📸 Claude Composer',
-        message: `Terminal snapshot saved\nProject: ${projectName}\nPath to snapshot copied to clipboard`,
-        wait: false,
-        sound: false,
-        timeout: 5000,
-      })
+      showSnapshotNotification(projectName, appConfig)
     }
   } catch (error) {}
 }
@@ -304,46 +300,6 @@ process.on('uncaughtException', error => {
   process.exit(1)
 })
 
-function replacePlaceholders(template: string, match: MatchResult): string {
-  let result = template
-
-  // Replace standard placeholders
-  const projectName = path.basename(process.cwd())
-  result = result.replace(/\{\{\s*title\s*\}\}/gi, match.patternTitle)
-  result = result.replace(/\{\{\s*project\s*\}\}/gi, projectName)
-
-  // Replace placeholders from extractedData
-  if (match.extractedData) {
-    for (const [key, value] of Object.entries(match.extractedData)) {
-      const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'gi')
-      // Strip box chars, then remove empty lines and trim whitespace
-      const strippedValue = stripBoxChars(value)
-      const cleanValue = strippedValue
-        .split('\n')
-        .map(line => line.trim())
-        .filter(line => line.length > 0)
-        .join('\n')
-        .trim()
-      result = result.replace(regex, cleanValue)
-    }
-  }
-
-  return result
-}
-
-function showNotification(match: MatchResult): void {
-  const title = '🤖 Claude Composer'
-  const message = replacePlaceholders(match.notification || '', match)
-
-  notifier.notify({
-    title,
-    message,
-    wait: false,
-    sound: false,
-    timeout: 5000,
-  })
-}
-
 function handlePatternMatches(data: string): void {
   const matches = patternMatcher.processData(data)
 
@@ -351,7 +307,7 @@ function handlePatternMatches(data: string): void {
     responseQueue.enqueue(match.response)
 
     if (appConfig.show_notifications !== false && match.notification) {
-      showNotification(match)
+      showPatternNotification(match, appConfig)
     }
   }
 }

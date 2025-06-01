@@ -120,6 +120,17 @@ export async function runPreflight(
     log('※ Ignoring global configuration file')
   }
 
+  // Handle notification flags with proper precedence
+  // --sticky-notifications always enables show_notifications unless explicitly disabled after
+  if (parsedOptions.stickyNotifications !== undefined) {
+    appConfig.sticky_notifications = parsedOptions.stickyNotifications
+    // --sticky-notifications implies --show-notifications
+    if (parsedOptions.stickyNotifications === true) {
+      appConfig.show_notifications = true
+    }
+  }
+
+  // Process showNotifications after sticky to allow explicit override
   if (parsedOptions.showNotifications !== undefined) {
     appConfig.show_notifications = parsedOptions.showNotifications
   }

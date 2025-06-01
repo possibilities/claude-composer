@@ -12,6 +12,14 @@ export function createClaudeComposerCommand(): Command {
     )
     .option('--no-show-notifications', 'Disable notifications')
     .option(
+      '--sticky-notifications',
+      'Enable notifications that stay on screen until manually dismissed (also enables --show-notifications)',
+    )
+    .option(
+      '--no-sticky-notifications',
+      'Make notifications auto-dismiss after timeout (default)',
+    )
+    .option(
       '--dangerously-dismiss-edit-file-prompts',
       'Automatically dismiss edit file prompts',
     )
@@ -148,6 +156,8 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   })
 
   knownOptions.add('--no-show-notifications')
+  knownOptions.add('--sticky-notifications')
+  knownOptions.add('--no-sticky-notifications')
   knownOptions.add('--no-dangerously-dismiss-edit-file-prompts')
   knownOptions.add('--no-dangerously-dismiss-create-file-prompts')
   knownOptions.add('--no-dangerously-dismiss-bash-command-prompts')
