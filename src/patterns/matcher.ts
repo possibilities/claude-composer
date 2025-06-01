@@ -8,6 +8,7 @@ export interface PatternConfig {
   title: string
   pattern: string[]
   response: string | string[] | (() => string | string[])
+  selfClearing?: boolean
 }
 
 export interface MatchResult {
@@ -90,7 +91,13 @@ export class PatternMatcher {
       current.lastLineNumber > bottomMost.lastLineNumber ? current : bottomMost,
     )
 
+    // Get the pattern config for the bottom-most match
+    const matchedPattern = this.patterns.get(bottomMostMatch.patternId)
+    const isSelfClearing = matchedPattern?.config.selfClearing || false
+
+    // Skip duplicate check for self-clearing patterns
     if (
+      !isSelfClearing &&
       this.previousMatch &&
       this.previousMatch.fullMatchedContent ===
         bottomMostMatch.fullMatchedContent

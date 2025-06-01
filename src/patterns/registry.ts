@@ -24,6 +24,7 @@ function buildTriggerPattern(
       }).trim()}\n<\/${tag}>\n`,
     ],
     pattern: [followedByCursor(trigger)],
+    selfClearing: true,
   }
 }
 
