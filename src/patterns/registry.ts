@@ -70,8 +70,8 @@ export const patterns: PatternConfig[] = [
     response: '1',
     pattern: [
       'Bash command',
-      // '{{ command }}',
-      // '{{ description }}',
+      '{{ command }}',
+      '{{ description }}',
       'Do you want to proceed?',
       '❯ 1. Yes',
       'No, and tell Claude what to do differently (esc)',

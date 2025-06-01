@@ -201,6 +201,42 @@ export async function runPreflight(
     }
   }
 
+  // Check for mutually exclusive options
+  const hasToolsetFlag =
+    parsedOptions.toolset && parsedOptions.toolset.length > 0
+  const hasToolsetConfig =
+    appConfig.toolsets &&
+    appConfig.toolsets.length > 0 &&
+    parsedOptions.defaultToolsets !== false
+  const hasToolsetConfiguration = hasToolsetFlag || hasToolsetConfig
+
+  const mutuallyExclusiveFlags = [
+    '--mcp-config',
+    '--allowed-tools',
+    '--disallowed-tools',
+  ]
+  const usedMutuallyExclusiveFlags = argv.filter(arg => {
+    // Check exact matches and variations with = sign
+    return mutuallyExclusiveFlags.some(
+      flag => arg === flag || arg.startsWith(flag + '='),
+    )
+  })
+
+  if (hasToolsetConfiguration && usedMutuallyExclusiveFlags.length > 0) {
+    const toolsetSource = hasToolsetFlag ? '--toolset' : 'toolsets in config'
+    console.error(
+      `※ Error: ${toolsetSource} is mutually exclusive with: ${usedMutuallyExclusiveFlags.join(', ')}`,
+    )
+    return {
+      appConfig,
+      toolsetArgs: [],
+      childArgs: [],
+      shouldExit: true,
+      exitCode: 1,
+      knownOptions,
+    }
+  }
+
   const childArgs: string[] = []
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i]
