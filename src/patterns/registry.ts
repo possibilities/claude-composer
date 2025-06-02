@@ -56,6 +56,7 @@ const patternsArray: PatternConfig[] = [
     notification: dedent(
       `
       Action: {{ title }}
+      Response: {{ actionResponse }} {{ actionResponseIcon }}
       Project: {{ project }}
       File: {{ fileName }}
       `,
@@ -71,6 +72,7 @@ const patternsArray: PatternConfig[] = [
     notification: dedent(
       `
       Action: {{ title }}
+      Response: {{ actionResponse }} {{ actionResponseIcon }}
       Project: {{ project }}
       File: {{ fileName }}
       `,
@@ -94,11 +96,13 @@ const patternsArray: PatternConfig[] = [
       `
       TEMP
       Action: {{ title }} (a)
+      Response: {{ actionResponse }} {{ actionResponseIcon }}
       Project: {{ project }}
       Test: {{ test }}
       `,
       // `
       // Action: {{ title }} (a)
+      // Response: {{ actionResponse }} {{ actionResponseIcon }}
       // Project: {{ project }}
       // Command: {{ command }}
       // Reason: {{ reason }}
@@ -124,11 +128,13 @@ const patternsArray: PatternConfig[] = [
       `
       TEMP
       Action: {{ title }} (b)
+      Response: {{ actionResponse }} {{ actionResponseIcon }}
       Project: {{ project }}
       Test: {{ test }}
       `,
       // `
       // Action: {{ title }} (b)
+      // Response: {{ actionResponse }} {{ actionResponseIcon }}
       // Project: {{ project }}
       // Command: {{ command }}
       // `,
@@ -146,6 +152,7 @@ const patternsArray: PatternConfig[] = [
     notification: dedent(
       `
       Action: {{ title }}
+      Response: {{ actionResponse }} {{ actionResponseIcon }}
       Project: {{ project }}
       File: {{ fileName }}
       `,
@@ -167,6 +174,7 @@ const patternsArray: PatternConfig[] = [
     notification: dedent(
       `
       Action: {{ title }}
+      Response: {{ actionResponse }} {{ actionResponseIcon }}
       Project: {{ project }}
       Domain: {{ domain }}
       URL: {{ url }}

@@ -76,46 +76,7 @@ async function initializePatterns(): Promise<boolean> {
       promptTriggers.add(pattern.triggerText)
     }
 
-    if (
-      pattern.id === 'edit-file-prompt' &&
-      !appConfig.dangerously_dismiss_edit_file_prompts &&
-      !mergedRuleset?.dismiss_project_edit_file_prompts &&
-      !mergedRuleset?.dismiss_global_edit_file_prompts
-    ) {
-      return
-    }
-    if (
-      pattern.id === 'create-file-prompt' &&
-      !appConfig.dangerously_dismiss_create_file_prompts &&
-      !mergedRuleset?.dismiss_project_create_file_prompts &&
-      !mergedRuleset?.dismiss_global_create_file_prompts
-    ) {
-      return
-    }
-    if (
-      (pattern.id === 'bash-command-prompt-format-1' ||
-        pattern.id === 'bash-command-prompt-format-2') &&
-      !appConfig.dangerously_dismiss_bash_command_prompts &&
-      !mergedRuleset?.dismiss_project_bash_command_prompts &&
-      !mergedRuleset?.dismiss_global_bash_command_prompts
-    ) {
-      return
-    }
-    if (
-      pattern.id === 'read-files-prompt' &&
-      !appConfig.dangerously_dismiss_read_files_prompts &&
-      !mergedRuleset?.dismiss_project_read_files_prompts &&
-      !mergedRuleset?.dismiss_global_read_files_prompts
-    ) {
-      return
-    }
-    if (
-      pattern.id === 'fetch-content-prompt' &&
-      !appConfig.dangerously_dismiss_fetch_content_prompts &&
-      !mergedRuleset?.dismiss_fetch_content_prompts
-    ) {
-      return
-    }
+    // Always add prompt patterns so notifications work, dismissal is handled later
     if (
       pattern.id === 'add-tree-trigger' &&
       !appConfig.allow_adding_project_tree
@@ -235,14 +196,27 @@ function handlePatternMatches(
       match.patternId === 'add-changes-trigger' ||
       match.type === 'completion'
 
+    let actionResponse: 'Dismissed' | 'Prompted' | undefined
+    let actionResponseIcon: string | undefined
+
     if (isCompletionPattern) {
       responseQueue.enqueue(match.response)
     } else if (shouldDismissPrompt(match)) {
       responseQueue.enqueue(match.response)
+      actionResponse = 'Dismissed'
+      actionResponseIcon = '👍'
+    } else if (match.type === 'prompt') {
+      actionResponse = 'Prompted'
+      actionResponseIcon = '✋'
     }
 
     if (appConfig.show_notifications !== false && match.notification) {
-      showPatternNotification(match, appConfig)
+      showPatternNotification(
+        match,
+        appConfig,
+        actionResponse,
+        actionResponseIcon,
+      )
     }
   }
 }
