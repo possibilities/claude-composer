@@ -20,6 +20,7 @@ import {
   saveTerminalSnapshot,
 } from './terminal/utils'
 import type { TerminalConfig } from './terminal/types'
+import { InterruptMonitor } from './core/interrupt-monitor'
 
 let patternMatcher: PatternMatcher
 let responseQueue: ResponseQueue
@@ -27,6 +28,7 @@ let terminalManager: TerminalManager
 let tempMcpConfigPath: string | undefined
 let appConfig: AppConfig | undefined
 let promptPatternTriggers: string[] = []
+let interruptMonitor: InterruptMonitor | undefined
 
 const debugLog = util.debuglog('claude-composer')
 
@@ -463,6 +465,14 @@ export async function main() {
       const newCols = process.stdout.columns || 80
       const newRows = process.stdout.rows || 30
       terminalManager.resize(newCols, newRows)
+    })
+  }
+
+  // Initialize interrupt monitor and start polling
+  if (appConfig) {
+    interruptMonitor = new InterruptMonitor(appConfig)
+    terminalManager.startTerminalPolling(1000, (snapshot: string) => {
+      interruptMonitor?.checkSnapshot(snapshot)
     })
   }
 }

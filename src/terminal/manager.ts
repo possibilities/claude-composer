@@ -28,6 +28,7 @@ export class TerminalManager {
   private tempMcpConfigPath?: string
   private appConfig?: AppConfig
   private responseQueue?: ResponseQueue
+  private pollingCallback?: (snapshot: string) => void
 
   constructor(appConfig?: AppConfig, responseQueue?: ResponseQueue) {
     this.appConfig = appConfig
@@ -307,5 +308,33 @@ export class TerminalManager {
       clearTimeout(this.state.pendingPromptCheck)
     }
     this.state.pendingPromptCheck = timeout
+  }
+
+  startTerminalPolling(
+    intervalMs: number,
+    callback: (snapshot: string) => void,
+  ): void {
+    // Clear any existing polling interval
+    if (this.state.screenReadInterval) {
+      clearInterval(this.state.screenReadInterval)
+    }
+
+    this.pollingCallback = callback
+
+    // Set up the polling interval
+    this.state.screenReadInterval = setInterval(async () => {
+      const snapshot = await this.captureSnapshot()
+      if (snapshot && this.pollingCallback) {
+        this.pollingCallback(snapshot)
+      }
+    }, intervalMs)
+  }
+
+  stopTerminalPolling(): void {
+    if (this.state.screenReadInterval) {
+      clearInterval(this.state.screenReadInterval)
+      this.state.screenReadInterval = undefined
+    }
+    this.pollingCallback = undefined
   }
 }
