@@ -1,5 +1,6 @@
 import { Worker } from 'worker_threads'
 import * as path from 'path'
+import { fileURLToPath } from 'url'
 import { EventEmitter } from 'events'
 import type { PatternConfig } from '../../config/schemas'
 import type {
@@ -77,6 +78,8 @@ export class PatternMatchingWorker extends EventEmitter {
 
     try {
       // Create worker thread
+      const __filename = fileURLToPath(import.meta.url)
+      const __dirname = path.dirname(__filename)
       const workerPath = path.join(__dirname, 'worker-thread.js')
       this.worker = new Worker(workerPath)
 
