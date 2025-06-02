@@ -264,7 +264,7 @@ export async function handleDangerFlagsWarning(
 
   const proceed = await askYesNo(
     'Do you want to continue with these dangerous settings?',
-    false,
+    true,
     preflightOptions?.stdin,
     preflightOptions?.stdout,
   )
