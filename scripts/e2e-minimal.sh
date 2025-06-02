@@ -3,6 +3,8 @@
 set -e
 set -o verbose
 
+pnpm build
+
 rm -rf /tmp/claude-composer-e2e
 mkdir /tmp/claude-composer-e2e
 export cli_path=$(pwd)/dist/cli.js
