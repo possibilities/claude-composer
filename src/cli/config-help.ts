@@ -2,8 +2,10 @@ export function getConfigHelp(): string {
   return `
 Configuration File Options for claude-composer
 
-Configuration files are stored in ~/.claude-composer/ (or CLAUDE_COMPOSER_CONFIG_DIR)
-Main config: ~/.claude-composer/config.yaml
+Configuration files can be stored in two locations:
+1. Global config: ~/.claude-composer/config.yaml (or CLAUDE_COMPOSER_CONFIG_DIR)
+2. Project config: .claude-composer/config.yaml (in current working directory)
+
 Toolsets: ~/.claude-composer/toolsets/<name>.yaml
 
 MAIN CONFIGURATION OPTIONS (config.yaml)
@@ -112,6 +114,16 @@ mcp:
     args: ["@example/mcp-server"]
 
 
-Note: Command-line arguments always take precedence over configuration file settings.
+CONFIGURATION PRECEDENCE
+========================
+
+Settings are loaded with the following precedence (highest to lowest):
+1. Command-line arguments (always win)
+2. Project config (.claude-composer/config.yaml in current directory)
+3. Global config (~/.claude-composer/config.yaml)
+4. Built-in defaults
+
+Note: For toolsets, project config completely replaces global config (no merging).
+      CLI-specified toolsets replace both project and global toolsets.
 `
 }

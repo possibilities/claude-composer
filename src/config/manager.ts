@@ -86,32 +86,71 @@ export class ConfigurationManager {
     const { configPath, ignoreGlobalConfig, toolsetNames, cliOverrides } =
       options
 
-    // Load app config
+    // Start with defaults
+    let config = this.getDefaultAppConfig()
+
+    // Load global config
     if (!ignoreGlobalConfig) {
-      await this.loadAppConfig(configPath)
+      const globalConfig = await this.loadConfigFile(
+        configPath || CONFIG_PATHS.getConfigFilePath(),
+      )
+      if (globalConfig) {
+        config = mergeConfigs([
+          { config, precedence: ConfigPrecedence.DEFAULT },
+          { config: globalConfig, precedence: ConfigPrecedence.CONFIG_FILE },
+        ])
+      }
+    }
+
+    // Load project config
+    const projectConfigPath = CONFIG_PATHS.getProjectConfigFilePath()
+    if (fs.existsSync(projectConfigPath)) {
+      const projectConfig = await this.loadConfigFile(projectConfigPath)
+      if (projectConfig) {
+        // Special handling for toolsets - project completely replaces global
+        const mergedConfig = mergeConfigs([
+          { config, precedence: ConfigPrecedence.CONFIG_FILE },
+          { config: projectConfig, precedence: ConfigPrecedence.CLI_FLAG }, // Higher precedence
+        ])
+
+        // If project config has toolsets, use only those
+        if (projectConfig.toolsets !== undefined) {
+          mergedConfig.toolsets = projectConfig.toolsets
+        }
+
+        config = mergedConfig
+      }
     }
 
     // Apply CLI overrides with highest precedence
     if (cliOverrides) {
-      this.applyCliOverrides(cliOverrides)
+      config = mergeConfigs([
+        { config, precedence: ConfigPrecedence.CONFIG_FILE },
+        { config: cliOverrides, precedence: ConfigPrecedence.CLI_FLAG },
+      ])
+
+      // If CLI specifies toolsets, use only those
+      if (cliOverrides.toolsets !== undefined) {
+        config.toolsets = cliOverrides.toolsets
+      }
     }
 
+    this.state.appConfig = config
+
     // Load toolsets if specified
-    if (toolsetNames && toolsetNames.length > 0) {
-      await this.loadToolsets(toolsetNames)
+    const toolsetsToLoad = toolsetNames || config.toolsets
+    if (toolsetsToLoad && toolsetsToLoad.length > 0) {
+      await this.loadToolsets(toolsetsToLoad)
     }
   }
 
   /**
-   * Load app configuration from file
+   * Load configuration from file
    */
-  private async loadAppConfig(configPath?: string): Promise<void> {
-    const filePath = configPath || CONFIG_PATHS.getConfigFilePath()
-
+  private async loadConfigFile(filePath: string): Promise<AppConfig | null> {
     if (!fs.existsSync(filePath)) {
-      // Config file is optional, use defaults
-      this.state.appConfig = this.getDefaultAppConfig()
-      return
+      // Config file is optional
+      return null
     }
 
     try {
@@ -123,7 +162,7 @@ export class ConfigurationManager {
         throw new ConfigValidationError(result.error, filePath)
       }
 
-      this.state.appConfig = result.data
+      return result.data
     } catch (error) {
       if (error instanceof ConfigurationError) {
         throw error
@@ -133,23 +172,6 @@ export class ConfigurationManager {
         'CONFIG_LOAD_ERROR',
       )
     }
-  }
-
-  /**
-   * Apply CLI overrides to configuration
-   */
-  private applyCliOverrides(overrides: Partial<AppConfig>): void {
-    if (!this.state.appConfig) {
-      this.state.appConfig = this.getDefaultAppConfig()
-    }
-
-    this.state.appConfig = mergeConfigs([
-      {
-        config: this.state.appConfig,
-        precedence: ConfigPrecedence.CONFIG_FILE,
-      },
-      { config: overrides, precedence: ConfigPrecedence.CLI_FLAG },
-    ])
   }
 
   /**

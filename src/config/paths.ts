@@ -51,6 +51,14 @@ export const CONFIG_PATHS = {
   getConfigFilePath: (): string => {
     return path.join(CONFIG_PATHS.getConfigDirectory(), 'config.yaml')
   },
+
+  /**
+   * Get the project config file path
+   * Located at .claude-composer/config.yaml in the current working directory
+   */
+  getProjectConfigFilePath: (): string => {
+    return path.join(process.cwd(), '.claude-composer', 'config.yaml')
+  },
 } as const
 
 /**
