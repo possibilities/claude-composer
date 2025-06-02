@@ -49,7 +49,6 @@ export class PatternMatcher {
     const allMatches: MatchResult[] = []
 
     for (const [id, pattern] of this.patterns) {
-      // Check if pattern contains ANSI sequences - if so, match against raw content
       const hasAnsiPattern = pattern.sequence.some(p =>
         this.containsAnsiSequence(p),
       )
@@ -87,12 +86,10 @@ export class PatternMatcher {
       current.lastLineNumber > bottomMost.lastLineNumber ? current : bottomMost,
     )
 
-    // Get the pattern config for the bottom-most match
     const matchedPattern = this.patterns.get(bottomMostMatch.patternId)
     const patternType = matchedPattern?.config.type
     const isSelfClearing = patternType === 'completion'
 
-    // Skip duplicate check for self-clearing patterns
     if (
       !isSelfClearing &&
       this.previousMatch &&
@@ -120,12 +117,10 @@ export class PatternMatcher {
     const allMatches: MatchResult[] = []
 
     for (const [id, pattern] of this.patterns) {
-      // Skip patterns that don't match the filter type
       if (pattern.config.type !== filterType) {
         continue
       }
 
-      // Check if pattern contains ANSI sequences - if so, match against raw content
       const hasAnsiPattern = pattern.sequence.some(p =>
         this.containsAnsiSequence(p),
       )
@@ -163,12 +158,10 @@ export class PatternMatcher {
       current.lastLineNumber > bottomMost.lastLineNumber ? current : bottomMost,
     )
 
-    // Get the pattern config for the bottom-most match
     const matchedPattern = this.patterns.get(bottomMostMatch.patternId)
     const patternType = matchedPattern?.config.type
     const isSelfClearing = patternType === 'completion'
 
-    // Skip duplicate check for self-clearing patterns
     if (
       !isSelfClearing &&
       this.previousMatch &&
@@ -195,7 +188,6 @@ export class PatternMatcher {
   }
 
   private containsAnsiSequence(text: string): boolean {
-    // Check for ANSI escape sequences like \x1b[...m
     return /\x1b\[[0-9;]*m/.test(text)
   }
 
@@ -214,7 +206,6 @@ export class PatternMatcher {
     }
     const lines = content.split('\n')
 
-    // Track which lines matched which patterns
     const matchedLines: Array<{
       lineIndex: number
       patternIndex: number
@@ -222,16 +213,12 @@ export class PatternMatcher {
       isMultilinePlaceholder: boolean
     }> = []
 
-    // For each pattern in sequence, find the first line that matches it
-    // (after the previous pattern match)
     let startSearchFrom = 0
 
     for (let patternIndex = 0; patternIndex < sequence.length; patternIndex++) {
       const pattern = sequence[patternIndex]
 
-      // Check if this is a multiline placeholder pattern
       if (this.isMultilinePlaceholderPattern(pattern)) {
-        // This is a multiline placeholder - we'll handle it after finding concrete patterns
         matchedLines.push({
           lineIndex: -1, // Will be filled in later
           patternIndex,
@@ -258,19 +245,17 @@ export class PatternMatcher {
             lineResult: matchResult,
             isMultilinePlaceholder: false,
           })
-          startSearchFrom = lineIndex + 1 // Next pattern must come after this line
+          startSearchFrom = lineIndex + 1
           found = true
           break
         }
       }
 
-      // If we couldn't find this concrete pattern, the sequence doesn't match
       if (!found) {
         return null
       }
     }
 
-    // Now process multiline placeholders by capturing content between concrete patterns
     const extractedData: Record<string, string> = {}
     let firstLineNumber = -1
     let lastLineNumber = -1
@@ -279,26 +264,21 @@ export class PatternMatcher {
       const match = matchedLines[i]
 
       if (!match.isMultilinePlaceholder) {
-        // This is a concrete pattern match
         if (firstLineNumber === -1) {
           firstLineNumber = match.lineIndex
         }
         lastLineNumber = match.lineIndex
 
-        // Collect extracted data from concrete patterns
         Object.assign(extractedData, match.lineResult.extractedData)
       } else {
-        // This is a multiline placeholder - capture content between patterns
         const pattern = sequence[match.patternIndex]
         const multilinePlaceholderInfo = this.parseMultilinePlaceholder(pattern)
 
         if (multilinePlaceholderInfo) {
-          // Find the previous and next concrete patterns
           const prevMatch = this.findPreviousConcreteMatch(matchedLines, i)
           const nextMatch = this.findNextConcreteMatch(matchedLines, i)
 
           if (prevMatch !== null && nextMatch !== null) {
-            // Capture content between the two concrete patterns
             const startLine = prevMatch.lineIndex + 1
             const endLine = nextMatch.lineIndex - 1
 
@@ -311,7 +291,6 @@ export class PatternMatcher {
               extractedData[multilinePlaceholderInfo.name] = ''
             }
           } else if (prevMatch !== null && nextMatch === null) {
-            // Capture from previous match to end
             const startLine = prevMatch.lineIndex + 1
             if (startLine < lines.length) {
               const capturedContent = lines.slice(startLine).join('\n')
@@ -320,7 +299,6 @@ export class PatternMatcher {
               extractedData[multilinePlaceholderInfo.name] = ''
             }
           } else if (prevMatch === null && nextMatch !== null) {
-            // Capture from beginning to next match
             const endLine = nextMatch.lineIndex - 1
             if (endLine >= 0) {
               const capturedContent = lines.slice(0, endLine + 1).join('\n')
@@ -371,7 +349,6 @@ export class PatternMatcher {
       let name: string
       let type: 'simple' | 'multiline' = 'simple'
 
-      // Check for pipe syntax: {{ name | type }}
       if (content.includes('|')) {
         const parts = content.split('|').map(p => p.trim())
         name = parts[0]
@@ -392,18 +369,14 @@ export class PatternMatcher {
     }
 
     if (placeholders.length === 0) {
-      // No placeholders, use simple string matching
       return {
         matches: line.includes(pattern),
         extractedData: {},
       }
     }
 
-    // Build regex pattern by replacing placeholders with capture groups
-    // Use a simpler approach: replace placeholders first, then escape
     let regexPattern = pattern
 
-    // Replace all placeholders with a unique marker first
     const PLACEHOLDER_MARKER = '___PLACEHOLDER___'
     for (let i = placeholders.length - 1; i >= 0; i--) {
       const placeholder = placeholders[i]
@@ -412,11 +385,8 @@ export class PatternMatcher {
       regexPattern = before + PLACEHOLDER_MARKER + after
     }
 
-    // Escape all special regex characters
     regexPattern = regexPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-    // Now replace markers with capture groups
-    // Use greedy matching that also allows empty strings
     regexPattern = regexPattern.replace(
       new RegExp(
         PLACEHOLDER_MARKER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
@@ -430,7 +400,6 @@ export class PatternMatcher {
       const lineMatch = line.match(regex)
 
       if (lineMatch) {
-        // Extract captured values - use original order for mapping to capture groups
         const originalOrderPlaceholders = [...placeholders].sort(
           (a, b) => a.start - b.start,
         )
@@ -444,7 +413,6 @@ export class PatternMatcher {
         }
       }
     } catch (error) {
-      // If regex construction fails, fall back to simple matching
       return {
         matches: line.includes(pattern.replace(/\{\{\s*\w+\s*\}\}/g, '')),
         extractedData: {},
@@ -558,9 +526,7 @@ export class PatternMatcher {
 
       const logLine = JSON.stringify(logEntry) + '\n'
       fs.appendFileSync(logFile, logLine)
-    } catch (error) {
-      // Silently ignore logging errors to avoid disrupting the main flow
-    }
+    } catch (error) {}
   }
 }
 

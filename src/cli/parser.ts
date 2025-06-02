@@ -125,7 +125,6 @@ export function parseCommandLineArgs(argv: string[]): {
       program.parse(argv)
     } catch (err) {
       if (err.exitCode === 0) {
-        // Help was displayed, we'll handle this in the caller
         return {
           program,
           options: {},

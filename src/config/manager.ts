@@ -107,13 +107,11 @@ export class ConfigurationManager {
     if (fs.existsSync(projectConfigPath)) {
       const projectConfig = await this.loadConfigFile(projectConfigPath)
       if (projectConfig) {
-        // Special handling for toolsets - project completely replaces global
         const mergedConfig = mergeConfigs([
           { config, precedence: ConfigPrecedence.CONFIG_FILE },
           { config: projectConfig, precedence: ConfigPrecedence.CLI_FLAG }, // Higher precedence
         ])
 
-        // If project config has toolsets, use only those
         if (projectConfig.toolsets !== undefined) {
           mergedConfig.toolsets = projectConfig.toolsets
         }
@@ -129,7 +127,6 @@ export class ConfigurationManager {
         { config: cliOverrides, precedence: ConfigPrecedence.CLI_FLAG },
       ])
 
-      // If CLI specifies toolsets, use only those
       if (cliOverrides.toolsets !== undefined) {
         config.toolsets = cliOverrides.toolsets
       }
@@ -149,7 +146,6 @@ export class ConfigurationManager {
    */
   private async loadConfigFile(filePath: string): Promise<AppConfig | null> {
     if (!fs.existsSync(filePath)) {
-      // Config file is optional
       return null
     }
 
@@ -205,7 +201,6 @@ export class ConfigurationManager {
         throw new ConfigValidationError(result.error, toolsetPath)
       }
 
-      // Validate MCP config if present
       if (result.data.mcp) {
         result.data.mcp = validateMcpConfig(result.data.mcp)
       }
@@ -225,13 +220,11 @@ export class ConfigurationManager {
   registerPatterns(patterns: PatternConfig[]): void {
     const { valid, invalid } = validatePatterns(patterns)
 
-    // Log warnings for invalid patterns
     for (const { pattern, errors } of invalid) {
       const id = (pattern as any)?.id || 'unknown'
       console.warn(`Invalid pattern "${id}":`, errors.join('; '))
     }
 
-    // Register valid patterns
     for (const pattern of valid) {
       this.state.patterns.set(pattern.id, pattern)
     }
@@ -267,7 +260,6 @@ export class ConfigurationManager {
   getActivePatterns(): PatternConfig[] {
     const config = this.getAppConfig()
     return this.getAllPatterns().filter(pattern => {
-      // Filter based on configuration flags
       if (
         pattern.id === 'edit-file-prompt' &&
         !config.dangerously_dismiss_edit_file_prompts
@@ -315,17 +307,14 @@ export class ConfigurationManager {
     let mcp: McpConfig = { servers: {} }
 
     for (const toolset of this.state.toolsets.values()) {
-      // Merge allowed tools
       if (toolset.allowed_tools) {
         toolset.allowed_tools.forEach(tool => allowedTools.add(tool))
       }
 
-      // Merge disallowed tools
       if (toolset.disallowed_tools) {
         toolset.disallowed_tools.forEach(tool => disallowedTools.add(tool))
       }
 
-      // Merge MCP configurations
       if (toolset.mcp?.servers) {
         mcp.servers = { ...mcp.servers, ...toolset.mcp.servers }
       }

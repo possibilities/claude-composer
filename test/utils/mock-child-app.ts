@@ -79,7 +79,6 @@ if (args.includes('--welcome')) {
         process.stdout.columns + 'x' + process.stdout.rows,
       )
     })
-    // Reduce watch timeout significantly since tests will kill the process
     setTimeout(() => {
       console.log('Size watch complete')
       process.exit(0)

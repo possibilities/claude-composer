@@ -162,7 +162,6 @@ const patternsArray: PatternConfig[] = [
   },
 ]
 
-// Validate patterns at module initialization time
 const validationResult = validatePatternConfigs(patternsArray)
 if (!validationResult.success) {
   throw new Error(

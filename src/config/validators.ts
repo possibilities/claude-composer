@@ -27,11 +27,8 @@ export function validatePattern(pattern: unknown): PatternValidationResult {
       }
     }
 
-    // Additional business logic validation
     const validatedPattern = result.data
     const errors: string[] = []
-
-    // Validate regex patterns
     if (validatedPattern.patterns) {
       for (let i = 0; i < validatedPattern.patterns.length; i++) {
         try {
@@ -42,12 +39,9 @@ export function validatePattern(pattern: unknown): PatternValidationResult {
       }
     }
 
-    // Validate trigger text for prompt patterns
     if (validatedPattern.type === 'prompt' && !validatedPattern.triggerText) {
       errors.push('triggerText is required for prompt-type patterns')
     }
-
-    // Validate response options
     if (
       validatedPattern.type === 'completion' &&
       !validatedPattern.responseOptions?.length
@@ -162,10 +156,7 @@ export enum ConfigPrecedence {
 export function mergeConfigs<T extends Record<string, any>>(
   configs: Array<{ config: Partial<T>; precedence: ConfigPrecedence }>,
 ): T {
-  // Sort by precedence (lowest first)
   const sorted = configs.sort((a, b) => a.precedence - b.precedence)
-
-  // Merge from lowest to highest precedence
   return sorted.reduce((merged, { config }) => {
     return { ...merged, ...config }
   }, {} as T)

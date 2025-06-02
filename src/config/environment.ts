@@ -75,10 +75,8 @@ export function getClaudeAppPath(env?: EnvironmentConfig): string {
     return config.appPath
   }
 
-  // Import dynamically to avoid circular dependency
   const { CLAUDE_PATHS } = require('./paths')
   return CLAUDE_PATHS.getDefaultAppPath()
 }
 
-// Need to import os for homedir fallback
 import * as os from 'node:os'

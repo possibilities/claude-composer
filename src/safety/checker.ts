@@ -194,7 +194,6 @@ export async function handleDangerFlagsWarning(
     return true
   }
 
-  // Skip interactive prompt in test environment
   if (process.env.NODE_ENV?.includes('test')) {
     console.log(
       '\x1b[33m╔════════════════════════════════════════════════════════════════╗\x1b[0m',
