@@ -112,7 +112,7 @@ export async function handleGoOffMode(
   ) {
     throw new Error(
       'Cannot use --go-off with individual dangerous prompt flags\n' +
-        'The YOLO flag already sets all dangerous prompt dismissals',
+        'The go-off flag already sets all dangerous prompt dismissals',
     )
   }
 
@@ -177,7 +177,7 @@ export async function handleGoOffMode(
     return false
   }
 
-  warn('※ YOLO mode activated - All safety prompts disabled!')
+  warn('※ Go-off mode activated - All safety prompts disabled!')
   return true
 }
 
@@ -253,7 +253,7 @@ export async function handleDangerFlagsWarning(
     '\x1b[33m║                                                                 ║\x1b[0m',
   )
   console.log(
-    '\x1b[33m║ Consider using --go-off instead for the full YOLO experience    ║\x1b[0m',
+    '\x1b[33m║ Consider using --go-off instead for the full go-off experience  ║\x1b[0m',
   )
   console.log(
     '\x1b[33m║ if you want to dismiss ALL safety prompts at once.              ║\x1b[0m',

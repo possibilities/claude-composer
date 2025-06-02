@@ -4,7 +4,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
 
-describe('YOLO Flag functionality', () => {
+describe('Go-off Flag functionality', () => {
   beforeEach(() => {
     // Environment setup handled by test utilities
   })
@@ -81,7 +81,7 @@ describe('YOLO Flag functionality', () => {
       })
 
       expect(result.stderr).toContain(
-        '※ YOLO mode activated - All safety prompts disabled!',
+        '※ Go-off mode activated - All safety prompts disabled!',
       )
       expect(result.stdout).toContain('Mock child app running')
     })
@@ -100,7 +100,7 @@ describe('YOLO Flag functionality', () => {
         'Error: Cannot use --go-off with individual dangerous prompt flags',
       )
       expect(result.stderr).toContain(
-        'The YOLO flag already sets all dangerous prompt dismissals',
+        'The go-off flag already sets all dangerous prompt dismissals',
       )
       expect(result.exitCode).toBe(1)
     })
@@ -171,7 +171,7 @@ describe('YOLO Flag functionality', () => {
       })
 
       expect(result.stderr).toContain(
-        '※ YOLO mode activated - All safety prompts disabled!',
+        '※ Go-off mode activated - All safety prompts disabled!',
       )
       expect(result.exitCode).toBe(0)
     })
