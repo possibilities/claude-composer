@@ -20,7 +20,7 @@ import {
   saveTerminalSnapshot,
 } from './terminal/utils'
 import type { TerminalConfig } from './terminal/types'
-import { InterruptMonitor } from './core/interrupt-monitor'
+import { ActivityMonitor } from './core/activity-monitor'
 import { isFileInProjectRoot } from './utils/file-utils.js'
 
 let patternMatcher: PatternMatcher
@@ -30,7 +30,7 @@ let tempMcpConfigPath: string | undefined
 let appConfig: AppConfig | undefined
 let mergedRuleset: RulesetConfig | undefined
 let promptPatternTriggers: string[] = []
-let interruptMonitor: InterruptMonitor | undefined
+let activityMonitor: ActivityMonitor | undefined
 
 const debugLog = util.debuglog('claude-composer')
 
@@ -499,9 +499,9 @@ export async function main() {
   }
 
   if (appConfig) {
-    interruptMonitor = new InterruptMonitor(appConfig)
+    activityMonitor = new ActivityMonitor(appConfig)
     terminalManager.startTerminalPolling(1000, (snapshot: string) => {
-      interruptMonitor?.checkSnapshot(snapshot)
+      activityMonitor?.checkSnapshot(snapshot)
     })
   }
 }
