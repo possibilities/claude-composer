@@ -5,8 +5,8 @@ import * as path from 'path'
 import * as fs from 'fs'
 
 describe('Default toolsets configuration', () => {
-  const CLI_PATH = path.join(__dirname, '..', 'src', 'index.ts')
-  const MOCK_APP_PATH = path.join(__dirname, 'mock-child-app.ts')
+  const CLI_PATH = path.join(__dirname, '..', '..', 'src', 'index.ts')
+  const MOCK_APP_PATH = path.join(__dirname, '..', 'utils', 'mock-child-app.ts')
   let testConfigDir: string
 
   beforeEach(() => {
@@ -66,7 +66,7 @@ disallowed:
             ...process.env,
             CLAUDE_APP_PATH: MOCK_APP_PATH,
             CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir,
-            CLAUDE_PATTERNS_PATH: './test/test-patterns',
+            CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
           },
         },
       )
@@ -144,7 +144,7 @@ disallowed:
             ...process.env,
             CLAUDE_APP_PATH: MOCK_APP_PATH,
             CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir,
-            CLAUDE_PATTERNS_PATH: './test/test-patterns',
+            CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
           },
         },
       )
@@ -198,7 +198,7 @@ disallowed:
             ...process.env,
             CLAUDE_APP_PATH: MOCK_APP_PATH,
             CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir,
-            CLAUDE_PATTERNS_PATH: './test/test-patterns',
+            CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
           },
         },
       )
@@ -275,7 +275,7 @@ mcp:
             ...process.env,
             CLAUDE_APP_PATH: MOCK_APP_PATH,
             CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir,
-            CLAUDE_PATTERNS_PATH: './test/test-patterns',
+            CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
           },
         },
       )
@@ -333,7 +333,7 @@ mcp:
             ...process.env,
             CLAUDE_APP_PATH: MOCK_APP_PATH,
             CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir,
-            CLAUDE_PATTERNS_PATH: './test/test-patterns',
+            CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
           },
         },
       )
@@ -378,7 +378,7 @@ mcp:
             ...process.env,
             CLAUDE_APP_PATH: MOCK_APP_PATH,
             CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir,
-            CLAUDE_PATTERNS_PATH: './test/test-patterns',
+            CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
           },
         },
       )
@@ -442,7 +442,7 @@ mcp:
             ...process.env,
             CLAUDE_APP_PATH: MOCK_APP_PATH,
             CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir,
-            CLAUDE_PATTERNS_PATH: './test/test-patterns',
+            CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
           },
         },
       )
@@ -516,7 +516,7 @@ mcp:
             ...process.env,
             CLAUDE_APP_PATH: MOCK_APP_PATH,
             CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir,
-            CLAUDE_PATTERNS_PATH: './test/test-patterns',
+            CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
           },
         },
       )

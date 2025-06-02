@@ -5,7 +5,7 @@ import {
   parsePatternConfig,
   parsePatternConfigs,
   type PatternConfig,
-} from '../src/config/schemas'
+} from '../../src/config/schemas'
 
 describe('PatternConfig validation', () => {
   describe('validatePatternConfig', () => {

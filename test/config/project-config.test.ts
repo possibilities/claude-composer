@@ -2,8 +2,8 @@ import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
-import { ConfigurationManager } from '../src/config/manager'
-import { CONFIG_PATHS } from '../src/config/paths'
+import { ConfigurationManager } from '../../src/config/manager'
+import { CONFIG_PATHS } from '../../src/config/paths'
 
 vi.mock('fs')
 vi.mock('yaml', () => ({

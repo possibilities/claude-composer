@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { runCli } from './test-utils'
+import { runCli } from '../utils/test-utils'
 import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
@@ -10,7 +10,7 @@ const TOOLSETS_DIR = path.join(CONFIG_DIR, 'toolsets')
 describe('--print Option Detection', () => {
   beforeEach(async () => {
     process.env.CLAUDE_COMPOSER_CONFIG_DIR = CONFIG_DIR
-    process.env.CLAUDE_PATTERNS_PATH = './test/test-patterns'
+    process.env.CLAUDE_PATTERNS_PATH = './test/utils/test-patterns'
     await fs.promises.mkdir(TOOLSETS_DIR, { recursive: true })
   })
 
@@ -33,7 +33,7 @@ describe('--print Option Detection', () => {
         ],
         env: {
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       })
       expect(result.stdout).toContain(
@@ -55,7 +55,7 @@ describe('--print Option Detection', () => {
         ],
         env: {
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       })
       expect(result.stdout).toContain(
@@ -73,7 +73,7 @@ describe('--print Option Detection', () => {
         ],
         env: {
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       })
       expect(result.stdout).toContain(
@@ -94,7 +94,7 @@ describe('--print Option Detection', () => {
         ],
         env: {
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       })
       expect(result.stdout).toContain(
@@ -125,7 +125,7 @@ describe('--print Option Detection', () => {
         ],
         env: {
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       })
       expect(result.stdout).toContain(
@@ -156,7 +156,7 @@ describe('--print Option Detection', () => {
         ],
         env: {
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       })
       expect(result.stdout).toContain(
@@ -207,7 +207,7 @@ mcp:
         ],
         env: {
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       })
 

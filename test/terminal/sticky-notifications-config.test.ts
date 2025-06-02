@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
-import { loadConfigFile } from '../src/config/loader'
-import { AppConfig } from '../src/config/schemas'
+import { loadConfigFile } from '../../src/config/loader'
+import { AppConfig } from '../../src/config/schemas'
 
 describe('Sticky notifications config file', () => {
   let tempDir: string

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
-import { runPreflight } from '../src/core/preflight'
+import { runPreflight } from '../../src/core/preflight'
 
 describe('Sticky notifications implies show notifications', () => {
   let tempDir: string

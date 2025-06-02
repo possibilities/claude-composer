@@ -4,9 +4,9 @@ import {
   showPatternNotification,
   showSnapshotNotification,
   notifier,
-} from '../src/utils/notifications'
-import { MatchResult } from '../src/patterns/matcher'
-import { AppConfig } from '../src/config/schemas'
+} from '../../src/utils/notifications'
+import { MatchResult } from '../../src/patterns/matcher'
+import { AppConfig } from '../../src/config/schemas'
 
 vi.mock('node-notifier', () => ({
   default: {

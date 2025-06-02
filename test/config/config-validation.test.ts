@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { validateAppConfig, validateToolsetConfig } from '../src/config/schemas'
+import {
+  validateAppConfig,
+  validateToolsetConfig,
+} from '../../src/config/schemas'
 
 describe('Config Validation', () => {
   describe('AppConfig validation', () => {

@@ -1,5 +1,5 @@
-import { MatchResult } from '../src/patterns/matcher'
-import { showPatternNotification } from '../src/utils/notifications'
+import { MatchResult } from '../../src/patterns/matcher'
+import { showPatternNotification } from '../../src/utils/notifications'
 
 // Helper function to create a MatchResult with notification
 export function createMatchWithNotification(

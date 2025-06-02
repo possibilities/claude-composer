@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import { PatternMatcher, type PatternConfig } from '../src/patterns/matcher'
+import { PatternMatcher, type PatternConfig } from '../../src/patterns/matcher'
 import { readFileSync, unlinkSync, existsSync } from 'fs'
 
 describe('PatternMatcher', () => {

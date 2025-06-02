@@ -28,6 +28,7 @@ const CLI_PATH = path.join(process.cwd(), 'src/index.ts')
 const DEFAULT_MOCK_APP_PATH = path.join(
   process.cwd(),
   'test',
+  'utils',
   'mock-child-app.ts',
 )
 

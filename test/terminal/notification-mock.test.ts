@@ -3,7 +3,7 @@ import {
   showNotification,
   showPatternNotification,
   showSnapshotNotification,
-} from '../src/utils/notifications'
+} from '../../src/utils/notifications'
 
 describe('Notification mocking', () => {
   it('should be able to mock showNotification directly', () => {

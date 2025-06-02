@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
-import { runCli } from './test-utils'
+import { runCli } from '../utils/test-utils'
 
 describe('--ignore-global-config flag', () => {
   let tempConfigDir: string

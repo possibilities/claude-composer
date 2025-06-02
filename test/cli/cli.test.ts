@@ -4,8 +4,8 @@ import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
 
-const cliPath = path.join(__dirname, '..', 'dist', 'cli.js')
-const mockAppPath = path.join(__dirname, 'mock-child-app.ts')
+const cliPath = path.join(__dirname, '..', '..', 'dist', 'cli.js')
+const mockAppPath = path.join(__dirname, '..', 'utils', 'mock-child-app.ts')
 
 describe('CLI Wrapper', () => {
   beforeEach(() => {
@@ -121,7 +121,7 @@ describe('CLI Wrapper', () => {
           env: {
             ...process.env,
             CLAUDE_APP_PATH: mockAppPath,
-            CLAUDE_PATTERNS_PATH: './test/test-patterns',
+            CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
           },
         },
       )

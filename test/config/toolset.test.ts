@@ -4,7 +4,7 @@ import path from 'path'
 import fs from 'fs'
 import os from 'os'
 
-const CLI_PATH = path.join(__dirname, '..', 'src', 'index.ts')
+const CLI_PATH = path.join(__dirname, '..', '..', 'src', 'index.ts')
 const TEST_ID = `test-${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 const CONFIG_DIR = path.join(os.tmpdir(), TEST_ID, '.claude-composer')
 const TOOLSETS_DIR = path.join(CONFIG_DIR, 'toolsets')
@@ -42,12 +42,17 @@ describe('Toolset functionality', () => {
         '--echo-args',
       ],
       {
-        cwd: path.join(__dirname, '..'),
+        cwd: path.join(__dirname, '..', '..'),
         env: {
           ...process.env,
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_APP_PATH: path.join(
+            __dirname,
+            '..',
+            'utils',
+            'mock-child-app.ts',
+          ),
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       },
     )
@@ -94,12 +99,17 @@ describe('Toolset functionality', () => {
         '--echo-args',
       ],
       {
-        cwd: path.join(__dirname, '..'),
+        cwd: path.join(__dirname, '..', '..'),
         env: {
           ...process.env,
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_APP_PATH: path.join(
+            __dirname,
+            '..',
+            'utils',
+            'mock-child-app.ts',
+          ),
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       },
     )
@@ -149,12 +159,17 @@ disallowed:
         '--echo-args',
       ],
       {
-        cwd: path.join(__dirname, '..'),
+        cwd: path.join(__dirname, '..', '..'),
         env: {
           ...process.env,
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_APP_PATH: path.join(
+            __dirname,
+            '..',
+            'utils',
+            'mock-child-app.ts',
+          ),
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       },
     )
@@ -204,12 +219,17 @@ disallowed:
         '--echo-args',
       ],
       {
-        cwd: path.join(__dirname, '..'),
+        cwd: path.join(__dirname, '..', '..'),
         env: {
           ...process.env,
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_APP_PATH: path.join(
+            __dirname,
+            '..',
+            'utils',
+            'mock-child-app.ts',
+          ),
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       },
     )
@@ -247,12 +267,17 @@ disallowed:
         '--echo-args',
       ],
       {
-        cwd: path.join(__dirname, '..'),
+        cwd: path.join(__dirname, '..', '..'),
         env: {
           ...process.env,
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_APP_PATH: path.join(
+            __dirname,
+            '..',
+            'utils',
+            'mock-child-app.ts',
+          ),
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       },
     )
@@ -296,12 +321,17 @@ disallowed:
         '--echo-args',
       ],
       {
-        cwd: path.join(__dirname, '..'),
+        cwd: path.join(__dirname, '..', '..'),
         env: {
           ...process.env,
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_APP_PATH: path.join(
+            __dirname,
+            '..',
+            'utils',
+            'mock-child-app.ts',
+          ),
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       },
     )
@@ -348,12 +378,17 @@ disallowed:
         '--echo-args',
       ],
       {
-        cwd: path.join(__dirname, '..'),
+        cwd: path.join(__dirname, '..', '..'),
         env: {
           ...process.env,
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_APP_PATH: path.join(
+            __dirname,
+            '..',
+            'utils',
+            'mock-child-app.ts',
+          ),
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       },
     )
@@ -425,12 +460,17 @@ mcp:
         '--echo-args',
       ],
       {
-        cwd: path.join(__dirname, '..'),
+        cwd: path.join(__dirname, '..', '..'),
         env: {
           ...process.env,
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_APP_PATH: path.join(
+            __dirname,
+            '..',
+            'utils',
+            'mock-child-app.ts',
+          ),
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       },
     )
@@ -479,12 +519,17 @@ mcp:
         '--echo-args',
       ],
       {
-        cwd: path.join(__dirname, '..'),
+        cwd: path.join(__dirname, '..', '..'),
         env: {
           ...process.env,
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_APP_PATH: path.join(
+            __dirname,
+            '..',
+            'utils',
+            'mock-child-app.ts',
+          ),
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       },
     )
@@ -546,12 +591,17 @@ disallowed:
         '--echo-args',
       ],
       {
-        cwd: path.join(__dirname, '..'),
+        cwd: path.join(__dirname, '..', '..'),
         env: {
           ...process.env,
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_APP_PATH: path.join(
+            __dirname,
+            '..',
+            'utils',
+            'mock-child-app.ts',
+          ),
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       },
     )
@@ -619,12 +669,17 @@ disallowed:
         '--echo-args',
       ],
       {
-        cwd: path.join(__dirname, '..'),
+        cwd: path.join(__dirname, '..', '..'),
         env: {
           ...process.env,
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_APP_PATH: path.join(
+            __dirname,
+            '..',
+            'utils',
+            'mock-child-app.ts',
+          ),
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       },
     )
@@ -701,12 +756,17 @@ disallowed:
         '--echo-args',
       ],
       {
-        cwd: path.join(__dirname, '..'),
+        cwd: path.join(__dirname, '..', '..'),
         env: {
           ...process.env,
           CLAUDE_COMPOSER_CONFIG_DIR: CONFIG_DIR,
-          CLAUDE_APP_PATH: path.join(__dirname, 'mock-child-app.ts'),
-          CLAUDE_PATTERNS_PATH: './test/test-patterns',
+          CLAUDE_APP_PATH: path.join(
+            __dirname,
+            '..',
+            'utils',
+            'mock-child-app.ts',
+          ),
+          CLAUDE_PATTERNS_PATH: './test/utils/test-patterns',
         },
       },
     )

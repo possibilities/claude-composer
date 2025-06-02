@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseCommandLineArgs } from '../src/cli/parser'
+import { parseCommandLineArgs } from '../../src/cli/parser'
 
 describe('Sticky notifications CLI flags', () => {
   it('should parse --sticky-notifications flag', () => {

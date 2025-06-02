@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { runCli } from './test-utils'
+import { runCli } from '../utils/test-utils'
 
 describe('Subcommand Detection', () => {
   beforeEach(() => {

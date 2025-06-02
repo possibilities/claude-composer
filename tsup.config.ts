@@ -3,7 +3,7 @@ import { defineConfig } from 'tsup'
 export default defineConfig({
   entry: {
     cli: 'src/index.ts',
-    'test-patterns': 'test/test-patterns.ts',
+    'test-patterns': 'test/utils/test-patterns.ts',
   },
   format: ['esm'],
   target: 'node18',

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { runCli } from './test-utils'
+import { runCli } from '../utils/test-utils'
 
 describe('--safe flag functionality', () => {
   describe('--safe flag', () => {

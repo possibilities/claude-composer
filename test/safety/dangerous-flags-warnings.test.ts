@@ -1,5 +1,5 @@
 import { expect, test, describe, beforeEach } from 'vitest'
-import { runCliInteractive } from './test-utils'
+import { runCliInteractive } from '../utils/test-utils'
 import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'

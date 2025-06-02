@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { MatchResult } from '../src/patterns/matcher'
-import { showPatternNotification, notifier } from '../src/utils/notifications'
-import { createMatchWithNotification } from './test-notification-utils'
+import { MatchResult } from '../../src/patterns/matcher'
+import {
+  showPatternNotification,
+  notifier,
+} from '../../src/utils/notifications'
+import { createMatchWithNotification } from '../utils/test-notification-utils'
 
 vi.mock('node-notifier', () => ({
   default: {
