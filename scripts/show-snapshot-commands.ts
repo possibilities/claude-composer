@@ -4,6 +4,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
 import { stripBoxChars } from '../src/utils/strip-box-chars'
+import parse from 'bash-parser'
 
 interface PatternMatch {
   extractedData?: {
@@ -53,4 +54,64 @@ console.log('-'.repeat(50))
 const sortedCommands = Array.from(uniqueCommands).sort()
 for (const command of sortedCommands) {
   console.log(command)
+
+  try {
+    const ast = parse(command)
+    const commandNames: string[] = []
+
+    // Recursive function to extract command names from AST
+    const extractCommands = (node: any): void => {
+      if (!node) return
+
+      if (node.type === 'Command' && node.name?.text) {
+        commandNames.push(node.name.text)
+      }
+
+      // Recursively check various node types that can contain commands
+      if (node.commands) {
+        node.commands.forEach(extractCommands)
+      }
+      if (node.clause) {
+        extractCommands(node.clause)
+      }
+      if (node.then) {
+        extractCommands(node.then)
+      }
+      if (node.else) {
+        extractCommands(node.else)
+      }
+      if (node.do) {
+        extractCommands(node.do)
+      }
+      if (node.list) {
+        extractCommands(node.list)
+      }
+      if (node.body) {
+        extractCommands(node.body)
+      }
+      if (node.cases) {
+        node.cases.forEach((caseItem: any) => {
+          if (caseItem.body) extractCommands(caseItem.body)
+        })
+      }
+      if (node.left) {
+        extractCommands(node.left)
+      }
+      if (node.right) {
+        extractCommands(node.right)
+      }
+    }
+
+    extractCommands(ast)
+
+    if (commandNames.length > 0) {
+      console.log(`Commands: ${commandNames.join(', ')}`)
+    } else {
+      console.log('Commands: (none found)')
+    }
+    console.log('-'.repeat(50))
+  } catch (error) {
+    console.log(`Parse error: ${error.message}`)
+    console.log('-'.repeat(50))
+  }
 }
