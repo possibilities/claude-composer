@@ -28,8 +28,7 @@ describe('InterruptMonitor', () => {
 
   describe('Text presence detection', () => {
     it('should detect when target text appears', () => {
-      const snapshot =
-        'Some output... Press ENTER to continue or Ctrl+C to interrupt) more text'
+      const snapshot = 'Some output... esc to interrupt) more text'
       monitor.checkSnapshot(snapshot)
 
       // Should not trigger notification yet
@@ -109,9 +108,8 @@ describe('InterruptMonitor', () => {
       monitor.checkSnapshot(snapshotWithoutText)
       expect(mockShowNotification).toHaveBeenCalledOnce()
       expect(mockShowNotification).toHaveBeenCalledWith(
-        'Claude Composer is done working.',
+        { message: 'Claude Composer is done working.' },
         expect.any(Object),
-        false,
       )
     })
 
@@ -277,9 +275,8 @@ describe('InterruptMonitor', () => {
       customMonitor.checkSnapshot(snapshotWithoutText)
 
       expect(mockShowNotification).toHaveBeenCalledWith(
-        'Claude Composer is done working.',
+        { message: 'Claude Composer is done working.' },
         mockConfig,
-        false, // not sticky
       )
     })
   })

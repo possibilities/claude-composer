@@ -10,7 +10,6 @@ export class InterruptMonitor {
   private persistenceThreshold = 2000 // 2 seconds in milliseconds
   private absenceThreshold = 2000 // 2 seconds in milliseconds
   private hasNotified = false
-
   constructor(private appConfig: AppConfig) {}
 
   checkSnapshot(snapshot: string): void {
@@ -59,9 +58,8 @@ export class InterruptMonitor {
 
   private triggerNotification(): void {
     showNotification(
-      'Claude Composer is done working.',
+      { message: 'Claude Composer is done working.' },
       this.appConfig,
-      false, // not sticky
     )
   }
 
