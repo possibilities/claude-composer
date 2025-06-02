@@ -72,20 +72,18 @@ LOG_FILES.forEach(logFile => {
               if (
                 matches.length > 0 &&
                 matches[0].extractedData &&
-                matches[0].extractedData.command
+                matches[0].extractedData.body
               ) {
-                const command = stripBoxChars(
-                  matches[0].extractedData.command,
-                ).trim()
+                const body = stripBoxChars(matches[0].extractedData.body).trim()
 
                 // Check if we should show based on SHOW_SUBSTRING
-                if (SHOW_SUBSTRING && command.includes(SHOW_SUBSTRING)) {
+                if (SHOW_SUBSTRING && body.includes(SHOW_SUBSTRING)) {
                   shouldShow = true
                   fileShownCount++
                 }
 
                 // Check if we should delete based on DELETE_SUBSTRING
-                if (DELETE_SUBSTRING && command.includes(DELETE_SUBSTRING)) {
+                if (DELETE_SUBSTRING && body.includes(DELETE_SUBSTRING)) {
                   shouldDelete = true
                   fileDeletedCount++
                   console.log(
@@ -94,7 +92,7 @@ LOG_FILES.forEach(logFile => {
                     '---',
                   )
                   console.log('Matched Content:', stripped)
-                  console.log('Extracted Command:', command)
+                  console.log('Extracted Command:', body)
 
                   // Show all extracted data
                   if (matches[0].extractedData) {
@@ -116,7 +114,7 @@ LOG_FILES.forEach(logFile => {
                     '---',
                   )
                   console.log('Matched Content:', stripped)
-                  console.log('Extracted Command:', command)
+                  console.log('Extracted Command:', body)
 
                   // Show all extracted data
                   if (matches[0].extractedData) {
@@ -133,7 +131,7 @@ LOG_FILES.forEach(logFile => {
                   console.log('---\n')
                 } else if (!SHOW_SUBSTRING) {
                   // Only print commands normally if SHOW_SUBSTRING is not set
-                  console.log(command)
+                  console.log(body)
                   console.log('Matched:', stripped)
 
                   // Show all extracted data

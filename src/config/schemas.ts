@@ -94,6 +94,11 @@ export const patternConfigSchema = z
     type: z.enum(['completion', 'prompt']).optional(),
     notification: z.string().optional(),
     triggerText: z.string().optional(),
+    transformExtractedData: z
+      .function()
+      .args(z.record(z.string(), z.any()))
+      .returns(z.record(z.string(), z.string()))
+      .optional(),
   })
   .refine(
     data => {

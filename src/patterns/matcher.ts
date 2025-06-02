@@ -62,6 +62,12 @@ export class PatternMatcher {
             ? pattern.config.response()
             : pattern.config.response
 
+        // Apply transformExtractedData if present
+        let extractedData = sequenceMatch.extractedData
+        if (extractedData && pattern.config.transformExtractedData) {
+          extractedData = pattern.config.transformExtractedData(extractedData)
+        }
+
         allMatches.push({
           patternId: id,
           patternTitle: pattern.config.title || `Unknown Pattern (${id})`,
@@ -72,7 +78,7 @@ export class PatternMatcher {
           lastLineNumber: sequenceMatch.lastLineNumber,
           bufferContent: content,
           strippedBufferContent: strippedContent,
-          extractedData: sequenceMatch.extractedData,
+          extractedData,
           notification: pattern.config.notification,
         })
       }
@@ -134,6 +140,12 @@ export class PatternMatcher {
             ? pattern.config.response()
             : pattern.config.response
 
+        // Apply transformExtractedData if present
+        let extractedData = sequenceMatch.extractedData
+        if (extractedData && pattern.config.transformExtractedData) {
+          extractedData = pattern.config.transformExtractedData(extractedData)
+        }
+
         allMatches.push({
           patternId: id,
           patternTitle: pattern.config.title || `Unknown Pattern (${id})`,
@@ -144,7 +156,7 @@ export class PatternMatcher {
           lastLineNumber: sequenceMatch.lastLineNumber,
           bufferContent: content,
           strippedBufferContent: strippedContent,
-          extractedData: sequenceMatch.extractedData,
+          extractedData,
           notification: pattern.config.notification,
         })
       }
