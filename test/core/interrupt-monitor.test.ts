@@ -108,7 +108,7 @@ describe('InterruptMonitor', () => {
       monitor.checkSnapshot(snapshotWithoutText)
       expect(mockShowNotification).toHaveBeenCalledOnce()
       expect(mockShowNotification).toHaveBeenCalledWith(
-        { message: 'Claude Composer is done working.' },
+        { message: 'Claude Composer is done working' },
         expect.any(Object),
       )
     })
@@ -275,7 +275,7 @@ describe('InterruptMonitor', () => {
       customMonitor.checkSnapshot(snapshotWithoutText)
 
       expect(mockShowNotification).toHaveBeenCalledWith(
-        { message: 'Claude Composer is done working.' },
+        { message: 'Claude Composer is done working' },
         mockConfig,
       )
     })

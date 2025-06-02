@@ -58,7 +58,7 @@ export class InterruptMonitor {
 
   private triggerNotification(): void {
     showNotification(
-      { message: 'Claude Composer is done working.' },
+      { message: 'Claude Composer is done working' },
       this.appConfig,
     )
   }
