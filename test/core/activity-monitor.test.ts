@@ -108,7 +108,7 @@ describe('ActivityMonitor', () => {
       monitor.checkSnapshot(snapshotWithoutText)
       expect(mockShowNotification).toHaveBeenCalledOnce()
       expect(mockShowNotification).toHaveBeenCalledWith(
-        { message: 'Claude Composer is done working' },
+        { message: expect.stringContaining('Claude Composer is done working') },
         expect.any(Object),
       )
     })
@@ -346,7 +346,58 @@ Line 15
       customMonitor.checkSnapshot(snapshotWithoutText)
 
       expect(mockShowNotification).toHaveBeenCalledWith(
-        { message: 'Claude Composer is done working' },
+        { message: expect.stringContaining('Claude Composer is done working') },
+        mockConfig,
+      )
+    })
+
+    it('should not show notification when notify_work_complete is false', () => {
+      const snapshotWithText =
+        'Press ENTER to continue or Ctrl+C to interrupt) waiting...'
+      const snapshotWithoutText = 'Working... processing data...'
+      const mockConfig = {
+        show_notifications: true,
+        notify_work_complete: false,
+      }
+
+      const customMonitor = new ActivityMonitor(mockConfig as any)
+
+      // Trigger notification
+      customMonitor.checkSnapshot(snapshotWithText)
+      vi.advanceTimersByTime(2100)
+      customMonitor.checkSnapshot(snapshotWithText)
+      customMonitor.checkSnapshot(snapshotWithoutText)
+      vi.advanceTimersByTime(2100)
+      customMonitor.checkSnapshot(snapshotWithoutText)
+
+      expect(mockShowNotification).not.toHaveBeenCalled()
+    })
+
+    it('should include project name in notification message', () => {
+      const snapshotWithText =
+        'Press ENTER to continue or Ctrl+C to interrupt) waiting...'
+      const snapshotWithoutText = 'Working... processing data...'
+      const mockConfig = {
+        show_notifications: true,
+        notify_work_complete: true,
+      }
+
+      const customMonitor = new ActivityMonitor(mockConfig as any)
+
+      // Trigger notification
+      customMonitor.checkSnapshot(snapshotWithText)
+      vi.advanceTimersByTime(2100)
+      customMonitor.checkSnapshot(snapshotWithText)
+      customMonitor.checkSnapshot(snapshotWithoutText)
+      vi.advanceTimersByTime(2100)
+      customMonitor.checkSnapshot(snapshotWithoutText)
+
+      expect(mockShowNotification).toHaveBeenCalledWith(
+        {
+          message: expect.stringMatching(
+            /Claude Composer is done working\nProject: .+/,
+          ),
+        },
         mockConfig,
       )
     })

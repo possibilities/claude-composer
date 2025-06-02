@@ -32,6 +32,8 @@ export async function runPreflight(
 ): Promise<PreflightResult> {
   let appConfig: AppConfig = {
     show_notifications: true,
+    notify_work_started: false,
+    notify_work_complete: true,
     dangerously_dismiss_edit_file_prompts: false,
     dangerously_dismiss_create_file_prompts: false,
     dangerously_dismiss_bash_command_prompts: false,
@@ -176,6 +178,12 @@ export async function runPreflight(
   if (parsedOptions.allowAddingProjectChanges !== undefined) {
     appConfig.allow_adding_project_changes =
       parsedOptions.allowAddingProjectChanges
+  }
+  if (parsedOptions.notifyWorkStarted !== undefined) {
+    appConfig.notify_work_started = parsedOptions.notifyWorkStarted
+  }
+  if (parsedOptions.notifyWorkComplete !== undefined) {
+    appConfig.notify_work_complete = parsedOptions.notifyWorkComplete
   }
 
   let toolsetArgs: string[] = []

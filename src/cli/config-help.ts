@@ -21,6 +21,14 @@ sticky_notifications: boolean (optional)
   Also enables show_notifications when set to true
   Default: false
 
+notify_work_started: boolean (optional)
+  Show notification when Claude Composer starts working
+  Default: false
+
+notify_work_complete: boolean (optional)
+  Show notification when Claude Composer is done working
+  Default: true
+
 dangerously_dismiss_edit_file_prompts: boolean (optional)
   Automatically dismiss edit file prompts without user confirmation
   Default: false
@@ -137,6 +145,8 @@ EXAMPLE CONFIG FILE (config.yaml)
 
 show_notifications: true
 sticky_notifications: false
+notify_work_started: false
+notify_work_complete: true
 dangerously_dismiss_edit_file_prompts: false
 dangerously_dismiss_create_file_prompts: false
 dangerously_dismiss_bash_command_prompts: false

@@ -465,6 +465,14 @@ export async function main() {
 
   log('※ Ready, Passing off control to Claude CLI')
 
+  if (appConfig.notify_work_started === true) {
+    const projectName = process.cwd().split('/').pop() || 'Unknown'
+    showNotification(
+      { message: `Claude Composer started working\nProject: ${projectName}` },
+      appConfig,
+    )
+  }
+
   const childArgs = preflightResult.childArgs
 
   const terminalConfig: TerminalConfig = {

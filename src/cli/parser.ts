@@ -20,6 +20,19 @@ export function createClaudeComposerCommand(): Command {
       'Make notifications auto-dismiss after timeout (default)',
     )
     .option(
+      '--notify-work-started',
+      'Show notification when Claude Composer starts working',
+    )
+    .option(
+      '--no-notify-work-started',
+      'Disable work started notifications (default)',
+    )
+    .option(
+      '--notify-work-complete',
+      'Show notification when Claude Composer is done working (default)',
+    )
+    .option('--no-notify-work-complete', 'Disable work complete notifications')
+    .option(
       '--dangerously-dismiss-edit-file-prompts',
       'Automatically dismiss edit file prompts',
     )
@@ -189,6 +202,10 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--no-show-notifications')
   knownOptions.add('--sticky-notifications')
   knownOptions.add('--no-sticky-notifications')
+  knownOptions.add('--notify-work-started')
+  knownOptions.add('--no-notify-work-started')
+  knownOptions.add('--notify-work-complete')
+  knownOptions.add('--no-notify-work-complete')
   knownOptions.add('--dangerously-dismiss-edit-file-prompts')
   knownOptions.add('--no-dangerously-dismiss-edit-file-prompts')
   knownOptions.add('--dangerously-dismiss-create-file-prompts')

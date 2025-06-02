@@ -73,10 +73,13 @@ export class ActivityMonitor {
   }
 
   private triggerNotification(): void {
-    showNotification(
-      { message: 'Claude Composer is done working' },
-      this.appConfig,
-    )
+    if (this.appConfig.notify_work_complete !== false) {
+      const projectName = process.cwd().split('/').pop() || 'Unknown'
+      showNotification(
+        { message: `Claude Composer is done working\nProject: ${projectName}` },
+        this.appConfig,
+      )
+    }
   }
 
   reset(): void {
