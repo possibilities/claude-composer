@@ -36,6 +36,7 @@ let appConfig: AppConfig | undefined
 let stdinBuffer: PassThrough | undefined
 let isStdinPaused = false
 let promptPatternTriggers: string[] = []
+let pendingPromptCheck: NodeJS.Timeout | null = null
 
 const debugLog = util.debuglog('claude-composer')
 
@@ -271,6 +272,11 @@ function cleanup() {
   if (screenReadInterval) {
     clearInterval(screenReadInterval)
     screenReadInterval = undefined
+  }
+
+  if (pendingPromptCheck) {
+    clearTimeout(pendingPromptCheck)
+    pendingPromptCheck = null
   }
 
   if (terminal) {
@@ -599,13 +605,19 @@ export async function main() {
             data.includes(trigger),
           )
           if (matchedTrigger && terminal && serializeAddon) {
-            // Small delay to ensure terminal rendering completes
-            setTimeout(() => {
+            // Cancel any pending check
+            if (pendingPromptCheck) {
+              clearTimeout(pendingPromptCheck)
+            }
+
+            // Schedule new check with debouncing
+            pendingPromptCheck = setTimeout(() => {
               try {
                 const currentScreenContent = serializeAddon.serialize()
                 handlePatternMatches(currentScreenContent, 'prompt')
               } catch (error) {}
-            }, 10)
+              pendingPromptCheck = null
+            }, 1)
           }
         } catch (error) {}
       })
@@ -639,13 +651,19 @@ export async function main() {
           data.includes(trigger),
         )
         if (matchedTrigger && terminal && serializeAddon) {
-          // Small delay to ensure terminal rendering completes
-          setTimeout(() => {
+          // Cancel any pending check
+          if (pendingPromptCheck) {
+            clearTimeout(pendingPromptCheck)
+          }
+
+          // Schedule new check with debouncing
+          pendingPromptCheck = setTimeout(() => {
             try {
               const currentScreenContent = serializeAddon.serialize()
               handlePatternMatches(currentScreenContent, 'prompt')
             } catch (error) {}
-          }, 10)
+            pendingPromptCheck = null
+          }, 1)
         }
       })
     }
@@ -759,13 +777,19 @@ export async function main() {
             dataStr.includes(trigger),
           )
           if (matchedTrigger && terminal && serializeAddon) {
-            // Small delay to ensure terminal rendering completes
-            setTimeout(() => {
+            // Cancel any pending check
+            if (pendingPromptCheck) {
+              clearTimeout(pendingPromptCheck)
+            }
+
+            // Schedule new check with debouncing
+            pendingPromptCheck = setTimeout(() => {
               try {
                 const currentScreenContent = serializeAddon.serialize()
                 handlePatternMatches(currentScreenContent, 'prompt')
               } catch (error) {}
-            }, 10)
+              pendingPromptCheck = null
+            }, 1)
           }
         } catch (error) {}
       })
