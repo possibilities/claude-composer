@@ -10,6 +10,7 @@ export const appConfigSchema = z
     dangerously_allow_in_dirty_directory: z.boolean().optional(),
     dangerously_allow_without_version_control: z.boolean().optional(),
     toolsets: z.array(z.string()).optional(),
+    rulesets: z.array(z.string()).optional(),
     log_all_pattern_matches: z.boolean().optional(),
     allow_buffer_snapshots: z.boolean().optional(),
     allow_adding_project_tree: z.boolean().optional(),
@@ -29,6 +30,19 @@ export const toolsetConfigSchema = z
 
 export type ToolsetConfig = z.infer<typeof toolsetConfigSchema>
 
+export const rulesetConfigSchema = z
+  .object({
+    dismiss_edit_file_prompt_inside_project: z.boolean().optional(),
+    dismiss_create_file_prompts_inside_project: z.boolean().optional(),
+    dismiss_bash_command_prompts_inside_project: z.boolean().optional(),
+    dismiss_edit_file_prompt_outside_project: z.boolean().optional(),
+    dismiss_create_file_prompts_outside_project: z.boolean().optional(),
+    dismiss_bash_command_prompts_outside_project: z.boolean().optional(),
+  })
+  .strict()
+
+export type RulesetConfig = z.infer<typeof rulesetConfigSchema>
+
 export function parseAppConfig(data: unknown): AppConfig {
   return appConfigSchema.parse(data)
 }
@@ -47,6 +61,16 @@ export function validateToolsetConfig(
   data: unknown,
 ): z.SafeParseReturnType<unknown, ToolsetConfig> {
   return toolsetConfigSchema.safeParse(data)
+}
+
+export function parseRulesetConfig(data: unknown): RulesetConfig {
+  return rulesetConfigSchema.parse(data)
+}
+
+export function validateRulesetConfig(
+  data: unknown,
+): z.SafeParseReturnType<unknown, RulesetConfig> {
+  return rulesetConfigSchema.safeParse(data)
 }
 
 // Pattern configuration schema

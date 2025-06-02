@@ -4,13 +4,16 @@ import type {
   PreflightOptions,
   PreflightResult,
   AppConfig,
+  RulesetConfig,
 } from '../types/preflight.js'
 import {
   ensureConfigDirectory,
   loadConfigFile,
   createTempMcpConfig,
+  loadRulesetFile,
 } from '../config/loader.js'
 import { buildToolsetArgs, mergeToolsets } from '../config/toolsets.js'
+import { buildRulesetArgs, mergeRulesets } from '../config/rulesets.js'
 import {
   checkGitInstalled,
   checkChildAppPath,
@@ -63,6 +66,7 @@ export async function runPreflight(
       return {
         appConfig,
         toolsetArgs: [],
+        rulesetArgs: [],
         childArgs: [],
         shouldExit: true,
         exitCode: 1,
@@ -87,6 +91,7 @@ export async function runPreflight(
     return {
       appConfig,
       toolsetArgs: [],
+      rulesetArgs: [],
       childArgs: [],
       shouldExit: true,
       exitCode: 0,
@@ -108,6 +113,7 @@ export async function runPreflight(
       return {
         appConfig,
         toolsetArgs: [],
+        rulesetArgs: [],
         childArgs: [],
         shouldExit: true,
         exitCode: 1,
@@ -163,6 +169,8 @@ export async function runPreflight(
   }
 
   let toolsetArgs: string[] = []
+  let rulesetArgs: string[] = []
+  let mergedRuleset: RulesetConfig | undefined
   let tempMcpConfigPath: string | undefined
 
   let toolsetsToLoad: string[] = []
@@ -198,6 +206,51 @@ export async function runPreflight(
       return {
         appConfig,
         toolsetArgs: [],
+        rulesetArgs: [],
+        childArgs: [],
+        shouldExit: true,
+        exitCode: 1,
+        knownOptions,
+      }
+    }
+  }
+
+  let rulesetsToLoad: string[] = []
+  if (parsedOptions.ruleset && parsedOptions.ruleset.length > 0) {
+    rulesetsToLoad = parsedOptions.ruleset
+  } else if (
+    appConfig.rulesets &&
+    appConfig.rulesets.length > 0 &&
+    parsedOptions.defaultRulesets !== false
+  ) {
+    rulesetsToLoad = appConfig.rulesets
+  } else if (
+    appConfig.rulesets &&
+    appConfig.rulesets.length > 0 &&
+    parsedOptions.defaultRulesets === false
+  ) {
+    log('※ Ignoring default rulesets from configuration')
+  }
+
+  if (rulesetsToLoad.length > 0) {
+    try {
+      const rulesetConfigs = await Promise.all(
+        rulesetsToLoad.map(name => loadRulesetFile(name)),
+      )
+      mergedRuleset = mergeRulesets(rulesetConfigs)
+      rulesetArgs = buildRulesetArgs(mergedRuleset)
+
+      rulesetsToLoad.forEach(name => {
+        log(`※ Loaded ruleset: ${name}`)
+      })
+    } catch (error) {
+      console.error(
+        `\x1b[31m※ Error: ${error instanceof Error ? error.message : error}\x1b[0m`,
+      )
+      return {
+        appConfig,
+        toolsetArgs: [],
+        rulesetArgs: [],
         childArgs: [],
         shouldExit: true,
         exitCode: 1,
@@ -233,6 +286,7 @@ export async function runPreflight(
     return {
       appConfig,
       toolsetArgs: [],
+      rulesetArgs: [],
       childArgs: [],
       shouldExit: true,
       exitCode: 1,
@@ -247,16 +301,20 @@ export async function runPreflight(
       childArgs.push(arg)
     } else if (arg === '--toolset' && i + 1 < argv.length) {
       i++
+    } else if (arg === '--ruleset' && i + 1 < argv.length) {
+      i++
     }
   }
 
   childArgs.push(...toolsetArgs)
+  childArgs.push(...rulesetArgs)
 
   if (isPrint) {
     log(`※ Starting Claude Code in non-interactive mode due to --print option`)
     return {
       appConfig,
       toolsetArgs,
+      rulesetArgs,
       childArgs,
       shouldExit: true,
       exitCode: 0,
@@ -270,6 +328,7 @@ export async function runPreflight(
     return {
       appConfig,
       toolsetArgs,
+      rulesetArgs,
       childArgs: argv.slice(2), // Use original args for subcommands
       shouldExit: true,
       exitCode: 0,
@@ -283,6 +342,7 @@ export async function runPreflight(
       return {
         appConfig,
         toolsetArgs,
+        rulesetArgs,
         childArgs,
         shouldExit: true,
         exitCode: 0,
@@ -301,6 +361,7 @@ export async function runPreflight(
     return {
       appConfig,
       toolsetArgs,
+      rulesetArgs,
       childArgs,
       shouldExit: true,
       exitCode: 1,
@@ -315,6 +376,7 @@ export async function runPreflight(
     return {
       appConfig,
       toolsetArgs,
+      rulesetArgs,
       childArgs,
       shouldExit: true,
       exitCode: 1,
@@ -337,6 +399,7 @@ export async function runPreflight(
     return {
       appConfig,
       toolsetArgs,
+      rulesetArgs,
       childArgs,
       shouldExit: true,
       exitCode: 1,
@@ -371,6 +434,7 @@ export async function runPreflight(
     return {
       appConfig,
       toolsetArgs,
+      rulesetArgs,
       childArgs,
       shouldExit: true,
       exitCode: 1,
@@ -391,6 +455,7 @@ export async function runPreflight(
       return {
         appConfig,
         toolsetArgs,
+        rulesetArgs,
         childArgs,
         shouldExit: true,
         exitCode: 0,
@@ -410,6 +475,8 @@ export async function runPreflight(
   return {
     appConfig,
     toolsetArgs,
+    rulesetArgs,
+    mergedRuleset,
     childArgs,
     tempMcpConfigPath,
     shouldExit: false,

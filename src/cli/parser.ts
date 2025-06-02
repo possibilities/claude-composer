@@ -64,12 +64,20 @@ export function createClaudeComposerCommand(): Command {
       'Use predefined toolsets from ~/.claude-composer/toolsets/ directory (can be specified multiple times)',
     )
     .option(
+      '--ruleset <name...>',
+      'Use predefined rulesets from ~/.claude-composer/rulesets/ directory (can be specified multiple times)',
+    )
+    .option(
       '--ignore-global-config',
       'Ignore configuration from ~/.claude-composer/config.yaml',
     )
     .option(
       '--no-default-toolsets',
       'Ignore default toolsets from the main config file',
+    )
+    .option(
+      '--no-default-rulesets',
+      'Ignore default rulesets from the main config file',
     )
     .option('--go-off', 'Go off. Full auto mode. What could go wrong?')
     .option(
@@ -172,6 +180,8 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--no-dangerously-allow-without-version-control')
   knownOptions.add('--toolset')
   knownOptions.add('--no-default-toolsets')
+  knownOptions.add('--ruleset')
+  knownOptions.add('--no-default-rulesets')
   knownOptions.add('--log-all-pattern-matches')
   knownOptions.add('--allow-buffer-snapshots')
   knownOptions.add('--allow-adding-project-tree')

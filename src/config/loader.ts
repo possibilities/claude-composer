@@ -5,8 +5,10 @@ import * as yaml from 'js-yaml'
 import {
   validateAppConfig,
   validateToolsetConfig,
+  validateRulesetConfig,
   type AppConfig,
   type ToolsetConfig,
+  type RulesetConfig,
 } from './schemas.js'
 import { CONFIG_PATHS } from './paths'
 
@@ -95,6 +97,46 @@ export async function loadToolsetFile(
       throw error
     }
     throw new Error(`Error loading toolset file: ${error}`)
+  }
+}
+
+export async function loadRulesetFile(
+  rulesetName: string,
+): Promise<RulesetConfig> {
+  const rulesetPath = path.join(
+    CONFIG_PATHS.getRulesetsDirectory(),
+    `${rulesetName}.yaml`,
+  )
+
+  if (!fs.existsSync(rulesetPath)) {
+    throw new Error(`Ruleset file not found: ${rulesetPath}`)
+  }
+
+  try {
+    const rulesetData = fs.readFileSync(rulesetPath, 'utf8')
+    const parsed = yaml.load(rulesetData)
+    const result = validateRulesetConfig(parsed)
+
+    if (!result.success) {
+      console.error(`\nError: Invalid ruleset configuration in ${rulesetPath}`)
+      console.error('\nValidation errors:')
+      result.error.issues.forEach(issue => {
+        const fieldPath = issue.path.length > 0 ? issue.path.join('.') : 'root'
+        console.error(`  • ${fieldPath}: ${issue.message}`)
+      })
+      console.error('')
+      throw new Error('Ruleset validation failed')
+    }
+
+    return result.data
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message === 'Ruleset validation failed'
+    ) {
+      throw error
+    }
+    throw new Error(`Error loading ruleset file: ${error}`)
   }
 }
 

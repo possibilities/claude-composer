@@ -1,4 +1,8 @@
-import type { AppConfig, ToolsetConfig } from '../config/schemas.js'
+import type {
+  AppConfig,
+  ToolsetConfig,
+  RulesetConfig,
+} from '../config/schemas.js'
 
 export interface PreflightOptions {
   configPath?: string
@@ -10,6 +14,8 @@ export interface PreflightOptions {
 export interface PreflightResult {
   appConfig: AppConfig
   toolsetArgs: string[]
+  rulesetArgs: string[]
+  mergedRuleset?: RulesetConfig
   childArgs: string[]
   tempMcpConfigPath?: string
   shouldExit: boolean
@@ -26,8 +32,10 @@ export interface ParsedOptions {
   dangerouslyAllowInDirtyDirectory?: boolean
   dangerouslyAllowWithoutVersionControl?: boolean
   toolset?: string[]
+  ruleset?: string[]
   ignoreGlobalConfig?: boolean
   defaultToolsets?: boolean
+  defaultRulesets?: boolean
   goOff?: boolean
   logAllPatternMatches?: boolean
   allowBufferSnapshots?: boolean
@@ -38,4 +46,4 @@ export interface ParsedOptions {
 }
 
 // Re-export for convenience
-export type { AppConfig, ToolsetConfig }
+export type { AppConfig, ToolsetConfig, RulesetConfig }

@@ -39,6 +39,13 @@ export const CONFIG_PATHS = {
   },
 
   /**
+   * Get the rulesets directory path
+   */
+  getRulesetsDirectory: (): string => {
+    return path.join(CONFIG_PATHS.getConfigDirectory(), 'rulesets')
+  },
+
+  /**
    * Get the patterns directory path
    */
   getPatternsDirectory: (): string => {
