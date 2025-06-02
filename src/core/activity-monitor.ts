@@ -1,7 +1,7 @@
 import { showNotification } from '../utils/notifications'
 import type { AppConfig } from '../config/schemas'
 
-export class InterruptMonitor {
+export class ActivityMonitor {
   private targetText = 'to interrupt)'
   private isPersistentlyPresent = false
   private isCurrentlyPresent = false

@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { InterruptMonitor } from '../../src/core/interrupt-monitor'
+import { ActivityMonitor } from '../../src/core/activity-monitor'
 import * as notifications from '../../src/utils/notifications'
 
 vi.mock('../../src/utils/notifications')
 
-describe('InterruptMonitor', () => {
-  let monitor: InterruptMonitor
+describe('ActivityMonitor', () => {
+  let monitor: ActivityMonitor
   let mockShowNotification: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
@@ -18,7 +18,7 @@ describe('InterruptMonitor', () => {
     const mockConfig = {
       show_notifications: true,
     }
-    monitor = new InterruptMonitor(mockConfig as any)
+    monitor = new ActivityMonitor(mockConfig as any)
   })
 
   afterEach(() => {
@@ -264,7 +264,7 @@ describe('InterruptMonitor', () => {
         some_other_setting: 'value',
       }
 
-      const customMonitor = new InterruptMonitor(mockConfig as any)
+      const customMonitor = new ActivityMonitor(mockConfig as any)
 
       // Trigger notification
       customMonitor.checkSnapshot(snapshotWithText)
