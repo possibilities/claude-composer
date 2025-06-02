@@ -77,7 +77,7 @@ const patternsArray: PatternConfig[] = [
     ),
   },
   {
-    id: 'bash-command-prompt',
+    id: 'bash-command-prompt-format-1',
     title: 'Bash command',
     type: 'prompt' as const,
     response: '1',
@@ -87,17 +87,39 @@ const patternsArray: PatternConfig[] = [
       '{{ command }}',
       '{{ reason }}',
       'Do you want to proceed?',
-      "2. Yes, and don't ask again for {{ commandWithoutArguments }} commands in {{ commandDir }}",
-      'No, and tell Claude what to do differently',
+      "2. Yes, and don't ask again for {{ commandWithoutArguments }} commands in {{ directory }}",
+      '3. No, and tell Claude what to do differently',
     ],
     triggerText: 'Bash command',
     notification: dedent(
       `
-      Action: {{ title }}
+      Action: {{ title }} (a)
       Project: {{ project }}
       Command: {{ command }}
       Reason: {{ reason }}
-      Directory: {{ commandDir }}
+      Directory: {{ directory }}
+      `,
+    ),
+  },
+  {
+    id: 'bash-command-prompt-format-2',
+    title: 'Bash command',
+    type: 'prompt' as const,
+    response: '1',
+    pattern: [
+      'Bash command',
+      '{{ emptyLine }}',
+      '{{ command }}',
+      '{{ reason }}',
+      'Do you want to proceed?',
+      '2. No, and tell Claude what to do differently',
+    ],
+    triggerText: 'Bash command',
+    notification: dedent(
+      `
+      Action: {{ title }} (b)
+      Project: {{ project }}
+      Command: {{ command }}
       `,
     ),
   },
