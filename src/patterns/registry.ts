@@ -24,7 +24,7 @@ function buildTriggerPattern(
         encoding: 'utf8',
       }).trim()}\n<\/${tag}>\n`,
     ],
-    pattern: [followedByCursor(trigger)],
+    pattern: [followedByCursor(trigger.slice(0, -1))],
     type: 'completion' as const,
   }
 }

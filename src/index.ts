@@ -617,7 +617,7 @@ export async function main() {
                 handlePatternMatches(currentScreenContent, 'prompt')
               } catch (error) {}
               pendingPromptCheck = null
-            }, 1)
+            }, 100)
           }
         } catch (error) {}
       })
@@ -635,7 +635,7 @@ export async function main() {
       //         }
       //       } catch (error) {}
       //     }
-      //   }, 1)
+      //   }, 100)
       // }
     } else {
       ptyProcess.onData((data: string) => {
@@ -663,7 +663,7 @@ export async function main() {
               handlePatternMatches(currentScreenContent, 'prompt')
             } catch (error) {}
             pendingPromptCheck = null
-          }, 1)
+          }, 100)
         }
       })
     }
@@ -789,7 +789,7 @@ export async function main() {
                 handlePatternMatches(currentScreenContent, 'prompt')
               } catch (error) {}
               pendingPromptCheck = null
-            }, 1)
+            }, 100)
           }
         } catch (error) {}
       })
@@ -807,7 +807,7 @@ export async function main() {
       //         }
       //       } catch (error) {}
       //     }
-      //   }, 1)
+      //   }, 100)
       // }
     } else {
       if (stdinBuffer) {
