@@ -6,7 +6,7 @@ import { spawn } from 'child_process'
 import { PatternMatcher, MatchResult } from './patterns/matcher'
 import { ResponseQueue } from './core/response-queue'
 import { patterns } from './patterns/registry'
-import { type AppConfig } from './config/schemas.js'
+import { type AppConfig, type RulesetConfig } from './config/schemas.js'
 import { runPreflight, log, warn } from './core/preflight.js'
 import {
   showNotification,
@@ -21,12 +21,14 @@ import {
 } from './terminal/utils'
 import type { TerminalConfig } from './terminal/types'
 import { InterruptMonitor } from './core/interrupt-monitor'
+import { isFileInsideProject } from './utils/file-utils.js'
 
 let patternMatcher: PatternMatcher
 let responseQueue: ResponseQueue
 let terminalManager: TerminalManager
 let tempMcpConfigPath: string | undefined
 let appConfig: AppConfig | undefined
+let mergedRuleset: RulesetConfig | undefined
 let promptPatternTriggers: string[] = []
 let interruptMonitor: InterruptMonitor | undefined
 
@@ -76,19 +78,26 @@ async function initializePatterns(): Promise<boolean> {
 
     if (
       pattern.id === 'edit-file-prompt' &&
-      !appConfig.dangerously_dismiss_edit_file_prompts
+      !appConfig.dangerously_dismiss_edit_file_prompts &&
+      !mergedRuleset?.dismiss_edit_file_prompt_inside_project &&
+      !mergedRuleset?.dismiss_edit_file_prompt_outside_project
     ) {
       return
     }
     if (
       pattern.id === 'create-file-prompt' &&
-      !appConfig.dangerously_dismiss_create_file_prompts
+      !appConfig.dangerously_dismiss_create_file_prompts &&
+      !mergedRuleset?.dismiss_create_file_prompts_inside_project &&
+      !mergedRuleset?.dismiss_create_file_prompts_outside_project
     ) {
       return
     }
     if (
-      pattern.id === 'bash-command-prompt' &&
-      !appConfig.dangerously_dismiss_bash_command_prompts
+      (pattern.id === 'bash-command-prompt-format-1' ||
+        pattern.id === 'bash-command-prompt-format-2') &&
+      !appConfig.dangerously_dismiss_bash_command_prompts &&
+      !mergedRuleset?.dismiss_bash_command_prompts_inside_project &&
+      !mergedRuleset?.dismiss_bash_command_prompts_outside_project
     ) {
       return
     }
@@ -153,6 +162,40 @@ process.on('uncaughtException', error => {
   process.exit(1)
 })
 
+function shouldDismissPrompt(match: MatchResult): boolean {
+  const fileName = match.extractedData?.fileName
+  const directory = match.extractedData?.directory
+
+  let checkPath = fileName || directory || process.cwd()
+  if (!checkPath) return false
+
+  const isInside = isFileInsideProject(checkPath)
+
+  switch (match.patternId) {
+    case 'edit-file-prompt':
+      if (appConfig.dangerously_dismiss_edit_file_prompts) return true
+      if (!mergedRuleset) return false
+      return isInside
+        ? mergedRuleset.dismiss_edit_file_prompt_inside_project === true
+        : mergedRuleset.dismiss_edit_file_prompt_outside_project === true
+    case 'create-file-prompt':
+      if (appConfig.dangerously_dismiss_create_file_prompts) return true
+      if (!mergedRuleset) return false
+      return isInside
+        ? mergedRuleset.dismiss_create_file_prompts_inside_project === true
+        : mergedRuleset.dismiss_create_file_prompts_outside_project === true
+    case 'bash-command-prompt-format-1':
+    case 'bash-command-prompt-format-2':
+      if (appConfig.dangerously_dismiss_bash_command_prompts) return true
+      if (!mergedRuleset) return false
+      return isInside
+        ? mergedRuleset.dismiss_bash_command_prompts_inside_project === true
+        : mergedRuleset.dismiss_bash_command_prompts_outside_project === true
+    default:
+      return true
+  }
+}
+
 function handlePatternMatches(
   data: string,
   filterType?: 'completion' | 'prompt',
@@ -162,7 +205,9 @@ function handlePatternMatches(
     : patternMatcher.processData(data)
 
   for (const match of matches) {
-    responseQueue.enqueue(match.response)
+    if (shouldDismissPrompt(match)) {
+      responseQueue.enqueue(match.response)
+    }
 
     if (appConfig.show_notifications !== false && match.notification) {
       showPatternNotification(match, appConfig)
@@ -370,6 +415,7 @@ export async function main() {
   }
 
   appConfig = preflightResult.appConfig
+  mergedRuleset = preflightResult.mergedRuleset
   tempMcpConfigPath = preflightResult.tempMcpConfigPath
 
   responseQueue = new ResponseQueue()

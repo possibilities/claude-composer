@@ -7,6 +7,7 @@ Configuration files can be stored in two locations:
 2. Project config: .claude-composer/config.yaml (in current working directory)
 
 Toolsets: ~/.claude-composer/toolsets/<name>.yaml
+Rulesets: ~/.claude-composer/rulesets/<name>.yaml
 
 MAIN CONFIGURATION OPTIONS (config.yaml)
 ========================================
@@ -45,6 +46,11 @@ toolsets: array of strings (optional)
   Example: ["custom-tools", "project-specific"]
   Default: []
 
+rulesets: array of strings (optional)
+  List of ruleset names to load from ~/.claude-composer/rulesets/
+  Example: ["development", "production"]
+  Default: []
+
 log_all_pattern_matches: boolean (optional)
   Log all pattern matches to ~/.claude-composer/logs/pattern-matches-<pattern.id>.jsonl
   Default: false
@@ -78,6 +84,34 @@ mcp: record (optional)
   Structure depends on specific MCP server requirements
 
 
+RULESET CONFIGURATION OPTIONS (<name>.yaml)
+==========================================
+
+dismiss_edit_file_prompt_inside_project: boolean (optional)
+  Automatically dismiss edit file prompts for files inside the project
+  Default: false
+
+dismiss_create_file_prompts_inside_project: boolean (optional)
+  Automatically dismiss create file prompts for files inside the project
+  Default: false
+
+dismiss_bash_command_prompts_inside_project: boolean (optional)
+  Automatically dismiss bash command prompts running inside the project
+  Default: false
+
+dismiss_edit_file_prompt_outside_project: boolean (optional)
+  Automatically dismiss edit file prompts for files outside the project
+  Default: false
+
+dismiss_create_file_prompts_outside_project: boolean (optional)
+  Automatically dismiss create file prompts for files outside the project
+  Default: false
+
+dismiss_bash_command_prompts_outside_project: boolean (optional)
+  Automatically dismiss bash command prompts running outside the project
+  Default: false
+
+
 EXAMPLE CONFIG FILE (config.yaml)
 =================================
 
@@ -91,6 +125,8 @@ dangerously_allow_without_version_control: false
 toolsets:
   - development
   - testing
+rulesets:
+  - safe-mode
 log_all_pattern_matches: false
 allow_buffer_snapshots: true
 allow_adding_project_tree: true
@@ -114,6 +150,17 @@ mcp:
     args: ["@example/mcp-server"]
 
 
+EXAMPLE RULESET FILE (safe-mode.yaml)
+=====================================
+
+dismiss_edit_file_prompt_inside_project: true
+dismiss_create_file_prompts_inside_project: true
+dismiss_bash_command_prompts_inside_project: true
+dismiss_edit_file_prompt_outside_project: false
+dismiss_create_file_prompts_outside_project: false
+dismiss_bash_command_prompts_outside_project: false
+
+
 CONFIGURATION PRECEDENCE
 ========================
 
@@ -123,7 +170,7 @@ Settings are loaded with the following precedence (highest to lowest):
 3. Global config (~/.claude-composer/config.yaml)
 4. Built-in defaults
 
-Note: For toolsets, project config completely replaces global config (no merging).
-      CLI-specified toolsets replace both project and global toolsets.
+Note: For toolsets and rulesets, project config completely replaces global config (no merging).
+      CLI-specified toolsets/rulesets replace both project and global toolsets/rulesets.
 `
 }

@@ -1,8 +1,17 @@
 import * as fs from 'fs'
 import * as yaml from 'yaml'
 import { z } from 'zod'
-import type { AppConfig, PatternConfig, ToolsetConfig } from './schemas'
-import { appConfigSchema, toolsetConfigSchema } from './schemas'
+import type {
+  AppConfig,
+  PatternConfig,
+  ToolsetConfig,
+  RulesetConfig,
+} from './schemas'
+import {
+  appConfigSchema,
+  toolsetConfigSchema,
+  rulesetConfigSchema,
+} from './schemas'
 import { CONFIG_PATHS, CLAUDE_PATHS } from './paths'
 import {
   ConfigurationError,
@@ -27,6 +36,7 @@ interface ConfigurationState {
   appConfig: AppConfig | null
   patterns: Map<string, PatternConfig>
   toolsets: Map<string, ToolsetConfig>
+  rulesets: Map<string, RulesetConfig>
   environment: EnvironmentConfig
   tempFiles: Set<string>
 }
@@ -38,6 +48,7 @@ export interface LoadConfigOptions {
   configPath?: string
   ignoreGlobalConfig?: boolean
   toolsetNames?: string[]
+  rulesetNames?: string[]
   cliOverrides?: Partial<AppConfig>
 }
 
@@ -54,6 +65,7 @@ export class ConfigurationManager {
       appConfig: null,
       patterns: new Map(),
       toolsets: new Map(),
+      rulesets: new Map(),
       environment: parseEnvironment(),
       tempFiles: new Set(),
     }
