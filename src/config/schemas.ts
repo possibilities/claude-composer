@@ -7,6 +7,8 @@ export const appConfigSchema = z
     dangerously_dismiss_edit_file_prompts: z.boolean().optional(),
     dangerously_dismiss_create_file_prompts: z.boolean().optional(),
     dangerously_dismiss_bash_command_prompts: z.boolean().optional(),
+    dangerously_dismiss_read_files_prompts: z.boolean().optional(),
+    dangerously_dismiss_fetch_content_prompts: z.boolean().optional(),
     dangerously_allow_in_dirty_directory: z.boolean().optional(),
     dangerously_allow_without_version_control: z.boolean().optional(),
     toolsets: z.array(z.string()).optional(),
@@ -35,9 +37,11 @@ export const rulesetConfigSchema = z
     dismiss_edit_file_prompt_inside_project: z.boolean().optional(),
     dismiss_create_file_prompts_inside_project: z.boolean().optional(),
     dismiss_bash_command_prompts_inside_project: z.boolean().optional(),
+    dismiss_read_files_prompts_inside_project: z.boolean().optional(),
     dismiss_edit_file_prompt_outside_project: z.boolean().optional(),
     dismiss_create_file_prompts_outside_project: z.boolean().optional(),
     dismiss_bash_command_prompts_outside_project: z.boolean().optional(),
+    dismiss_read_files_prompts_outside_project: z.boolean().optional(),
   })
   .strict()
 

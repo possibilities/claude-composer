@@ -191,8 +191,17 @@ function shouldDismissPrompt(match: MatchResult): boolean {
       return isInside
         ? mergedRuleset.dismiss_bash_command_prompts_inside_project === true
         : mergedRuleset.dismiss_bash_command_prompts_outside_project === true
+    case 'read-files-prompt':
+      if (appConfig.dangerously_dismiss_read_files_prompts) return true
+      if (!mergedRuleset) return false
+      return isInside
+        ? mergedRuleset.dismiss_read_files_prompts_inside_project === true
+        : mergedRuleset.dismiss_read_files_prompts_outside_project === true
+    case 'fetch-content-prompt':
+      if (appConfig.dangerously_dismiss_fetch_content_prompts) return true
+      return false
     default:
-      return true
+      return false
   }
 }
 

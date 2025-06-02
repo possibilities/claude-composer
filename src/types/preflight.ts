@@ -29,6 +29,8 @@ export interface ParsedOptions {
   dangerouslyDismissEditFilePrompts?: boolean
   dangerouslyDismissCreateFilePrompts?: boolean
   dangerouslyDismissBashCommandPrompts?: boolean
+  dangerouslyDismissReadFilesPrompts?: boolean
+  dangerouslyDismissFetchContentPrompts?: boolean
   dangerouslyAllowInDirtyDirectory?: boolean
   dangerouslyAllowWithoutVersionControl?: boolean
   toolset?: string[]

@@ -35,6 +35,8 @@ export async function runPreflight(
     dangerously_dismiss_edit_file_prompts: false,
     dangerously_dismiss_create_file_prompts: false,
     dangerously_dismiss_bash_command_prompts: false,
+    dangerously_dismiss_read_files_prompts: false,
+    dangerously_dismiss_fetch_content_prompts: false,
     dangerously_allow_in_dirty_directory: false,
     dangerously_allow_without_version_control: false,
   }
@@ -145,6 +147,14 @@ export async function runPreflight(
   if (parsedOptions.dangerouslyDismissBashCommandPrompts !== undefined) {
     appConfig.dangerously_dismiss_bash_command_prompts =
       parsedOptions.dangerouslyDismissBashCommandPrompts
+  }
+  if (parsedOptions.dangerouslyDismissReadFilesPrompts !== undefined) {
+    appConfig.dangerously_dismiss_read_files_prompts =
+      parsedOptions.dangerouslyDismissReadFilesPrompts
+  }
+  if (parsedOptions.dangerouslyDismissFetchContentPrompts !== undefined) {
+    appConfig.dangerously_dismiss_fetch_content_prompts =
+      parsedOptions.dangerouslyDismissFetchContentPrompts
   }
   if (parsedOptions.dangerouslyAllowInDirtyDirectory !== undefined) {
     appConfig.dangerously_allow_in_dirty_directory =
@@ -353,6 +363,8 @@ export async function runPreflight(
       appConfig.dangerously_dismiss_edit_file_prompts = true
       appConfig.dangerously_dismiss_create_file_prompts = true
       appConfig.dangerously_dismiss_bash_command_prompts = true
+      appConfig.dangerously_dismiss_read_files_prompts = true
+      appConfig.dangerously_dismiss_fetch_content_prompts = true
     }
   } catch (error) {
     console.error(

@@ -33,6 +33,14 @@ dangerously_dismiss_bash_command_prompts: boolean (optional)
   Automatically dismiss bash command prompts without user confirmation
   Default: false
 
+dangerously_dismiss_read_files_prompts: boolean (optional)
+  Automatically dismiss read files prompts without user confirmation
+  Default: false
+
+dangerously_dismiss_fetch_content_prompts: boolean (optional)
+  Automatically dismiss fetch content prompts without user confirmation
+  Default: false
+
 dangerously_allow_in_dirty_directory: boolean (optional)
   Allow running in a directory with uncommitted git changes
   Default: false
@@ -99,6 +107,10 @@ dismiss_bash_command_prompts_inside_project: boolean (optional)
   Automatically dismiss bash command prompts running inside the project
   Default: false
 
+dismiss_read_files_prompts_inside_project: boolean (optional)
+  Automatically dismiss read files prompts for files inside the project
+  Default: false
+
 dismiss_edit_file_prompt_outside_project: boolean (optional)
   Automatically dismiss edit file prompts for files outside the project
   Default: false
@@ -111,6 +123,10 @@ dismiss_bash_command_prompts_outside_project: boolean (optional)
   Automatically dismiss bash command prompts running outside the project
   Default: false
 
+dismiss_read_files_prompts_outside_project: boolean (optional)
+  Automatically dismiss read files prompts for files outside the project
+  Default: false
+
 
 EXAMPLE CONFIG FILE (config.yaml)
 =================================
@@ -120,6 +136,8 @@ sticky_notifications: false
 dangerously_dismiss_edit_file_prompts: false
 dangerously_dismiss_create_file_prompts: false
 dangerously_dismiss_bash_command_prompts: false
+dangerously_dismiss_read_files_prompts: false
+dangerously_dismiss_fetch_content_prompts: false
 dangerously_allow_in_dirty_directory: false
 dangerously_allow_without_version_control: false
 toolsets:
@@ -156,9 +174,11 @@ EXAMPLE RULESET FILE (safe-mode.yaml)
 dismiss_edit_file_prompt_inside_project: true
 dismiss_create_file_prompts_inside_project: true
 dismiss_bash_command_prompts_inside_project: true
+dismiss_read_files_prompts_inside_project: true
 dismiss_edit_file_prompt_outside_project: false
 dismiss_create_file_prompts_outside_project: false
 dismiss_bash_command_prompts_outside_project: false
+dismiss_read_files_prompts_outside_project: false
 
 
 CONFIGURATION PRECEDENCE

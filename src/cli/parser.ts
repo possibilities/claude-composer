@@ -44,6 +44,22 @@ export function createClaudeComposerCommand(): Command {
       'Do not automatically dismiss bash command prompts',
     )
     .option(
+      '--dangerously-dismiss-read-files-prompts',
+      'Automatically dismiss read files prompts',
+    )
+    .option(
+      '--no-dangerously-dismiss-read-files-prompts',
+      'Do not automatically dismiss read files prompts',
+    )
+    .option(
+      '--dangerously-dismiss-fetch-content-prompts',
+      'Automatically dismiss fetch content prompts',
+    )
+    .option(
+      '--no-dangerously-dismiss-fetch-content-prompts',
+      'Do not automatically dismiss fetch content prompts',
+    )
+    .option(
       '--dangerously-allow-in-dirty-directory',
       'Allow running in a directory with uncommitted git changes',
     )
@@ -176,6 +192,8 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--no-dangerously-dismiss-edit-file-prompts')
   knownOptions.add('--no-dangerously-dismiss-create-file-prompts')
   knownOptions.add('--no-dangerously-dismiss-bash-command-prompts')
+  knownOptions.add('--no-dangerously-dismiss-read-files-prompts')
+  knownOptions.add('--no-dangerously-dismiss-fetch-content-prompts')
   knownOptions.add('--no-dangerously-allow-in-dirty-directory')
   knownOptions.add('--no-dangerously-allow-without-version-control')
   knownOptions.add('--toolset')

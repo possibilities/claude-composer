@@ -44,5 +44,12 @@ export function buildRulesetArgs(ruleset: RulesetConfig): string[] {
     args.push('--dangerously-dismiss-bash-command-prompts')
   }
 
+  if (
+    ruleset.dismiss_read_files_prompts_inside_project ||
+    ruleset.dismiss_read_files_prompts_outside_project
+  ) {
+    args.push('--dangerously-dismiss-read-files-prompts')
+  }
+
   return args
 }
