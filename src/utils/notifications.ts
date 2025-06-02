@@ -11,7 +11,6 @@ export interface NotificationOptions {
   sound?: boolean | string
 }
 
-// Export the notifier for mocking in tests
 export { notifier }
 
 export function showNotification(

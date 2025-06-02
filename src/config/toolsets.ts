@@ -71,7 +71,6 @@ export async function mergeToolsets(
     }
   }
 
-  // Deduplicate arrays
   if (mergedConfig.allowed) {
     mergedConfig.allowed = [...new Set(mergedConfig.allowed)]
   }

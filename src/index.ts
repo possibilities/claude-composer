@@ -37,7 +37,6 @@ export { appConfig }
 async function initializePatterns(): Promise<boolean> {
   let patternsToUse = patterns
 
-  // Support custom patterns path for testing
   if (process.env.CLAUDE_PATTERNS_PATH) {
     try {
       const customPatterns = await import(process.env.CLAUDE_PATTERNS_PATH)
@@ -49,7 +48,6 @@ async function initializePatterns(): Promise<boolean> {
           `Invalid custom pattern configuration from ${process.env.CLAUDE_PATTERNS_PATH}:`,
           JSON.stringify(validationResult.error.errors, null, 2),
         )
-        // Fall back to default patterns
       } else {
         patternsToUse = validationResult.data
       }
@@ -58,7 +56,6 @@ async function initializePatterns(): Promise<boolean> {
         `Failed to load custom patterns from ${process.env.CLAUDE_PATTERNS_PATH}:`,
         error,
       )
-      // Fall back to default patterns
     }
   }
   patternMatcher = new PatternMatcher(
@@ -70,11 +67,9 @@ async function initializePatterns(): Promise<boolean> {
 
   let hasActivePatterns = false
 
-  // Collect first items from prompt-type patterns
   const promptTriggers = new Set<string>()
 
   patternsToUse.forEach(pattern => {
-    // Collect trigger text from prompt-type patterns
     if (pattern.type === 'prompt' && pattern.triggerText) {
       promptTriggers.add(pattern.triggerText)
     }
@@ -119,7 +114,6 @@ async function initializePatterns(): Promise<boolean> {
     }
   })
 
-  // Store the unique prompt triggers globally
   promptPatternTriggers = Array.from(promptTriggers)
 
   return hasActivePatterns
@@ -180,21 +174,16 @@ function handleTerminalData(data: string): void {
   try {
     process.stdout.write(data)
 
-    // Update terminal buffer
     terminalManager.updateTerminalBuffer(data)
-
-    // Check for prompt pattern triggers in output
     const matchedTrigger = promptPatternTriggers.find(trigger =>
       data.includes(trigger),
     )
     if (matchedTrigger) {
-      // Cancel any pending check
       const state = terminalManager.getTerminalState()
       if (state.pendingPromptCheck) {
         clearTimeout(state.pendingPromptCheck)
       }
 
-      // Schedule new check with debouncing
       const timeout = setTimeout(async () => {
         try {
           const currentScreenContent = await terminalManager.captureSnapshot()
@@ -212,7 +201,6 @@ function handleTerminalData(data: string): void {
 
 function handleStdinData(data: Buffer): void {
   try {
-    // Check for space character (ASCII 32) - trigger completion patterns
     if (data.length === 1 && data[0] === 32) {
       terminalManager.captureSnapshot().then(snapshot => {
         if (snapshot) {
@@ -221,22 +209,18 @@ function handleStdinData(data: Buffer): void {
       })
     }
 
-    // Let terminal manager handle the rest (including Ctrl+S)
     terminalManager.handleStdinData(data)
   } catch (error) {}
 }
 
 export async function main() {
-  // Handle --config-help flag early - print config help and exit
   if (process.argv.includes('--config-help')) {
     const { getConfigHelp } = await import('./cli/config-help.js')
     console.log(getConfigHelp())
     process.exit(0)
   }
 
-  // Handle --safe flag early - bypass all claude-composer functionality
   if (process.argv.includes('--safe')) {
-    // Check for conflicting claude-composer flags
     const { createClaudeComposerCommand } = await import('./cli/parser.js')
     const { buildKnownOptionsSet } = await import('./cli/parser.js')
     const program = createClaudeComposerCommand()
@@ -264,7 +248,6 @@ export async function main() {
     )
     const childAppPath = process.env.CLAUDE_APP_PATH || defaultChildAppPath
 
-    // Remove --safe from args before passing to child
     const childArgs = process.argv.slice(2).filter(arg => arg !== '--safe')
 
     const safeProcess = spawn(childAppPath, childArgs, {
@@ -389,7 +372,6 @@ export async function main() {
   appConfig = preflightResult.appConfig
   tempMcpConfigPath = preflightResult.tempMcpConfigPath
 
-  // Initialize terminal manager and response queue
   responseQueue = new ResponseQueue()
   terminalManager = new TerminalManager(appConfig, responseQueue)
   if (tempMcpConfigPath) {
@@ -433,7 +415,6 @@ export async function main() {
 
   const childArgs = preflightResult.childArgs
 
-  // Initialize terminal with configuration
   const terminalConfig: TerminalConfig = {
     isTTY: process.stdin.isTTY || false,
     cols: process.stdout.columns || 80,
@@ -446,7 +427,6 @@ export async function main() {
 
   await terminalManager.initialize(terminalConfig)
 
-  // Set up terminal event handlers
   terminalManager.onData(handleTerminalData)
 
   terminalManager.onExit((code: number) => {
@@ -454,12 +434,10 @@ export async function main() {
     process.exit(code)
   })
 
-  // Set up stdin handling for interactive features
   if (process.stdin.isTTY) {
     process.stdin.on('data', handleStdinData)
   }
 
-  // Set up resize handling
   if (process.stdin.isTTY) {
     process.stdout.on('resize', () => {
       const newCols = process.stdout.columns || 80
@@ -468,7 +446,6 @@ export async function main() {
     })
   }
 
-  // Initialize interrupt monitor and start polling
   if (appConfig) {
     interruptMonitor = new InterruptMonitor(appConfig)
     terminalManager.startTerminalPolling(1000, (snapshot: string) => {

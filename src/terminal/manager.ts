@@ -65,22 +65,17 @@ export class TerminalManager {
       this.responseQueue.setTargets(this.state.ptyProcess, undefined)
     }
 
-    // Initialize xterm if patterns are active
     if (this.appConfig && this.shouldInitializeXterm()) {
       await this.initializeXterm(cols, rows)
     }
-
-    // Set up PTY data handling
     this.state.ptyProcess.onData((data: string) => {
       this.dataHandlers.forEach(handler => handler(data))
     })
 
-    // Set up PTY exit handling
     this.state.ptyProcess.onExit(exitCode => {
       this.exitHandlers.forEach(handler => handler(exitCode.exitCode || 0))
     })
 
-    // Set up stdin handling
     if (process.stdin.isTTY) {
       process.stdin.removeAllListeners('data')
       process.stdin.setRawMode(true)
@@ -93,7 +88,6 @@ export class TerminalManager {
     childArgs: string[],
     env: NodeJS.ProcessEnv,
   ): Promise<void> {
-    // Set up stdin buffer for non-TTY mode
     if (!process.stdin.isTTY) {
       this.state.stdinBuffer = new PassThrough()
       process.stdin.pipe(this.state.stdinBuffer)
@@ -114,12 +108,9 @@ export class TerminalManager {
       this.responseQueue.setTargets(undefined, this.state.childProcess)
     }
 
-    // Initialize xterm if patterns are active
     if (this.appConfig && this.shouldInitializeXterm()) {
       await this.initializeXterm(80, 30)
     }
-
-    // Set up stdin piping
     if (this.state.stdinBuffer) {
       if (this.state.isStdinPaused) {
         process.stdin.resume()
@@ -130,16 +121,12 @@ export class TerminalManager {
       process.stdin.pipe(this.state.childProcess.stdin!)
     }
 
-    // Set up stdout handling
     this.state.childProcess.stdout!.on('data', (data: Buffer) => {
       const dataStr = data.toString()
       this.dataHandlers.forEach(handler => handler(dataStr))
     })
 
-    // Set up stderr handling
     this.state.childProcess.stderr!.pipe(process.stderr)
-
-    // Set up exit handling
     this.state.childProcess.on('exit', (code: number | null) => {
       this.exitHandlers.forEach(handler => handler(code || 0))
     })
@@ -166,20 +153,15 @@ export class TerminalManager {
 
       this.state.serializeAddon = new SerializeAddon() as SerializeAddon
       this.state.terminal.loadAddon(this.state.serializeAddon)
-    } catch (error) {
-      // Silently fail if xterm modules are not available
-    }
+    } catch (error) {}
   }
 
   private shouldInitializeXterm(): boolean {
-    // This method would check if there are active patterns
-    // For now, returning true as a placeholder
     return true
   }
 
   handleStdinData(data: Buffer): void {
     try {
-      // Check for Ctrl+S for snapshots
       if (
         this.appConfig?.allow_buffer_snapshots &&
         data.length === 1 &&
@@ -193,7 +175,6 @@ export class TerminalManager {
         return
       }
 
-      // Pass input to child process
       if (this.state.ptyProcess) {
         this.state.ptyProcess.write(data.toString())
       }
@@ -314,14 +295,12 @@ export class TerminalManager {
     intervalMs: number,
     callback: (snapshot: string) => void,
   ): void {
-    // Clear any existing polling interval
     if (this.state.screenReadInterval) {
       clearInterval(this.state.screenReadInterval)
     }
 
     this.pollingCallback = callback
 
-    // Set up the polling interval
     this.state.screenReadInterval = setInterval(async () => {
       const snapshot = await this.captureSnapshot()
       if (snapshot && this.pollingCallback) {

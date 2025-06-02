@@ -14,18 +14,13 @@ export async function askYesNo(
   const input = stdin || process.stdin
   const output = stdout || process.stdout
 
-  // Write the prompt
   output.write(prompt)
 
   if (!input.isTTY) {
-    // In production, we want to read from /dev/tty to avoid consuming piped data
-    // In tests, /dev/tty might not be available, so we fall back to stdin
     let ttyInput: NodeJS.ReadableStream = input
     let tty: fs.ReadStream | undefined
 
     try {
-      // Only try /dev/tty if we're not in a test environment
-      // Tests will have stdin available for interaction
       if (
         !process.env.NODE_ENV?.includes('test') &&
         fs.existsSync('/dev/tty')
@@ -43,7 +38,6 @@ export async function askYesNo(
       }
     }
 
-    // Fall back to readline for non-TTY inputs
     const rl = readline.createInterface({
       input: ttyInput,
       output,
@@ -66,7 +60,6 @@ export async function askYesNo(
       })
     })
   } else {
-    // Enable raw mode for immediate key detection
     if ('setRawMode' in input && typeof input.setRawMode === 'function') {
       input.setRawMode(true)
     }
@@ -75,7 +68,6 @@ export async function askYesNo(
       const onKeypress = (chunk: Buffer) => {
         const key = chunk.toString().toLowerCase()
 
-        // Handle y/n keys
         if (key === 'y') {
           output.write('y\n')
           cleanup()
@@ -85,13 +77,11 @@ export async function askYesNo(
           cleanup()
           resolve(false)
         } else if (key === '\r' || key === '\n') {
-          // Enter key - use default
           output.write(defaultNo ? 'n' : 'y')
           output.write('\n')
           cleanup()
           resolve(!defaultNo)
         } else if (key === '\u0003') {
-          // Ctrl+C
           output.write('\n')
           cleanup()
           process.exit(130)

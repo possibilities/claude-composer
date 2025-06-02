@@ -54,14 +54,10 @@ export async function saveTerminalSnapshot(
 
     fs.writeFileSync(filepath, JSON.stringify(snapshot, null, 2))
 
-    // Copy full file path to clipboard
     try {
       await clipboardy.write(filepath)
-    } catch (clipboardError) {
-      // Silently fail if clipboard operation fails
-    }
+    } catch (clipboardError) {}
 
-    // Show notification if enabled
     if (appConfig.show_notifications !== false) {
       const projectName = path.basename(process.cwd())
       showSnapshotNotification(projectName, appConfig)

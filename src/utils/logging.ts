@@ -17,12 +17,9 @@ export function warn(message: string) {
 }
 
 export function clearScreen() {
-  // Cross-platform screen clearing
   if (process.platform === 'win32') {
-    // Windows: Use ANSI escape sequence if supported, otherwise fallback
     process.stdout.write('\x1b[2J\x1b[3J\x1b[H')
   } else {
-    // Unix/Linux/macOS: Use ANSI escape sequences
     process.stdout.write('\x1b[2J\x1b[3J\x1b[H')
   }
 }

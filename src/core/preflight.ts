@@ -47,7 +47,6 @@ export async function runPreflight(
     hasPrintOption,
   } = parseCommandLineArgs(argv)
 
-  // Check if --safe is used with other known flags
   if (parsedOptions.safe) {
     const knownOptions = buildKnownOptionsSet(program)
     const usedOptions = argv.filter(
@@ -74,7 +73,6 @@ export async function runPreflight(
 
   const knownOptions = buildKnownOptionsSet(program)
 
-  // Set quiet mode based on parsed options
   if (parsedOptions.quiet) {
     setQuietMode(true)
   }
@@ -120,17 +118,13 @@ export async function runPreflight(
     log('※ Ignoring global configuration file')
   }
 
-  // Handle notification flags with proper precedence
-  // --sticky-notifications always enables show_notifications unless explicitly disabled after
   if (parsedOptions.stickyNotifications !== undefined) {
     appConfig.sticky_notifications = parsedOptions.stickyNotifications
-    // --sticky-notifications implies --show-notifications
     if (parsedOptions.stickyNotifications === true) {
       appConfig.show_notifications = true
     }
   }
 
-  // Process showNotifications after sticky to allow explicit override
   if (parsedOptions.showNotifications !== undefined) {
     appConfig.show_notifications = parsedOptions.showNotifications
   }
@@ -212,7 +206,6 @@ export async function runPreflight(
     }
   }
 
-  // Check for mutually exclusive options
   const hasToolsetFlag =
     parsedOptions.toolset && parsedOptions.toolset.length > 0
   const hasToolsetConfig =
@@ -227,7 +220,6 @@ export async function runPreflight(
     '--disallowed-tools',
   ]
   const usedMutuallyExclusiveFlags = argv.filter(arg => {
-    // Check exact matches and variations with = sign
     return mutuallyExclusiveFlags.some(
       flag => arg === flag || arg.startsWith(flag + '='),
     )
@@ -411,7 +403,6 @@ export async function runPreflight(
 
   log('※ Getting ready to launch Claude CLI')
 
-  // Clear screen if quiet mode is enabled
   if (parsedOptions.quiet) {
     clearScreen()
   }
@@ -426,7 +417,6 @@ export async function runPreflight(
   }
 }
 
-// Export config directory functions for compatibility
 import { CONFIG_PATHS } from '../config/paths'
 export const getConfigDirectory = CONFIG_PATHS.getConfigDirectory
 export { log, warn } from '../utils/logging.js'

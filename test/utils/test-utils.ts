@@ -71,7 +71,6 @@ export function runCli(options: RunCliOptions = {}): Promise<CliResult> {
       reject(err)
     })
 
-    // Safety timeout for hanging processes
     const timeoutHandle = setTimeout(() => {
       if (!child.killed) {
         child.kill('SIGTERM')
@@ -158,7 +157,6 @@ export function runCliInteractive(
       reject(err)
     })
 
-    // Safety timeout for hanging processes
     const timeoutHandle = setTimeout(() => {
       if (!child.killed) {
         child.kill('SIGTERM')
@@ -220,7 +218,6 @@ export function runCliWithPnpm(
       reject(err)
     })
 
-    // Safety timeout for hanging processes
     const timeoutHandle = setTimeout(() => {
       if (!child.killed) {
         child.kill('SIGTERM')
