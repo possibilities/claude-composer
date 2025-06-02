@@ -33,12 +33,19 @@ export function showNotification(
 export function showPatternNotification(
   match: MatchResult,
   appConfig?: AppConfig,
+  actionResponse?: 'Dismissed' | 'Prompted',
+  actionResponseIcon?: string,
 ): void {
   if (!match.notification) {
     return
   }
 
-  const message = replacePlaceholders(match.notification, match)
+  const message = replacePlaceholders(
+    match.notification,
+    match,
+    actionResponse,
+    actionResponseIcon,
+  )
 
   showNotification(
     {

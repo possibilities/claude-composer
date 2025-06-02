@@ -151,6 +151,7 @@ export class PatternMatcher {
         allMatches.push({
           patternId: id,
           patternTitle: pattern.config.title || `Unknown Pattern (${id})`,
+          type: pattern.config.type,
           response,
           matchedText: sequenceMatch.text,
           fullMatchedContent: sequenceMatch.fullMatchedContent,

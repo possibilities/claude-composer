@@ -6,6 +6,8 @@ import { stripBoxChars } from './strip-box-chars'
 export function replacePlaceholders(
   template: string,
   match: MatchResult,
+  actionResponse?: 'Dismissed' | 'Prompted',
+  actionResponseIcon?: string,
 ): string {
   let result = template
 
@@ -16,6 +18,17 @@ export function replacePlaceholders(
     /\{\{\s*matchedText\s*\}\}/gi,
     stripAnsi(match.matchedText),
   )
+
+  // Add actionResponse and actionResponseIcon replacements
+  if (actionResponse) {
+    result = result.replace(/\{\{\s*actionResponse\s*\}\}/gi, actionResponse)
+  }
+  if (actionResponseIcon) {
+    result = result.replace(
+      /\{\{\s*actionResponseIcon\s*\}\}/gi,
+      actionResponseIcon,
+    )
+  }
 
   if (match.extractedData) {
     for (const [key, value] of Object.entries(match.extractedData)) {
