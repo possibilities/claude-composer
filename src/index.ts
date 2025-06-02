@@ -102,6 +102,21 @@ async function initializePatterns(): Promise<boolean> {
       return
     }
     if (
+      pattern.id === 'read-files-prompt' &&
+      !appConfig.dangerously_dismiss_read_files_prompts &&
+      !mergedRuleset?.dismiss_project_read_files_prompts &&
+      !mergedRuleset?.dismiss_global_read_files_prompts
+    ) {
+      return
+    }
+    if (
+      pattern.id === 'fetch-content-prompt' &&
+      !appConfig.dangerously_dismiss_fetch_content_prompts &&
+      !mergedRuleset?.dismiss_fetch_content_prompts
+    ) {
+      return
+    }
+    if (
       pattern.id === 'add-tree-trigger' &&
       !appConfig.allow_adding_project_tree
     ) {
