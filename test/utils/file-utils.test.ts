@@ -2,10 +2,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
-import { isFileInsideProject } from '../../src/utils/file-utils'
+import { isFileInProjectRoot } from '../../src/utils/file-utils'
 
 describe('File Utils', () => {
-  describe('isFileInsideProject', () => {
+  describe('isFileInProjectRoot', () => {
     const originalCwd = process.cwd()
     let testDir: string
 
@@ -20,66 +20,66 @@ describe('File Utils', () => {
       fs.rmSync(testDir, { recursive: true, force: true })
     })
 
-    it('should identify relative files as inside project', () => {
-      expect(isFileInsideProject('file.txt')).toBe(true)
-      expect(isFileInsideProject('./file.txt')).toBe(true)
-      expect(isFileInsideProject('src/file.txt')).toBe(true)
-      expect(isFileInsideProject('./src/file.txt')).toBe(true)
-      expect(isFileInsideProject('deep/nested/path/file.txt')).toBe(true)
+    it('should identify relative files as in project root', () => {
+      expect(isFileInProjectRoot('file.txt')).toBe(true)
+      expect(isFileInProjectRoot('./file.txt')).toBe(true)
+      expect(isFileInProjectRoot('src/file.txt')).toBe(true)
+      expect(isFileInProjectRoot('./src/file.txt')).toBe(true)
+      expect(isFileInProjectRoot('deep/nested/path/file.txt')).toBe(true)
     })
 
-    it('should identify absolute paths inside project', () => {
+    it('should identify absolute paths in project root', () => {
       const projectFile = path.join(testDir, 'file.txt')
-      expect(isFileInsideProject(projectFile)).toBe(true)
+      expect(isFileInProjectRoot(projectFile)).toBe(true)
 
       const nestedFile = path.join(testDir, 'src', 'nested', 'file.txt')
-      expect(isFileInsideProject(nestedFile)).toBe(true)
+      expect(isFileInProjectRoot(nestedFile)).toBe(true)
     })
 
     it('should identify parent directory references as outside', () => {
-      expect(isFileInsideProject('../file.txt')).toBe(false)
-      expect(isFileInsideProject('../../file.txt')).toBe(false)
-      expect(isFileInsideProject('../sibling/file.txt')).toBe(false)
+      expect(isFileInProjectRoot('../file.txt')).toBe(false)
+      expect(isFileInProjectRoot('../../file.txt')).toBe(false)
+      expect(isFileInProjectRoot('../sibling/file.txt')).toBe(false)
     })
 
     it('should identify absolute paths outside project', () => {
-      expect(isFileInsideProject('/etc/passwd')).toBe(false)
-      expect(isFileInsideProject('/home/user/other-project/file.txt')).toBe(
+      expect(isFileInProjectRoot('/etc/passwd')).toBe(false)
+      expect(isFileInProjectRoot('/home/user/other-project/file.txt')).toBe(
         false,
       )
-      expect(isFileInsideProject(path.join(originalCwd, 'file.txt'))).toBe(
+      expect(isFileInProjectRoot(path.join(originalCwd, 'file.txt'))).toBe(
         false,
       )
     })
 
     it('should handle edge cases', () => {
       // Current directory
-      expect(isFileInsideProject('.')).toBe(true)
-      expect(isFileInsideProject('./')).toBe(true)
+      expect(isFileInProjectRoot('.')).toBe(true)
+      expect(isFileInProjectRoot('./')).toBe(true)
 
       // Empty path defaults to current directory
-      expect(isFileInsideProject('')).toBe(true)
+      expect(isFileInProjectRoot('')).toBe(true)
 
       // Paths with dots
-      expect(isFileInsideProject('./src/../file.txt')).toBe(true)
-      expect(isFileInsideProject('./src/../../file.txt')).toBe(false)
+      expect(isFileInProjectRoot('./src/../file.txt')).toBe(true)
+      expect(isFileInProjectRoot('./src/../../file.txt')).toBe(false)
     })
 
     it('should handle paths with spaces and special characters', () => {
-      expect(isFileInsideProject('file with spaces.txt')).toBe(true)
-      expect(isFileInsideProject('./path with spaces/file.txt')).toBe(true)
-      expect(isFileInsideProject('special-chars_$@!#.txt')).toBe(true)
+      expect(isFileInProjectRoot('file with spaces.txt')).toBe(true)
+      expect(isFileInProjectRoot('./path with spaces/file.txt')).toBe(true)
+      expect(isFileInProjectRoot('special-chars_$@!#.txt')).toBe(true)
     })
 
     it('should normalize paths correctly', () => {
       // Multiple slashes
-      expect(isFileInsideProject('./src//nested///file.txt')).toBe(true)
+      expect(isFileInProjectRoot('./src//nested///file.txt')).toBe(true)
 
       // Backslashes (Windows style)
-      expect(isFileInsideProject('src\\file.txt')).toBe(true)
+      expect(isFileInProjectRoot('src\\file.txt')).toBe(true)
 
       // Mixed separators
-      expect(isFileInsideProject('src\\nested/file.txt')).toBe(true)
+      expect(isFileInProjectRoot('src\\nested/file.txt')).toBe(true)
     })
 
     it('should handle symbolic links correctly', () => {
@@ -100,11 +100,11 @@ describe('File Utils', () => {
         fs.symlinkSync(insideFile, insideLink)
         fs.symlinkSync(outsideFile, outsideLink)
 
-        // Symlink to inside file should be considered inside
-        expect(isFileInsideProject(insideLink)).toBe(true)
+        // Symlink to file in project root should be considered in project root
+        expect(isFileInProjectRoot(insideLink)).toBe(true)
 
-        // Symlink to outside file (but link itself is inside) should be considered inside
-        expect(isFileInsideProject(outsideLink)).toBe(true)
+        // Symlink to outside file (but link itself is in project root) should be considered in project root
+        expect(isFileInProjectRoot(outsideLink)).toBe(true)
       } finally {
         fs.rmSync(outsideDir, { recursive: true, force: true })
       }
@@ -116,8 +116,8 @@ describe('File Utils', () => {
       try {
         if (process.platform !== 'win32') {
           process.chdir('/')
-          expect(isFileInsideProject('etc/passwd')).toBe(true)
-          expect(isFileInsideProject('/etc/passwd')).toBe(true)
+          expect(isFileInProjectRoot('etc/passwd')).toBe(true)
+          expect(isFileInProjectRoot('/etc/passwd')).toBe(true)
         }
       } finally {
         process.chdir(savedCwd)

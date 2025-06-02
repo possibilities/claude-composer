@@ -41,8 +41,8 @@ dangerously_allow_without_version_control: true
     it('should load a single ruleset from CLI', async () => {
       // Create a test ruleset file
       const rulesetContent = `
-dismiss_edit_file_prompt_inside_project: true
-dismiss_create_file_prompts_inside_project: false
+dismiss_project_edit_file_prompts: true
+dismiss_project_create_file_prompts: false
 `
       fs.writeFileSync(
         path.join(rulesetsDir, 'test-ruleset.yaml'),
@@ -57,23 +57,21 @@ dismiss_create_file_prompts_inside_project: false
       ])
 
       expect(result.mergedRuleset).toBeDefined()
-      expect(
-        result.mergedRuleset?.dismiss_edit_file_prompt_inside_project,
-      ).toBe(true)
-      expect(
-        result.mergedRuleset?.dismiss_create_file_prompts_inside_project,
-      ).toBe(false)
+      expect(result.mergedRuleset?.dismiss_project_edit_file_prompts).toBe(true)
+      expect(result.mergedRuleset?.dismiss_project_create_file_prompts).toBe(
+        false,
+      )
     })
 
     it('should load multiple rulesets from CLI', async () => {
       // Create test ruleset files
       const ruleset1 = `
-dismiss_edit_file_prompt_inside_project: true
-dismiss_create_file_prompts_inside_project: false
+dismiss_project_edit_file_prompts: true
+dismiss_project_create_file_prompts: false
 `
       const ruleset2 = `
-dismiss_create_file_prompts_inside_project: true
-dismiss_bash_command_prompts_inside_project: true
+dismiss_project_create_file_prompts: true
+dismiss_project_bash_command_prompts: true
 `
       fs.writeFileSync(path.join(rulesetsDir, 'ruleset1.yaml'), ruleset1)
       fs.writeFileSync(path.join(rulesetsDir, 'ruleset2.yaml'), ruleset2)
@@ -87,15 +85,13 @@ dismiss_bash_command_prompts_inside_project: true
       ])
 
       expect(result.mergedRuleset).toBeDefined()
-      expect(
-        result.mergedRuleset?.dismiss_edit_file_prompt_inside_project,
-      ).toBe(true)
-      expect(
-        result.mergedRuleset?.dismiss_create_file_prompts_inside_project,
-      ).toBe(true)
-      expect(
-        result.mergedRuleset?.dismiss_bash_command_prompts_inside_project,
-      ).toBe(true)
+      expect(result.mergedRuleset?.dismiss_project_edit_file_prompts).toBe(true)
+      expect(result.mergedRuleset?.dismiss_project_create_file_prompts).toBe(
+        true,
+      )
+      expect(result.mergedRuleset?.dismiss_project_bash_command_prompts).toBe(
+        true,
+      )
     })
 
     it('should handle missing ruleset file gracefully', async () => {
@@ -124,7 +120,7 @@ rulesets:
 
       // Create the default ruleset
       const rulesetContent = `
-dismiss_edit_file_prompt_inside_project: true
+dismiss_project_edit_file_prompts: true
 `
       fs.writeFileSync(
         path.join(rulesetsDir, 'default-ruleset.yaml'),
@@ -134,9 +130,7 @@ dismiss_edit_file_prompt_inside_project: true
       const result = await runPreflight(['node', 'cli'])
 
       expect(result.mergedRuleset).toBeDefined()
-      expect(
-        result.mergedRuleset?.dismiss_edit_file_prompt_inside_project,
-      ).toBe(true)
+      expect(result.mergedRuleset?.dismiss_project_edit_file_prompts).toBe(true)
     })
 
     it('should respect --no-default-rulesets flag', async () => {
@@ -151,7 +145,7 @@ rulesets:
 
       // Create the default ruleset
       const rulesetContent = `
-dismiss_edit_file_prompt_inside_project: true
+dismiss_project_edit_file_prompts: true
 `
       fs.writeFileSync(
         path.join(rulesetsDir, 'default-ruleset.yaml'),
@@ -179,10 +173,10 @@ rulesets:
 
       // Create the rulesets
       const defaultContent = `
-dismiss_edit_file_prompt_inside_project: false
+dismiss_project_edit_file_prompts: false
 `
       const cliContent = `
-dismiss_edit_file_prompt_inside_project: true
+dismiss_project_edit_file_prompts: true
 `
       fs.writeFileSync(
         path.join(rulesetsDir, 'default-ruleset.yaml'),
@@ -198,17 +192,15 @@ dismiss_edit_file_prompt_inside_project: true
       ])
 
       expect(result.mergedRuleset).toBeDefined()
-      expect(
-        result.mergedRuleset?.dismiss_edit_file_prompt_inside_project,
-      ).toBe(true)
+      expect(result.mergedRuleset?.dismiss_project_edit_file_prompts).toBe(true)
     })
   })
 
   describe('Ruleset argument building', () => {
     it('should return empty rulesetArgs since rulesets are handled in parent', async () => {
       const rulesetContent = `
-dismiss_edit_file_prompt_inside_project: true
-dismiss_create_file_prompts_outside_project: true
+dismiss_project_edit_file_prompts: true
+dismiss_global_create_file_prompts: true
 `
       fs.writeFileSync(
         path.join(rulesetsDir, 'test-ruleset.yaml'),
@@ -227,8 +219,8 @@ dismiss_create_file_prompts_outside_project: true
 
     it('should always return empty rulesetArgs', async () => {
       const rulesetContent = `
-dismiss_edit_file_prompt_inside_project: true
-dismiss_edit_file_prompt_outside_project: true
+dismiss_project_edit_file_prompts: true
+dismiss_global_edit_file_prompts: true
 `
       fs.writeFileSync(
         path.join(rulesetsDir, 'test-ruleset.yaml'),
@@ -249,19 +241,19 @@ dismiss_edit_file_prompt_outside_project: true
   describe('Ruleset merging behavior', () => {
     it('should use least restrictive setting when merging', () => {
       const ruleset1 = {
-        dismiss_edit_file_prompt_inside_project: false,
-        dismiss_create_file_prompts_inside_project: true,
+        dismiss_project_edit_file_prompts: false,
+        dismiss_project_create_file_prompts: true,
       }
       const ruleset2 = {
-        dismiss_edit_file_prompt_inside_project: true,
-        dismiss_create_file_prompts_inside_project: false,
+        dismiss_project_edit_file_prompts: true,
+        dismiss_project_create_file_prompts: false,
       }
 
       const merged = mergeRulesets([ruleset1, ruleset2])
 
       // Both should be true (least restrictive)
-      expect(merged.dismiss_edit_file_prompt_inside_project).toBe(true)
-      expect(merged.dismiss_create_file_prompts_inside_project).toBe(true)
+      expect(merged.dismiss_project_edit_file_prompts).toBe(true)
+      expect(merged.dismiss_project_create_file_prompts).toBe(true)
     })
   })
 })

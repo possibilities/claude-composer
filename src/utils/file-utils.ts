@@ -1,6 +1,6 @@
 import * as path from 'path'
 
-export function isFileInsideProject(filePath: string): boolean {
+export function isFileInProjectRoot(filePath: string): boolean {
   const projectRoot = process.cwd()
   const absolutePath = path.isAbsolute(filePath)
     ? filePath

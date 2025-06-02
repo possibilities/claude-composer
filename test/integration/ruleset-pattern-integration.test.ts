@@ -4,14 +4,14 @@ import type { AppConfig, RulesetConfig } from '../../src/config/schemas'
 
 // Mock the file-utils module
 vi.mock('../../src/utils/file-utils', () => ({
-  isFileInsideProject: vi.fn(),
+  isFileInProjectRoot: vi.fn(),
 }))
 
 // Import after mocking
-import { isFileInsideProject } from '../../src/utils/file-utils'
+import { isFileInProjectRoot } from '../../src/utils/file-utils'
 
 describe('Ruleset Pattern Integration', () => {
-  const mockIsFileInsideProject = isFileInsideProject as ReturnType<
+  const mockIsFileInProjectRoot = isFileInProjectRoot as ReturnType<
     typeof vi.fn
   >
 
@@ -32,28 +32,28 @@ describe('Ruleset Pattern Integration', () => {
     let checkPath = fileName || directory || process.cwd()
     if (!checkPath) return false
 
-    const isInside = mockIsFileInsideProject(checkPath)
+    const isInside = mockIsFileInProjectRoot(checkPath)
 
     switch (match.patternId) {
       case 'edit-file-prompt':
         if (appConfig.dangerously_dismiss_edit_file_prompts) return true
         if (!mergedRuleset) return false
         return isInside
-          ? mergedRuleset.dismiss_edit_file_prompt_inside_project === true
-          : mergedRuleset.dismiss_edit_file_prompt_outside_project === true
+          ? mergedRuleset.dismiss_project_edit_file_prompts === true
+          : mergedRuleset.dismiss_global_edit_file_prompts === true
       case 'create-file-prompt':
         if (appConfig.dangerously_dismiss_create_file_prompts) return true
         if (!mergedRuleset) return false
         return isInside
-          ? mergedRuleset.dismiss_create_file_prompts_inside_project === true
-          : mergedRuleset.dismiss_create_file_prompts_outside_project === true
+          ? mergedRuleset.dismiss_project_create_file_prompts === true
+          : mergedRuleset.dismiss_global_create_file_prompts === true
       case 'bash-command-prompt-format-1':
       case 'bash-command-prompt-format-2':
         if (appConfig.dangerously_dismiss_bash_command_prompts) return true
         if (!mergedRuleset) return false
         return isInside
-          ? mergedRuleset.dismiss_bash_command_prompts_inside_project === true
-          : mergedRuleset.dismiss_bash_command_prompts_outside_project === true
+          ? mergedRuleset.dismiss_project_bash_command_prompts === true
+          : mergedRuleset.dismiss_global_bash_command_prompts === true
       default:
         return true
     }
@@ -74,38 +74,38 @@ describe('Ruleset Pattern Integration', () => {
       expect(shouldDismissPrompt(match, appConfig, undefined)).toBe(false)
     })
 
-    it('should dismiss inside project files when ruleset specifies', () => {
-      mockIsFileInsideProject.mockReturnValue(true)
+    it('should dismiss files in project root when ruleset specifies', () => {
+      mockIsFileInProjectRoot.mockReturnValue(true)
       const match = createEditMatch('./src/file.txt')
       const appConfig: AppConfig = {}
       const ruleset: RulesetConfig = {
-        dismiss_edit_file_prompt_inside_project: true,
-        dismiss_edit_file_prompt_outside_project: false,
+        dismiss_project_edit_file_prompts: true,
+        dismiss_global_edit_file_prompts: false,
       }
 
       expect(shouldDismissPrompt(match, appConfig, ruleset)).toBe(true)
     })
 
-    it('should not dismiss outside project files when ruleset specifies', () => {
-      mockIsFileInsideProject.mockReturnValue(false)
+    it('should not dismiss files outside project root when ruleset specifies', () => {
+      mockIsFileInProjectRoot.mockReturnValue(false)
       const match = createEditMatch('/etc/config.txt')
       const appConfig: AppConfig = {}
       const ruleset: RulesetConfig = {
-        dismiss_edit_file_prompt_inside_project: true,
-        dismiss_edit_file_prompt_outside_project: false,
+        dismiss_project_edit_file_prompts: true,
+        dismiss_global_edit_file_prompts: false,
       }
 
       expect(shouldDismissPrompt(match, appConfig, ruleset)).toBe(false)
     })
 
     it('should respect global dangerous flag over ruleset', () => {
-      mockIsFileInsideProject.mockReturnValue(false)
+      mockIsFileInProjectRoot.mockReturnValue(false)
       const match = createEditMatch('/etc/config.txt')
       const appConfig: AppConfig = {
         dangerously_dismiss_edit_file_prompts: true,
       }
       const ruleset: RulesetConfig = {
-        dismiss_edit_file_prompt_outside_project: false,
+        dismiss_global_edit_file_prompts: false,
       }
 
       expect(shouldDismissPrompt(match, appConfig, ruleset)).toBe(true)
@@ -121,22 +121,22 @@ describe('Ruleset Pattern Integration', () => {
     })
 
     it('should handle create file prompts with ruleset', () => {
-      mockIsFileInsideProject.mockReturnValue(true)
+      mockIsFileInProjectRoot.mockReturnValue(true)
       const match = createFileMatch('./newfile.txt')
       const appConfig: AppConfig = {}
       const ruleset: RulesetConfig = {
-        dismiss_create_file_prompts_inside_project: true,
+        dismiss_project_create_file_prompts: true,
       }
 
       expect(shouldDismissPrompt(match, appConfig, ruleset)).toBe(true)
     })
 
     it('should not dismiss when ruleset says false', () => {
-      mockIsFileInsideProject.mockReturnValue(true)
+      mockIsFileInProjectRoot.mockReturnValue(true)
       const match = createFileMatch('./newfile.txt')
       const appConfig: AppConfig = {}
       const ruleset: RulesetConfig = {
-        dismiss_create_file_prompts_inside_project: false,
+        dismiss_project_create_file_prompts: false,
       }
 
       expect(shouldDismissPrompt(match, appConfig, ruleset)).toBe(false)
@@ -158,35 +158,35 @@ describe('Ruleset Pattern Integration', () => {
     })
 
     it('should handle bash commands in project directory', () => {
-      mockIsFileInsideProject.mockReturnValue(true)
+      mockIsFileInProjectRoot.mockReturnValue(true)
       const match = createBashMatch('./src')
       const appConfig: AppConfig = {}
       const ruleset: RulesetConfig = {
-        dismiss_bash_command_prompts_inside_project: true,
+        dismiss_project_bash_command_prompts: true,
       }
 
       expect(shouldDismissPrompt(match, appConfig, ruleset)).toBe(true)
     })
 
     it('should handle bash commands outside project', () => {
-      mockIsFileInsideProject.mockReturnValue(false)
+      mockIsFileInProjectRoot.mockReturnValue(false)
       const match = createBashMatch('/tmp')
       const appConfig: AppConfig = {}
       const ruleset: RulesetConfig = {
-        dismiss_bash_command_prompts_inside_project: true,
-        dismiss_bash_command_prompts_outside_project: false,
+        dismiss_project_bash_command_prompts: true,
+        dismiss_global_bash_command_prompts: false,
       }
 
       expect(shouldDismissPrompt(match, appConfig, ruleset)).toBe(false)
     })
 
     it('should handle both bash command formats', () => {
-      mockIsFileInsideProject.mockReturnValue(true)
+      mockIsFileInProjectRoot.mockReturnValue(true)
       const match1 = createBashMatch('./src', 1)
       const match2 = createBashMatch('./src', 2)
       const appConfig: AppConfig = {}
       const ruleset: RulesetConfig = {
-        dismiss_bash_command_prompts_inside_project: true,
+        dismiss_project_bash_command_prompts: true,
       }
 
       expect(shouldDismissPrompt(match1, appConfig, ruleset)).toBe(true)
@@ -203,14 +203,14 @@ describe('Ruleset Pattern Integration', () => {
       }
       const appConfig: AppConfig = {}
       const ruleset: RulesetConfig = {
-        dismiss_edit_file_prompt_inside_project: true,
+        dismiss_project_edit_file_prompts: true,
       }
 
-      // Mock isFileInsideProject to return true for process.cwd()
-      mockIsFileInsideProject.mockReturnValue(true)
+      // Mock isFileInProjectRoot to return true for process.cwd()
+      mockIsFileInProjectRoot.mockReturnValue(true)
 
       expect(shouldDismissPrompt(match, appConfig, ruleset)).toBe(true)
-      expect(mockIsFileInsideProject).toHaveBeenCalledWith(process.cwd())
+      expect(mockIsFileInProjectRoot).toHaveBeenCalledWith(process.cwd())
     })
 
     it('should return true for unknown pattern types', () => {
@@ -226,7 +226,7 @@ describe('Ruleset Pattern Integration', () => {
     })
 
     it('should use current directory as fallback for bash commands', () => {
-      mockIsFileInsideProject.mockReturnValue(true)
+      mockIsFileInProjectRoot.mockReturnValue(true)
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-1',
         response: '1',
@@ -234,11 +234,11 @@ describe('Ruleset Pattern Integration', () => {
       }
       const appConfig: AppConfig = {}
       const ruleset: RulesetConfig = {
-        dismiss_bash_command_prompts_inside_project: true,
+        dismiss_project_bash_command_prompts: true,
       }
 
       expect(shouldDismissPrompt(match, appConfig, ruleset)).toBe(true)
-      expect(mockIsFileInsideProject).toHaveBeenCalledWith(process.cwd())
+      expect(mockIsFileInProjectRoot).toHaveBeenCalledWith(process.cwd())
     })
   })
 
@@ -258,13 +258,13 @@ describe('Ruleset Pattern Integration', () => {
     })
 
     it('should handle partial ruleset configurations', () => {
-      mockIsFileInsideProject.mockReturnValue(true)
+      mockIsFileInProjectRoot.mockReturnValue(true)
       const editMatch = createEditMatch('./file.txt')
       const createMatch = createFileMatch('./newfile.txt')
 
       const appConfig: AppConfig = {}
       const ruleset: RulesetConfig = {
-        dismiss_edit_file_prompt_inside_project: true,
+        dismiss_project_edit_file_prompts: true,
         // create file rule not specified
       }
 
@@ -273,22 +273,22 @@ describe('Ruleset Pattern Integration', () => {
     })
 
     it('should handle all prompts with complete ruleset', () => {
-      mockIsFileInsideProject.mockReturnValue(true)
+      mockIsFileInProjectRoot.mockReturnValue(true)
 
       const appConfig: AppConfig = {}
       const ruleset: RulesetConfig = {
-        dismiss_edit_file_prompt_inside_project: true,
-        dismiss_create_file_prompts_inside_project: true,
-        dismiss_bash_command_prompts_inside_project: true,
-        dismiss_edit_file_prompt_outside_project: false,
-        dismiss_create_file_prompts_outside_project: false,
-        dismiss_bash_command_prompts_outside_project: false,
+        dismiss_project_edit_file_prompts: true,
+        dismiss_project_create_file_prompts: true,
+        dismiss_project_bash_command_prompts: true,
+        dismiss_global_edit_file_prompts: false,
+        dismiss_global_create_file_prompts: false,
+        dismiss_global_bash_command_prompts: false,
       }
 
       const insideEdit = createEditMatch('./file.txt')
       expect(shouldDismissPrompt(insideEdit, appConfig, ruleset)).toBe(true)
 
-      mockIsFileInsideProject.mockReturnValue(false)
+      mockIsFileInProjectRoot.mockReturnValue(false)
       const outsideEdit = createEditMatch('/etc/file.txt')
       expect(shouldDismissPrompt(outsideEdit, appConfig, ruleset)).toBe(false)
     })

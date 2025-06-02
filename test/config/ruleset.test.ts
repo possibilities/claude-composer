@@ -9,18 +9,18 @@ import {
 } from '../../src/config/schemas'
 import { loadRulesetFile } from '../../src/config/loader'
 import { mergeRulesets, buildRulesetArgs } from '../../src/config/rulesets'
-import { isFileInsideProject } from '../../src/utils/file-utils'
+import { isFileInProjectRoot } from '../../src/utils/file-utils'
 
 describe('Ruleset Configuration', () => {
   describe('Schema Validation', () => {
     it('should accept valid ruleset configuration', () => {
       const validConfig = {
-        dismiss_edit_file_prompt_inside_project: true,
-        dismiss_create_file_prompts_inside_project: false,
-        dismiss_bash_command_prompts_inside_project: true,
-        dismiss_edit_file_prompt_outside_project: false,
-        dismiss_create_file_prompts_outside_project: true,
-        dismiss_bash_command_prompts_outside_project: false,
+        dismiss_project_edit_file_prompts: true,
+        dismiss_project_create_file_prompts: false,
+        dismiss_project_bash_command_prompts: true,
+        dismiss_global_edit_file_prompts: false,
+        dismiss_global_create_file_prompts: true,
+        dismiss_global_bash_command_prompts: false,
       }
 
       const result = validateRulesetConfig(validConfig)
@@ -32,7 +32,7 @@ describe('Ruleset Configuration', () => {
 
     it('should accept partial ruleset configuration', () => {
       const partialConfig = {
-        dismiss_edit_file_prompt_inside_project: true,
+        dismiss_project_edit_file_prompts: true,
       }
 
       const result = validateRulesetConfig(partialConfig)
@@ -44,7 +44,7 @@ describe('Ruleset Configuration', () => {
 
     it('should reject invalid fields', () => {
       const invalidConfig = {
-        dismiss_edit_file_prompt_inside_project: true,
+        dismiss_project_edit_file_prompts: true,
         invalid_field: 'should not be here',
       }
 
@@ -54,7 +54,7 @@ describe('Ruleset Configuration', () => {
 
     it('should reject non-boolean values', () => {
       const invalidConfig = {
-        dismiss_edit_file_prompt_inside_project: 'yes',
+        dismiss_project_edit_file_prompts: 'yes',
       }
 
       const result = validateRulesetConfig(invalidConfig)
@@ -65,59 +65,59 @@ describe('Ruleset Configuration', () => {
   describe('Ruleset Merging', () => {
     it('should merge multiple rulesets', () => {
       const ruleset1: RulesetConfig = {
-        dismiss_edit_file_prompt_inside_project: true,
-        dismiss_create_file_prompts_inside_project: false,
+        dismiss_project_edit_file_prompts: true,
+        dismiss_project_create_file_prompts: false,
       }
 
       const ruleset2: RulesetConfig = {
-        dismiss_create_file_prompts_inside_project: true,
-        dismiss_bash_command_prompts_inside_project: true,
+        dismiss_project_create_file_prompts: true,
+        dismiss_project_bash_command_prompts: true,
       }
 
       const merged = mergeRulesets([ruleset1, ruleset2])
       expect(merged).toEqual({
-        dismiss_edit_file_prompt_inside_project: true,
-        dismiss_create_file_prompts_inside_project: true,
-        dismiss_bash_command_prompts_inside_project: true,
+        dismiss_project_edit_file_prompts: true,
+        dismiss_project_create_file_prompts: true,
+        dismiss_project_bash_command_prompts: true,
       })
     })
 
     it('should use least restrictive setting (true prevails)', () => {
       const ruleset1: RulesetConfig = {
-        dismiss_edit_file_prompt_inside_project: false,
+        dismiss_project_edit_file_prompts: false,
       }
 
       const ruleset2: RulesetConfig = {
-        dismiss_edit_file_prompt_inside_project: true,
+        dismiss_project_edit_file_prompts: true,
       }
 
       const merged = mergeRulesets([ruleset1, ruleset2])
-      expect(merged.dismiss_edit_file_prompt_inside_project).toBe(true)
+      expect(merged.dismiss_project_edit_file_prompts).toBe(true)
     })
 
     it('should preserve true value even if later ruleset has false', () => {
       const ruleset1: RulesetConfig = {
-        dismiss_edit_file_prompt_inside_project: true,
+        dismiss_project_edit_file_prompts: true,
       }
 
       const ruleset2: RulesetConfig = {
-        dismiss_edit_file_prompt_inside_project: false,
+        dismiss_project_edit_file_prompts: false,
       }
 
       const merged = mergeRulesets([ruleset1, ruleset2])
-      expect(merged.dismiss_edit_file_prompt_inside_project).toBe(true)
+      expect(merged.dismiss_project_edit_file_prompts).toBe(true)
     })
   })
 
   describe('Build Ruleset Args', () => {
     it('should always return empty array since rulesets are handled in parent process', () => {
       const ruleset: RulesetConfig = {
-        dismiss_edit_file_prompt_inside_project: true,
-        dismiss_create_file_prompts_inside_project: true,
-        dismiss_bash_command_prompts_inside_project: true,
-        dismiss_edit_file_prompt_outside_project: true,
-        dismiss_create_file_prompts_outside_project: true,
-        dismiss_bash_command_prompts_outside_project: true,
+        dismiss_project_edit_file_prompts: true,
+        dismiss_project_create_file_prompts: true,
+        dismiss_project_bash_command_prompts: true,
+        dismiss_global_edit_file_prompts: true,
+        dismiss_global_create_file_prompts: true,
+        dismiss_global_bash_command_prompts: true,
       }
 
       const args = buildRulesetArgs(ruleset)
@@ -151,17 +151,17 @@ describe('Ruleset Configuration', () => {
       }
     })
 
-    it('should identify files inside project', () => {
-      expect(isFileInsideProject('file.txt')).toBe(true)
-      expect(isFileInsideProject('./file.txt')).toBe(true)
-      expect(isFileInsideProject('subdir/file.txt')).toBe(true)
-      expect(isFileInsideProject('/tmp/test-project/file.txt')).toBe(true)
+    it('should identify files in project root', () => {
+      expect(isFileInProjectRoot('file.txt')).toBe(true)
+      expect(isFileInProjectRoot('./file.txt')).toBe(true)
+      expect(isFileInProjectRoot('subdir/file.txt')).toBe(true)
+      expect(isFileInProjectRoot('/tmp/test-project/file.txt')).toBe(true)
     })
 
-    it('should identify files outside project', () => {
-      expect(isFileInsideProject('../file.txt')).toBe(false)
-      expect(isFileInsideProject('/home/user/file.txt')).toBe(false)
-      expect(isFileInsideProject('/tmp/other-project/file.txt')).toBe(false)
+    it('should identify files outside project root', () => {
+      expect(isFileInProjectRoot('../file.txt')).toBe(false)
+      expect(isFileInProjectRoot('/home/user/file.txt')).toBe(false)
+      expect(isFileInProjectRoot('/tmp/other-project/file.txt')).toBe(false)
     })
   })
 })

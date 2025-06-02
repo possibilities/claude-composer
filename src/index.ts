@@ -21,7 +21,7 @@ import {
 } from './terminal/utils'
 import type { TerminalConfig } from './terminal/types'
 import { InterruptMonitor } from './core/interrupt-monitor'
-import { isFileInsideProject } from './utils/file-utils.js'
+import { isFileInProjectRoot } from './utils/file-utils.js'
 
 let patternMatcher: PatternMatcher
 let responseQueue: ResponseQueue
@@ -79,16 +79,16 @@ async function initializePatterns(): Promise<boolean> {
     if (
       pattern.id === 'edit-file-prompt' &&
       !appConfig.dangerously_dismiss_edit_file_prompts &&
-      !mergedRuleset?.dismiss_edit_file_prompt_inside_project &&
-      !mergedRuleset?.dismiss_edit_file_prompt_outside_project
+      !mergedRuleset?.dismiss_project_edit_file_prompts &&
+      !mergedRuleset?.dismiss_global_edit_file_prompts
     ) {
       return
     }
     if (
       pattern.id === 'create-file-prompt' &&
       !appConfig.dangerously_dismiss_create_file_prompts &&
-      !mergedRuleset?.dismiss_create_file_prompts_inside_project &&
-      !mergedRuleset?.dismiss_create_file_prompts_outside_project
+      !mergedRuleset?.dismiss_project_create_file_prompts &&
+      !mergedRuleset?.dismiss_global_create_file_prompts
     ) {
       return
     }
@@ -96,8 +96,8 @@ async function initializePatterns(): Promise<boolean> {
       (pattern.id === 'bash-command-prompt-format-1' ||
         pattern.id === 'bash-command-prompt-format-2') &&
       !appConfig.dangerously_dismiss_bash_command_prompts &&
-      !mergedRuleset?.dismiss_bash_command_prompts_inside_project &&
-      !mergedRuleset?.dismiss_bash_command_prompts_outside_project
+      !mergedRuleset?.dismiss_project_bash_command_prompts &&
+      !mergedRuleset?.dismiss_global_bash_command_prompts
     ) {
       return
     }
@@ -169,26 +169,34 @@ function shouldDismissPrompt(match: MatchResult): boolean {
   let checkPath = fileName || directory || process.cwd()
   if (!checkPath) return false
 
-  const isInside = isFileInsideProject(checkPath)
+  const isInProjectRoot = isFileInProjectRoot(checkPath)
 
   switch (match.patternId) {
     case 'edit-file-prompt':
       if (!appConfig.dangerously_dismiss_edit_file_prompts) return false
       if (!mergedRuleset) return false
-      return mergedRuleset.dismiss_edit_file_prompt_inside_project === true
+      return isInProjectRoot
+        ? mergedRuleset.dismiss_project_edit_file_prompts === true
+        : mergedRuleset.dismiss_global_edit_file_prompts === true
     case 'create-file-prompt':
       if (!appConfig.dangerously_dismiss_create_file_prompts) return false
       if (!mergedRuleset) return false
-      return mergedRuleset.dismiss_create_file_prompts_inside_project === true
+      return isInProjectRoot
+        ? mergedRuleset.dismiss_project_create_file_prompts === true
+        : mergedRuleset.dismiss_global_create_file_prompts === true
     case 'bash-command-prompt-format-1':
     case 'bash-command-prompt-format-2':
       if (!appConfig.dangerously_dismiss_bash_command_prompts) return false
       if (!mergedRuleset) return false
-      return mergedRuleset.dismiss_bash_command_prompts_inside_project === true
+      return isInProjectRoot
+        ? mergedRuleset.dismiss_project_bash_command_prompts === true
+        : mergedRuleset.dismiss_global_bash_command_prompts === true
     case 'read-files-prompt':
       if (!appConfig.dangerously_dismiss_read_files_prompts) return false
       if (!mergedRuleset) return false
-      return mergedRuleset.dismiss_read_files_prompts_inside_project === true
+      return isInProjectRoot
+        ? mergedRuleset.dismiss_project_read_files_prompts === true
+        : mergedRuleset.dismiss_global_read_files_prompts === true
     case 'fetch-content-prompt':
       if (!appConfig.dangerously_dismiss_fetch_content_prompts) return false
       if (!mergedRuleset) return false

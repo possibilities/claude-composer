@@ -34,14 +34,14 @@ export type ToolsetConfig = z.infer<typeof toolsetConfigSchema>
 
 export const rulesetConfigSchema = z
   .object({
-    dismiss_edit_file_prompt_inside_project: z.boolean().optional(),
-    dismiss_create_file_prompts_inside_project: z.boolean().optional(),
-    dismiss_bash_command_prompts_inside_project: z.boolean().optional(),
-    dismiss_read_files_prompts_inside_project: z.boolean().optional(),
-    dismiss_edit_file_prompt_outside_project: z.boolean().optional(),
-    dismiss_create_file_prompts_outside_project: z.boolean().optional(),
-    dismiss_bash_command_prompts_outside_project: z.boolean().optional(),
-    dismiss_read_files_prompts_outside_project: z.boolean().optional(),
+    dismiss_project_edit_file_prompts: z.boolean().optional(),
+    dismiss_project_create_file_prompts: z.boolean().optional(),
+    dismiss_project_bash_command_prompts: z.boolean().optional(),
+    dismiss_project_read_files_prompts: z.boolean().optional(),
+    dismiss_global_edit_file_prompts: z.boolean().optional(),
+    dismiss_global_create_file_prompts: z.boolean().optional(),
+    dismiss_global_bash_command_prompts: z.boolean().optional(),
+    dismiss_global_read_files_prompts: z.boolean().optional(),
     dismiss_fetch_content_prompts: z.boolean().optional(),
   })
   .strict()

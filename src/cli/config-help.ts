@@ -95,35 +95,35 @@ mcp: record (optional)
 RULESET CONFIGURATION OPTIONS (<name>.yaml)
 ==========================================
 
-dismiss_edit_file_prompt_inside_project: boolean (optional)
-  Automatically dismiss edit file prompts for files inside the project
+dismiss_project_edit_file_prompts: boolean (optional)
+  Automatically dismiss edit file prompts for files in project root
   Default: false
 
-dismiss_create_file_prompts_inside_project: boolean (optional)
-  Automatically dismiss create file prompts for files inside the project
+dismiss_project_create_file_prompts: boolean (optional)
+  Automatically dismiss create file prompts for files in project root
   Default: false
 
-dismiss_bash_command_prompts_inside_project: boolean (optional)
-  Automatically dismiss bash command prompts running inside the project
+dismiss_project_bash_command_prompts: boolean (optional)
+  Automatically dismiss bash command prompts running in project root
   Default: false
 
-dismiss_read_files_prompts_inside_project: boolean (optional)
-  Automatically dismiss read files prompts for files inside the project
+dismiss_project_read_files_prompts: boolean (optional)
+  Automatically dismiss read files prompts for files in project root
   Default: false
 
-dismiss_edit_file_prompt_outside_project: boolean (optional)
+dismiss_global_edit_file_prompts: boolean (optional)
   Automatically dismiss edit file prompts for files outside the project
   Default: false
 
-dismiss_create_file_prompts_outside_project: boolean (optional)
+dismiss_global_create_file_prompts: boolean (optional)
   Automatically dismiss create file prompts for files outside the project
   Default: false
 
-dismiss_bash_command_prompts_outside_project: boolean (optional)
+dismiss_global_bash_command_prompts: boolean (optional)
   Automatically dismiss bash command prompts running outside the project
   Default: false
 
-dismiss_read_files_prompts_outside_project: boolean (optional)
+dismiss_global_read_files_prompts: boolean (optional)
   Automatically dismiss read files prompts for files outside the project
   Default: false
 
@@ -175,14 +175,14 @@ mcp:
 EXAMPLE RULESET FILE (safe-mode.yaml)
 =====================================
 
-dismiss_edit_file_prompt_inside_project: true
-dismiss_create_file_prompts_inside_project: true
-dismiss_bash_command_prompts_inside_project: true
-dismiss_read_files_prompts_inside_project: true
-dismiss_edit_file_prompt_outside_project: false
-dismiss_create_file_prompts_outside_project: false
-dismiss_bash_command_prompts_outside_project: false
-dismiss_read_files_prompts_outside_project: false
+dismiss_project_edit_file_prompts: true
+dismiss_project_create_file_prompts: true
+dismiss_project_bash_command_prompts: true
+dismiss_project_read_files_prompts: true
+dismiss_global_edit_file_prompts: false
+dismiss_global_create_file_prompts: false
+dismiss_global_bash_command_prompts: false
+dismiss_global_read_files_prompts: false
 dismiss_fetch_content_prompts: false
 
 
