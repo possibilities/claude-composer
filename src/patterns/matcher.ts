@@ -8,6 +8,7 @@ import { CONFIG_PATHS } from '../config/paths'
 export interface MatchResult {
   patternId: string
   patternTitle: string
+  type?: 'prompt' | 'completion'
   response: string | string[]
   matchedText: string
   fullMatchedContent: string
@@ -71,6 +72,7 @@ export class PatternMatcher {
         allMatches.push({
           patternId: id,
           patternTitle: pattern.config.title || `Unknown Pattern (${id})`,
+          type: pattern.config.type,
           response,
           matchedText: sequenceMatch.text,
           fullMatchedContent: sequenceMatch.fullMatchedContent,

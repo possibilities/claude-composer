@@ -230,7 +230,14 @@ function handlePatternMatches(
     : patternMatcher.processData(data)
 
   for (const match of matches) {
-    if (shouldDismissPrompt(match)) {
+    const isCompletionPattern =
+      match.patternId === 'add-tree-trigger' ||
+      match.patternId === 'add-changes-trigger' ||
+      match.type === 'completion'
+
+    if (isCompletionPattern) {
+      responseQueue.enqueue(match.response)
+    } else if (shouldDismissPrompt(match)) {
       responseQueue.enqueue(match.response)
     }
 
