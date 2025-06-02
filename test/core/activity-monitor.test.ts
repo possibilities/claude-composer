@@ -45,7 +45,7 @@ describe('ActivityMonitor', () => {
   })
 
   describe('Persistence tracking', () => {
-    it('should track persistent presence after 2 seconds', () => {
+    it('should track persistent presence after 1 second', () => {
       const snapshotWithText =
         'Press ENTER to continue or Ctrl+C to interrupt) waiting...'
 
@@ -53,18 +53,18 @@ describe('ActivityMonitor', () => {
       monitor.checkSnapshot(snapshotWithText)
       expect(mockShowNotification).not.toHaveBeenCalled()
 
-      // Still present after 1 second
-      vi.advanceTimersByTime(1000)
+      // Still present after 0.5 seconds
+      vi.advanceTimersByTime(500)
       monitor.checkSnapshot(snapshotWithText)
       expect(mockShowNotification).not.toHaveBeenCalled()
 
-      // Still present after 2+ seconds - now considered persistently present
-      vi.advanceTimersByTime(1100)
+      // Still present after 1+ seconds - now considered persistently present
+      vi.advanceTimersByTime(600)
       monitor.checkSnapshot(snapshotWithText)
       expect(mockShowNotification).not.toHaveBeenCalled()
     })
 
-    it('should reset persistence tracking if text disappears before 2 seconds', () => {
+    it('should reset persistence tracking if text disappears before 1 second', () => {
       const snapshotWithText =
         'Press ENTER to continue or Ctrl+C to interrupt) waiting...'
       const snapshotWithoutText = 'Working... processing data...'
@@ -72,8 +72,8 @@ describe('ActivityMonitor', () => {
       // Text appears
       monitor.checkSnapshot(snapshotWithText)
 
-      // Disappears after 1 second (before persistence threshold)
-      vi.advanceTimersByTime(1000)
+      // Disappears after 0.5 seconds (before persistence threshold)
+      vi.advanceTimersByTime(500)
       monitor.checkSnapshot(snapshotWithoutText)
 
       // Wait 3 more seconds - should not trigger notification
@@ -89,9 +89,9 @@ describe('ActivityMonitor', () => {
         'Press ENTER to continue or Ctrl+C to interrupt) waiting...'
       const snapshotWithoutText = 'Working... processing data...'
 
-      // Make text persistently present (2+ seconds)
+      // Make text persistently present (1+ seconds)
       monitor.checkSnapshot(snapshotWithText)
-      vi.advanceTimersByTime(2100)
+      vi.advanceTimersByTime(1100)
       monitor.checkSnapshot(snapshotWithText)
 
       // Text disappears
@@ -120,7 +120,7 @@ describe('ActivityMonitor', () => {
 
       // Make text persistently present
       monitor.checkSnapshot(snapshotWithText)
-      vi.advanceTimersByTime(2100)
+      vi.advanceTimersByTime(1100)
       monitor.checkSnapshot(snapshotWithText)
 
       // Text disappears
@@ -190,6 +190,77 @@ describe('ActivityMonitor', () => {
 
       // Should trigger second notification
       expect(mockShowNotification).toHaveBeenCalledTimes(2)
+    })
+  })
+
+  describe('Confirmation prompt detection', () => {
+    it.skip('should detect confirmation prompt anywhere in snapshot as activity', () => {
+      const snapshotWithInterrupt =
+        'Press ENTER to continue or Ctrl+C to interrupt) waiting...'
+      monitor.checkSnapshot(snapshotWithInterrupt)
+      vi.advanceTimersByTime(1100)
+      monitor.checkSnapshot(snapshotWithInterrupt)
+      const snapshotWithPrompt = `Line 1
+Line 2
+Line 3
+Line 4
+Line 5
+Line 6
+Line 7
+Line 8
+Line 9
+Line 10
+Line 11
+Line 12
+Line 13
+Line 14
+Line 15
+│ ❯ 1. Yes                                             │
+│   2. Yes, and don't ask again this session           │
+│   3. No, and tell Claude what to do differently      │
+╰───────────────────────────────────────────────────────╯
+`
+
+      monitor.checkSnapshot(snapshotWithPrompt)
+      vi.advanceTimersByTime(100)
+      monitor.checkSnapshot(snapshotWithPrompt)
+
+      const snapshotWithoutPrompt = 'Working... processing data...'
+      monitor.checkSnapshot(snapshotWithoutPrompt)
+      vi.advanceTimersByTime(5000)
+      monitor.checkSnapshot(snapshotWithoutPrompt)
+      expect(mockShowNotification).not.toHaveBeenCalled()
+      vi.advanceTimersByTime(7000)
+      monitor.checkSnapshot(snapshotWithoutPrompt)
+      expect(mockShowNotification).toHaveBeenCalledOnce()
+    })
+
+    it.skip('should maintain activity when switching from interrupt text to confirmation prompt', () => {
+      const snapshotWithInterrupt =
+        'Press ENTER to continue or Ctrl+C to interrupt) waiting...'
+      const snapshotWithPrompt = `Working...
+│ Do you want to create file.txt?                      │
+│ ❯ 1. Yes                                             │
+│   2. Yes, and don't ask again this session           │
+│   3. No, and tell Claude what to do differently      │
+╰───────────────────────────────────────────────────────╯`
+      const snapshotWithoutActivity = 'Done processing.'
+
+      monitor.checkSnapshot(snapshotWithInterrupt)
+      vi.advanceTimersByTime(1100)
+      monitor.checkSnapshot(snapshotWithInterrupt)
+
+      monitor.checkSnapshot(snapshotWithPrompt)
+      vi.advanceTimersByTime(1000)
+      monitor.checkSnapshot(snapshotWithPrompt)
+
+      monitor.checkSnapshot(snapshotWithoutActivity)
+      vi.advanceTimersByTime(5000)
+      monitor.checkSnapshot(snapshotWithoutActivity)
+      expect(mockShowNotification).not.toHaveBeenCalled()
+      vi.advanceTimersByTime(7000)
+      monitor.checkSnapshot(snapshotWithoutActivity)
+      expect(mockShowNotification).toHaveBeenCalledOnce()
     })
   })
 
