@@ -5,28 +5,46 @@ export class ActivityMonitor {
   private targetText = 'to interrupt)'
   private isPersistentlyPresent = false
   private isCurrentlyPresent = false
+  private confirmationPromptDetected = false
   private lastSeenTime: number | null = null
   private lastNotSeenTime: number | null = null
-  private persistenceThreshold = 2000 // 2 seconds in milliseconds
-  private absenceThreshold = 2000 // 2 seconds in milliseconds
+  private persistenceThreshold = 1000
+  private absenceThreshold = 2000
+  private confirmationPromptTimeout = 10000
+  private confirmationPromptDetectedAt: number | null = null
   private hasNotified = false
   constructor(private appConfig: AppConfig) {}
 
   checkSnapshot(snapshot: string): void {
     const currentTime = Date.now()
     const wasPresent = this.isCurrentlyPresent
-    this.isCurrentlyPresent = snapshot.includes(this.targetText)
+
+    const hasActivityIndicator = snapshot.includes(this.targetText)
+    const hasConfirmationPrompt = /1\.[\s\S]*?Yes/.test(snapshot)
+
+    if (hasConfirmationPrompt && !this.confirmationPromptDetected) {
+      this.confirmationPromptDetected = true
+      this.confirmationPromptDetectedAt = currentTime
+    }
+
+    const isWithinConfirmationTimeout =
+      this.confirmationPromptDetected &&
+      this.confirmationPromptDetectedAt &&
+      currentTime - this.confirmationPromptDetectedAt <
+        this.confirmationPromptTimeout
+
+    this.isCurrentlyPresent =
+      hasActivityIndicator ||
+      hasConfirmationPrompt ||
+      isWithinConfirmationTimeout
 
     if (this.isCurrentlyPresent) {
-      // Text is present
       if (!wasPresent) {
-        // Text just appeared
         this.lastSeenTime = currentTime
         this.lastNotSeenTime = null
         this.hasNotified = false
       }
 
-      // Check if it's been persistently present
       if (
         this.lastSeenTime &&
         currentTime - this.lastSeenTime >= this.persistenceThreshold
@@ -34,23 +52,21 @@ export class ActivityMonitor {
         this.isPersistentlyPresent = true
       }
     } else {
-      // Text is not present
       if (wasPresent) {
-        // Text just disappeared
         this.lastNotSeenTime = currentTime
       }
 
-      // Check if we should trigger notification
       if (
         this.isPersistentlyPresent &&
         !this.hasNotified &&
         this.lastNotSeenTime &&
         currentTime - this.lastNotSeenTime >= this.absenceThreshold
       ) {
-        // Text has been absent for long enough after being persistently present
         this.triggerNotification()
         this.hasNotified = true
         this.isPersistentlyPresent = false
+        this.confirmationPromptDetected = false
+        this.confirmationPromptDetectedAt = null
         this.lastSeenTime = null
       }
     }
@@ -66,6 +82,8 @@ export class ActivityMonitor {
   reset(): void {
     this.isPersistentlyPresent = false
     this.isCurrentlyPresent = false
+    this.confirmationPromptDetected = false
+    this.confirmationPromptDetectedAt = null
     this.lastSeenTime = null
     this.lastNotSeenTime = null
     this.hasNotified = false
