@@ -2,6 +2,8 @@ import * as pty from '@homebridge/node-pty-prebuilt-multiarch'
 import { spawn, ChildProcess } from 'child_process'
 import { PassThrough } from 'stream'
 import * as fs from 'fs'
+import type { Terminal } from '@xterm/xterm'
+import type { SerializeAddon } from '@xterm/addon-serialize'
 import type {
   TerminalConfig,
   TerminalState,
@@ -159,9 +161,9 @@ export class TerminalManager {
         cols,
         rows,
         scrollback: 5000,
-      })
+      }) as Terminal
 
-      this.state.serializeAddon = new SerializeAddon()
+      this.state.serializeAddon = new SerializeAddon() as SerializeAddon
       this.state.terminal.loadAddon(this.state.serializeAddon)
     } catch (error) {
       // Silently fail if xterm modules are not available

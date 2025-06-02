@@ -427,5 +427,6 @@ export async function runPreflight(
 }
 
 // Export config directory functions for compatibility
-export { getConfigDirectory } from '../config/loader.js'
+import { CONFIG_PATHS } from '../config/paths'
+export const getConfigDirectory = CONFIG_PATHS.getConfigDirectory
 export { log, warn } from '../utils/logging.js'

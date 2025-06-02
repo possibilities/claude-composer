@@ -3,6 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
 import { type PatternConfig } from '../config/schemas'
+import { CONFIG_PATHS } from '../config/paths'
 
 export interface MatchResult {
   patternId: string
@@ -530,15 +531,8 @@ export class PatternMatcher {
     return null
   }
 
-  private getConfigDirectory(): string {
-    return (
-      process.env.CLAUDE_COMPOSER_CONFIG_DIR ||
-      path.join(os.homedir(), '.claude-composer')
-    )
-  }
-
   private ensureLogDirectory(): void {
-    const logsDir = path.join(this.getConfigDirectory(), 'logs')
+    const logsDir = CONFIG_PATHS.getLogsDirectory()
     if (!fs.existsSync(logsDir)) {
       fs.mkdirSync(logsDir, { recursive: true })
     }
@@ -546,7 +540,7 @@ export class PatternMatcher {
 
   private logMatch(match: MatchResult): void {
     try {
-      const logsDir = path.join(this.getConfigDirectory(), 'logs')
+      const logsDir = CONFIG_PATHS.getLogsDirectory()
       const logFile = path.join(
         logsDir,
         `pattern-matches-${match.patternId}.jsonl`,

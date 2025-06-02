@@ -23,7 +23,7 @@ export const toolsetConfigSchema = z
   .object({
     allowed: z.array(z.string()).optional(),
     disallowed: z.array(z.string()).optional(),
-    mcp: z.record(z.string(), z.any()).optional(),
+    mcp: z.record(z.string(), z.unknown()).optional(),
   })
   .strict()
 

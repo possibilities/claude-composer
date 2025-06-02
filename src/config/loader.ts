@@ -8,12 +8,10 @@ import {
   type AppConfig,
   type ToolsetConfig,
 } from './schemas.js'
+import { CONFIG_PATHS } from './paths'
 
 export function getConfigDirectory(): string {
-  return (
-    process.env.CLAUDE_COMPOSER_CONFIG_DIR ||
-    path.join(os.homedir(), '.claude-composer')
-  )
+  return CONFIG_PATHS.getConfigDirectory()
 }
 
 export function ensureConfigDirectory(): void {
@@ -26,8 +24,7 @@ export function ensureConfigDirectory(): void {
 export async function loadConfigFile(
   configPath?: string,
 ): Promise<Partial<AppConfig>> {
-  const finalConfigPath =
-    configPath || path.join(getConfigDirectory(), 'config.yaml')
+  const finalConfigPath = configPath || CONFIG_PATHS.getConfigFilePath()
 
   if (!fs.existsSync(finalConfigPath)) {
     return {}
@@ -65,8 +62,7 @@ export async function loadToolsetFile(
   toolsetName: string,
 ): Promise<ToolsetConfig> {
   const toolsetPath = path.join(
-    getConfigDirectory(),
-    'toolsets',
+    CONFIG_PATHS.getToolsetsDirectory(),
     `${toolsetName}.yaml`,
   )
 
@@ -102,7 +98,7 @@ export async function loadToolsetFile(
   }
 }
 
-export function createTempMcpConfig(mcp: Record<string, any>): string {
+export function createTempMcpConfig(mcp: Record<string, unknown>): string {
   const tempFileName = `claude-composer-mcp-${Date.now()}-${Math.random().toString(36).substring(2, 9)}.json`
   const tempFilePath = path.join(os.tmpdir(), tempFileName)
 

@@ -1,6 +1,8 @@
 import type { IPty } from '@homebridge/node-pty-prebuilt-multiarch'
 import type { ChildProcess } from 'child_process'
 import type { PassThrough } from 'stream'
+import type { Terminal } from '@xterm/xterm'
+import type { SerializeAddon } from '@xterm/addon-serialize'
 
 export interface TerminalConfig {
   isTTY: boolean
@@ -33,8 +35,8 @@ export interface TerminalSnapshot {
 export interface TerminalState {
   ptyProcess?: IPty
   childProcess?: ChildProcess
-  terminal?: any
-  serializeAddon?: any
+  terminal?: Terminal
+  serializeAddon?: SerializeAddon
   stdinBuffer?: PassThrough
   isStdinPaused: boolean
   isRawMode: boolean

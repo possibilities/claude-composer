@@ -123,7 +123,7 @@ export function parseCommandLineArgs(argv: string[]): {
     program.exitOverride()
     try {
       program.parse(argv)
-    } catch (err: any) {
+    } catch (err) {
       if (err.exitCode === 0) {
         // Help was displayed, we'll handle this in the caller
         return {

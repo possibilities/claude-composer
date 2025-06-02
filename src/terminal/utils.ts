@@ -2,13 +2,13 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
 import clipboardy from 'clipboardy'
-import { getConfigDirectory } from '../core/preflight'
+import { CONFIG_PATHS } from '../config/paths'
 import { showSnapshotNotification } from '../utils/notifications'
 import type { AppConfig } from '../config/schemas'
 import type { TerminalSnapshot } from './types'
 
 export function ensureLogsDirectory(): void {
-  const logsDir = path.join(getConfigDirectory(), 'logs')
+  const logsDir = CONFIG_PATHS.getLogsDirectory()
   if (!fs.existsSync(logsDir)) {
     fs.mkdirSync(logsDir, { recursive: true })
   }
@@ -29,7 +29,7 @@ export async function saveTerminalSnapshot(
     const timestamp = new Date().toISOString()
     const timestampForFilename = timestamp.replace(/[:.]/g, '-')
     const filename = `snapshot-${timestampForFilename}.json`
-    const logpath = path.join(getConfigDirectory(), 'logs')
+    const logpath = CONFIG_PATHS.getLogsDirectory()
     const filepath = path.join(logpath, filename)
 
     const terminalContent = serializeAddon.serialize()
@@ -94,7 +94,7 @@ export function copyDirectory(src: string, dest: string): void {
 }
 
 export function getBackupDirectory(): string {
-  return path.join(getConfigDirectory(), 'backups')
+  return CONFIG_PATHS.getBackupsDirectory()
 }
 
 export function getBackupDirs(): { dir: string; mtime: number }[] {
