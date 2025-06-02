@@ -205,7 +205,7 @@ dismiss_edit_file_prompt_inside_project: true
   })
 
   describe('Ruleset argument building', () => {
-    it('should build correct arguments for rulesets', async () => {
+    it('should return empty rulesetArgs since rulesets are handled in parent', async () => {
       const rulesetContent = `
 dismiss_edit_file_prompt_inside_project: true
 dismiss_create_file_prompts_outside_project: true
@@ -222,15 +222,10 @@ dismiss_create_file_prompts_outside_project: true
         'test-ruleset',
       ])
 
-      expect(result.rulesetArgs).toContain(
-        '--dangerously-dismiss-edit-file-prompts',
-      )
-      expect(result.rulesetArgs).toContain(
-        '--dangerously-dismiss-create-file-prompts',
-      )
+      expect(result.rulesetArgs).toEqual([])
     })
 
-    it('should not duplicate arguments', async () => {
+    it('should always return empty rulesetArgs', async () => {
       const rulesetContent = `
 dismiss_edit_file_prompt_inside_project: true
 dismiss_edit_file_prompt_outside_project: true
@@ -247,10 +242,7 @@ dismiss_edit_file_prompt_outside_project: true
         'test-ruleset',
       ])
 
-      const editArgs = result.rulesetArgs.filter(
-        arg => arg === '--dangerously-dismiss-edit-file-prompts',
-      )
-      expect(editArgs.length).toBe(1)
+      expect(result.rulesetArgs).toEqual([])
     })
   })
 

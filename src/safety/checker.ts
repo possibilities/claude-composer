@@ -108,7 +108,9 @@ export async function handleGoOffMode(
   if (
     options.dangerouslyDismissEditFilePrompts !== undefined ||
     options.dangerouslyDismissCreateFilePrompts !== undefined ||
-    options.dangerouslyDismissBashCommandPrompts !== undefined
+    options.dangerouslyDismissBashCommandPrompts !== undefined ||
+    options.dangerouslyDismissReadFilesPrompts !== undefined ||
+    options.dangerouslyDismissFetchContentPrompts !== undefined
   ) {
     throw new Error(
       'Cannot use --go-off with individual dangerous prompt flags\n' +
@@ -142,6 +144,12 @@ export async function handleGoOffMode(
   )
   console.log(
     '\x1b[31m║ • Automatically dismiss ALL bash command prompts               ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[31m║ • Automatically dismiss ALL read files prompts                 ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[31m║ • Automatically dismiss ALL fetch content prompts              ║\x1b[0m',
   )
   console.log(
     '\x1b[31m║                                                                ║\x1b[0m',
@@ -188,7 +196,9 @@ export async function handleDangerFlagsWarning(
   const hasDangerFlags =
     appConfig.dangerously_dismiss_edit_file_prompts ||
     appConfig.dangerously_dismiss_create_file_prompts ||
-    appConfig.dangerously_dismiss_bash_command_prompts
+    appConfig.dangerously_dismiss_bash_command_prompts ||
+    appConfig.dangerously_dismiss_read_files_prompts ||
+    appConfig.dangerously_dismiss_fetch_content_prompts
 
   if (!hasDangerFlags) {
     return true
@@ -241,6 +251,16 @@ export async function handleDangerFlagsWarning(
       '\x1b[33m║ • Bash command prompts will be AUTO-DISMISSED                   ║\x1b[0m',
     )
   }
+  if (appConfig.dangerously_dismiss_read_files_prompts) {
+    console.log(
+      '\x1b[33m║ • Read files prompts will be AUTO-DISMISSED                     ║\x1b[0m',
+    )
+  }
+  if (appConfig.dangerously_dismiss_fetch_content_prompts) {
+    console.log(
+      '\x1b[33m║ • Fetch content prompts will be AUTO-DISMISSED                  ║\x1b[0m',
+    )
+  }
 
   console.log(
     '\x1b[33m║                                                                 ║\x1b[0m',
@@ -289,5 +309,13 @@ export function displayDangerousWarnings(appConfig: AppConfig): void {
   if (appConfig.dangerously_dismiss_bash_command_prompts) {
     warn('⚠️  WARNING: --dangerously-dismiss-bash-command-prompts is enabled')
     warn('   All bash command prompts will be automatically dismissed!')
+  }
+  if (appConfig.dangerously_dismiss_read_files_prompts) {
+    warn('⚠️  WARNING: --dangerously-dismiss-read-files-prompts is enabled')
+    warn('   All read files prompts will be automatically dismissed!')
+  }
+  if (appConfig.dangerously_dismiss_fetch_content_prompts) {
+    warn('⚠️  WARNING: --dangerously-dismiss-fetch-content-prompts is enabled')
+    warn('   All fetch content prompts will be automatically dismissed!')
   }
 }

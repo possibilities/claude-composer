@@ -110,43 +110,18 @@ describe('Ruleset Configuration', () => {
   })
 
   describe('Build Ruleset Args', () => {
-    it('should build args for inside project rules', () => {
+    it('should always return empty array since rulesets are handled in parent process', () => {
       const ruleset: RulesetConfig = {
         dismiss_edit_file_prompt_inside_project: true,
         dismiss_create_file_prompts_inside_project: true,
         dismiss_bash_command_prompts_inside_project: true,
-      }
-
-      const args = buildRulesetArgs(ruleset)
-      expect(args).toContain('--dangerously-dismiss-edit-file-prompts')
-      expect(args).toContain('--dangerously-dismiss-create-file-prompts')
-      expect(args).toContain('--dangerously-dismiss-bash-command-prompts')
-    })
-
-    it('should build args for outside project rules', () => {
-      const ruleset: RulesetConfig = {
         dismiss_edit_file_prompt_outside_project: true,
         dismiss_create_file_prompts_outside_project: true,
         dismiss_bash_command_prompts_outside_project: true,
       }
 
       const args = buildRulesetArgs(ruleset)
-      expect(args).toContain('--dangerously-dismiss-edit-file-prompts')
-      expect(args).toContain('--dangerously-dismiss-create-file-prompts')
-      expect(args).toContain('--dangerously-dismiss-bash-command-prompts')
-    })
-
-    it('should not duplicate args when both inside and outside are true', () => {
-      const ruleset: RulesetConfig = {
-        dismiss_edit_file_prompt_inside_project: true,
-        dismiss_edit_file_prompt_outside_project: true,
-      }
-
-      const args = buildRulesetArgs(ruleset)
-      const editPromptArgs = args.filter(
-        arg => arg === '--dangerously-dismiss-edit-file-prompts',
-      )
-      expect(editPromptArgs.length).toBe(1)
+      expect(args).toEqual([])
     })
 
     it('should return empty array for empty ruleset', () => {

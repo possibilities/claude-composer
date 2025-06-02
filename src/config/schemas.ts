@@ -42,6 +42,7 @@ export const rulesetConfigSchema = z
     dismiss_create_file_prompts_outside_project: z.boolean().optional(),
     dismiss_bash_command_prompts_outside_project: z.boolean().optional(),
     dismiss_read_files_prompts_outside_project: z.boolean().optional(),
+    dismiss_fetch_content_prompts: z.boolean().optional(),
   })
   .strict()
 

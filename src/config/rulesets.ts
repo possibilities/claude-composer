@@ -21,35 +21,7 @@ export function mergeRulesets(rulesets: RulesetConfig[]): RulesetConfig {
 }
 
 export function buildRulesetArgs(ruleset: RulesetConfig): string[] {
-  const args: string[] = []
-
-  if (
-    ruleset.dismiss_edit_file_prompt_inside_project ||
-    ruleset.dismiss_edit_file_prompt_outside_project
-  ) {
-    args.push('--dangerously-dismiss-edit-file-prompts')
-  }
-
-  if (
-    ruleset.dismiss_create_file_prompts_inside_project ||
-    ruleset.dismiss_create_file_prompts_outside_project
-  ) {
-    args.push('--dangerously-dismiss-create-file-prompts')
-  }
-
-  if (
-    ruleset.dismiss_bash_command_prompts_inside_project ||
-    ruleset.dismiss_bash_command_prompts_outside_project
-  ) {
-    args.push('--dangerously-dismiss-bash-command-prompts')
-  }
-
-  if (
-    ruleset.dismiss_read_files_prompts_inside_project ||
-    ruleset.dismiss_read_files_prompts_outside_project
-  ) {
-    args.push('--dangerously-dismiss-read-files-prompts')
-  }
-
-  return args
+  // Rulesets are handled entirely in the parent process (claude-composer)
+  // No flags need to be passed to the child process
+  return []
 }

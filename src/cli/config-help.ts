@@ -127,6 +127,10 @@ dismiss_read_files_prompts_outside_project: boolean (optional)
   Automatically dismiss read files prompts for files outside the project
   Default: false
 
+dismiss_fetch_content_prompts: boolean (optional)
+  Automatically dismiss fetch content prompts (not location-aware)
+  Default: false
+
 
 EXAMPLE CONFIG FILE (config.yaml)
 =================================
@@ -179,6 +183,7 @@ dismiss_edit_file_prompt_outside_project: false
 dismiss_create_file_prompts_outside_project: false
 dismiss_bash_command_prompts_outside_project: false
 dismiss_read_files_prompts_outside_project: false
+dismiss_fetch_content_prompts: false
 
 
 CONFIGURATION PRECEDENCE

@@ -76,6 +76,8 @@ show_notifications: false
 dangerously_dismiss_edit_file_prompts: true
 dangerously_dismiss_create_file_prompts: true
 dangerously_dismiss_bash_command_prompts: true
+dangerously_dismiss_read_files_prompts: true
+dangerously_dismiss_fetch_content_prompts: true
 dangerously_allow_in_dirty_directory: true
 dangerously_allow_without_version_control: true`
     fs.writeFileSync(testConfigPath, configContent)
@@ -86,6 +88,8 @@ dangerously_allow_without_version_control: true`
     expect(config.dangerously_dismiss_edit_file_prompts).toBe(true)
     expect(config.dangerously_dismiss_create_file_prompts).toBe(true)
     expect(config.dangerously_dismiss_bash_command_prompts).toBe(true)
+    expect(config.dangerously_dismiss_read_files_prompts).toBe(true)
+    expect(config.dangerously_dismiss_fetch_content_prompts).toBe(true)
     expect(config.dangerously_allow_in_dirty_directory).toBe(true)
     expect(config.dangerously_allow_without_version_control).toBe(true)
   })

@@ -173,33 +173,26 @@ function shouldDismissPrompt(match: MatchResult): boolean {
 
   switch (match.patternId) {
     case 'edit-file-prompt':
-      if (appConfig.dangerously_dismiss_edit_file_prompts) return true
+      if (!appConfig.dangerously_dismiss_edit_file_prompts) return false
       if (!mergedRuleset) return false
-      return isInside
-        ? mergedRuleset.dismiss_edit_file_prompt_inside_project === true
-        : mergedRuleset.dismiss_edit_file_prompt_outside_project === true
+      return mergedRuleset.dismiss_edit_file_prompt_inside_project === true
     case 'create-file-prompt':
-      if (appConfig.dangerously_dismiss_create_file_prompts) return true
+      if (!appConfig.dangerously_dismiss_create_file_prompts) return false
       if (!mergedRuleset) return false
-      return isInside
-        ? mergedRuleset.dismiss_create_file_prompts_inside_project === true
-        : mergedRuleset.dismiss_create_file_prompts_outside_project === true
+      return mergedRuleset.dismiss_create_file_prompts_inside_project === true
     case 'bash-command-prompt-format-1':
     case 'bash-command-prompt-format-2':
-      if (appConfig.dangerously_dismiss_bash_command_prompts) return true
+      if (!appConfig.dangerously_dismiss_bash_command_prompts) return false
       if (!mergedRuleset) return false
-      return isInside
-        ? mergedRuleset.dismiss_bash_command_prompts_inside_project === true
-        : mergedRuleset.dismiss_bash_command_prompts_outside_project === true
+      return mergedRuleset.dismiss_bash_command_prompts_inside_project === true
     case 'read-files-prompt':
-      if (appConfig.dangerously_dismiss_read_files_prompts) return true
+      if (!appConfig.dangerously_dismiss_read_files_prompts) return false
       if (!mergedRuleset) return false
-      return isInside
-        ? mergedRuleset.dismiss_read_files_prompts_inside_project === true
-        : mergedRuleset.dismiss_read_files_prompts_outside_project === true
+      return mergedRuleset.dismiss_read_files_prompts_inside_project === true
     case 'fetch-content-prompt':
-      if (appConfig.dangerously_dismiss_fetch_content_prompts) return true
-      return false
+      if (!appConfig.dangerously_dismiss_fetch_content_prompts) return false
+      if (!mergedRuleset) return false
+      return mergedRuleset.dismiss_fetch_content_prompts === true
     default:
       return false
   }
