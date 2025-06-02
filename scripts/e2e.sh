@@ -5,6 +5,7 @@ set -o verbose
 
 rm -rf /tmp/claude-composer-e2e
 mkdir /tmp/claude-composer-e2e
+export cli_path=$(pwd)/dist/cli.js
 cd /tmp/claude-composer-e2e
 touch readme.md
 git init
@@ -13,7 +14,7 @@ git commit -m "Let's frikken go"
 date > /tmp/claude-composer-e2e-date1.txt
 date > /tmp/claude-composer-e2e-date2.txt
 date > /tmp/claude-composer-e2e-date3.txt
-claude-composer --go-off "$(cat <<'EOF'
+${cli_path} --go-off "$(cat <<'EOF'
 Perform step by step:
 - Create a file called funny-words.txt with a funny word on each line. 5 lines.
 - Run `ls -lsa /tmp | grep e2e-date` in the current directory
