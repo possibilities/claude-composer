@@ -3,7 +3,8 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as util from 'node:util'
 import { spawn } from 'child_process'
-import { PatternMatcher, MatchResult } from './patterns/matcher'
+import { AsyncPatternMatcher } from './patterns/async-matcher'
+import type { MatchResult } from './patterns/matcher'
 import { ResponseQueue } from './core/response-queue'
 import { patterns } from './patterns/registry'
 import { type AppConfig } from './config/schemas.js'
@@ -21,7 +22,7 @@ import {
 } from './terminal/utils'
 import type { TerminalConfig } from './terminal/types'
 
-let patternMatcher: PatternMatcher
+let patternMatcher: AsyncPatternMatcher
 let responseQueue: ResponseQueue
 let terminalManager: TerminalManager
 let tempMcpConfigPath: string | undefined
@@ -59,7 +60,7 @@ async function initializePatterns(): Promise<boolean> {
       // Fall back to default patterns
     }
   }
-  patternMatcher = new PatternMatcher(
+  patternMatcher = new AsyncPatternMatcher(
     appConfig?.log_all_pattern_matches || false,
   )
   if (!responseQueue) {
@@ -123,9 +124,13 @@ async function initializePatterns(): Promise<boolean> {
   return hasActivePatterns
 }
 
-function cleanup() {
+async function cleanup() {
   if (terminalManager) {
     terminalManager.cleanup()
+  }
+
+  if (patternMatcher) {
+    await patternMatcher.destroy()
   }
 
   if (tempMcpConfigPath && fs.existsSync(tempMcpConfigPath)) {
@@ -135,42 +140,46 @@ function cleanup() {
   }
 }
 
-process.on('SIGINT', () => {
-  cleanup()
+process.on('SIGINT', async () => {
+  await cleanup()
   process.exit(130)
 })
 
-process.on('SIGTERM', () => {
-  cleanup()
+process.on('SIGTERM', async () => {
+  await cleanup()
   process.exit(143)
 })
 
-process.on('SIGHUP', () => {
-  cleanup()
+process.on('SIGHUP', async () => {
+  await cleanup()
   process.exit(129)
 })
 
-process.on('exit', cleanup)
+process.on('exit', () => cleanup())
 
-process.on('uncaughtException', error => {
-  cleanup()
+process.on('uncaughtException', async error => {
+  await cleanup()
   process.exit(1)
 })
 
-function handlePatternMatches(
+async function handlePatternMatches(
   data: string,
   filterType?: 'completion' | 'prompt',
-): void {
-  const matches = filterType
-    ? patternMatcher.processDataByType(data, filterType)
-    : patternMatcher.processData(data)
+): Promise<void> {
+  try {
+    const matches = await (filterType
+      ? patternMatcher.processDataByType(data, filterType)
+      : patternMatcher.processData(data))
 
-  for (const match of matches) {
-    responseQueue.enqueue(match.response)
+    for (const match of matches) {
+      responseQueue.enqueue(match.response)
 
-    if (appConfig.show_notifications !== false && match.notification) {
-      showPatternNotification(match, appConfig)
+      if (appConfig.show_notifications !== false && match.notification) {
+        showPatternNotification(match, appConfig)
+      }
     }
+  } catch (error) {
+    console.error('Pattern matching error:', error)
   }
 }
 
@@ -186,24 +195,16 @@ function handleTerminalData(data: string): void {
       data.includes(trigger),
     )
     if (matchedTrigger) {
-      // Cancel any pending check
-      const state = terminalManager.getTerminalState()
-      if (state.pendingPromptCheck) {
-        clearTimeout(state.pendingPromptCheck)
-      }
-
-      // Schedule new check with debouncing
-      const timeout = setTimeout(async () => {
-        try {
-          const currentScreenContent = await terminalManager.captureSnapshot()
-          if (currentScreenContent) {
-            handlePatternMatches(currentScreenContent, 'prompt')
-          }
-        } catch (error) {}
-        terminalManager.setPendingPromptCheck(null)
-      }, 100)
-
-      terminalManager.setPendingPromptCheck(timeout)
+      // Use debounced pattern matching from the async matcher
+      terminalManager.captureSnapshot().then(snapshot => {
+        if (snapshot) {
+          patternMatcher.processDataDebounced(
+            snapshot,
+            'prompt',
+            'prompt-patterns',
+          )
+        }
+      })
     }
   } catch (error) {}
 }
@@ -426,6 +427,19 @@ export async function main() {
   }
 
   const hasActivePatterns = await initializePatterns()
+
+  // Set up event handler for debounced pattern matches
+  if (hasActivePatterns) {
+    patternMatcher.onMatches(matches => {
+      for (const match of matches) {
+        responseQueue.enqueue(match.response)
+
+        if (appConfig.show_notifications !== false && match.notification) {
+          showPatternNotification(match, appConfig)
+        }
+      }
+    })
+  }
 
   log('※ Ready, Passing off control to Claude CLI')
 
