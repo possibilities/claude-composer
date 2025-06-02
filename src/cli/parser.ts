@@ -71,7 +71,7 @@ export function createClaudeComposerCommand(): Command {
       '--no-default-toolsets',
       'Ignore default toolsets from the main config file',
     )
-    .option('--go-off', 'Go off. YOLO. What could go wrong?')
+    .option('--go-off', 'Go off. Full auto mode. What could go wrong?')
     .option(
       '--log-all-pattern-matches',
       'Log all pattern matches to ~/.claude-composer/logs/pattern-matches-<pattern.id>.jsonl',
