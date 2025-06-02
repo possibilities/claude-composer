@@ -1,4 +1,4 @@
-import { PatternConfig } from './matcher'
+import { type PatternConfig, validatePatternConfigs } from '../config/schemas'
 import { execSync } from 'child_process'
 import dedent from 'dedent'
 
@@ -29,7 +29,7 @@ function buildTriggerPattern(
   }
 }
 
-export const patterns: PatternConfig[] = [
+const patternsArray: PatternConfig[] = [
   {
     id: 'add-tree-trigger',
     title: 'Add tree',
@@ -137,3 +137,13 @@ export const patterns: PatternConfig[] = [
     ),
   },
 ]
+
+// Validate patterns at module initialization time
+const validationResult = validatePatternConfigs(patternsArray)
+if (!validationResult.success) {
+  throw new Error(
+    `Invalid pattern configuration: ${JSON.stringify(validationResult.error.errors, null, 2)}`,
+  )
+}
+
+export const patterns: PatternConfig[] = validationResult.data

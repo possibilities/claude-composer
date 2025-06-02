@@ -180,7 +180,18 @@ async function initializePatterns(): Promise<boolean> {
   if (process.env.CLAUDE_PATTERNS_PATH) {
     try {
       const customPatterns = await import(process.env.CLAUDE_PATTERNS_PATH)
-      patternsToUse = customPatterns.patterns
+      // Validate custom patterns
+      const { validatePatternConfigs } = await import('./config/schemas.js')
+      const validationResult = validatePatternConfigs(customPatterns.patterns)
+      if (!validationResult.success) {
+        console.error(
+          `Invalid custom pattern configuration from ${process.env.CLAUDE_PATTERNS_PATH}:`,
+          JSON.stringify(validationResult.error.errors, null, 2),
+        )
+        // Fall back to default patterns
+      } else {
+        patternsToUse = validationResult.data
+      }
     } catch (error) {
       console.warn(
         `Failed to load custom patterns from ${process.env.CLAUDE_PATTERNS_PATH}:`,

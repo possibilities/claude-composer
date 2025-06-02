@@ -48,3 +48,55 @@ export function validateToolsetConfig(
 ): z.SafeParseReturnType<unknown, ToolsetConfig> {
   return toolsetConfigSchema.safeParse(data)
 }
+
+// Pattern configuration schema
+export const patternConfigSchema = z
+  .object({
+    id: z.string().min(1, 'Pattern ID cannot be empty'),
+    title: z.string().min(1, 'Pattern title cannot be empty'),
+    pattern: z
+      .array(z.string())
+      .min(1, 'Pattern must have at least one string'),
+    response: z.union([
+      z.string(),
+      z.array(z.string()),
+      z.function().returns(z.union([z.string(), z.array(z.string())])),
+    ]),
+    type: z.enum(['completion', 'prompt']).optional(),
+    notification: z.string().optional(),
+    triggerText: z.string().optional(),
+  })
+  .refine(
+    data => {
+      // triggerText is only allowed on prompt type patterns
+      if (data.triggerText && data.type !== 'prompt') {
+        return false
+      }
+      return true
+    },
+    {
+      message: 'triggerText is only allowed on patterns with type "prompt"',
+    },
+  )
+
+export type PatternConfig = z.infer<typeof patternConfigSchema>
+
+export function parsePatternConfig(data: unknown): PatternConfig {
+  return patternConfigSchema.parse(data)
+}
+
+export function validatePatternConfig(
+  data: unknown,
+): z.SafeParseReturnType<unknown, PatternConfig> {
+  return patternConfigSchema.safeParse(data)
+}
+
+export function parsePatternConfigs(data: unknown): PatternConfig[] {
+  return z.array(patternConfigSchema).parse(data)
+}
+
+export function validatePatternConfigs(
+  data: unknown,
+): z.SafeParseReturnType<unknown, PatternConfig[]> {
+  return z.array(patternConfigSchema).safeParse(data)
+}

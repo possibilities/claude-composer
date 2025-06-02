@@ -2,16 +2,7 @@ import stripAnsi from 'strip-ansi'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
-
-export interface PatternConfig {
-  id: string
-  title: string
-  pattern: string[]
-  response: string | string[] | (() => string | string[])
-  type?: 'completion' | 'prompt'
-  notification?: string
-  triggerText?: string
-}
+import { type PatternConfig } from '../config/schemas'
 
 export interface MatchResult {
   patternId: string
