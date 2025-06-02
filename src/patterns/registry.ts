@@ -7,6 +7,7 @@ function followedByCursor(str: string): string {
 }
 
 const backspaceKey = '\x7f'
+const metaBackspaceKey = '\x1b\x7f'
 
 function pressKeyNTimes(key: string, n: number): string[] {
   return Array(n).fill(key).flat()
@@ -19,7 +20,8 @@ function buildTriggerPattern(
 ): PatternConfig {
   return {
     response: () => [
-      ...pressKeyNTimes(backspaceKey, trigger.length),
+      metaBackspaceKey,
+      backspaceKey,
       `<${tag}>\n▶ ${command}${execSync(command, {
         encoding: 'utf8',
       }).trim()}\n<\/${tag}>\n`,
