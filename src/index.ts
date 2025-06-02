@@ -1,176 +1,34 @@
 import * as os from 'node:os'
-import * as pty from '@homebridge/node-pty-prebuilt-multiarch'
-import { spawn, ChildProcess } from 'child_process'
 import * as fs from 'fs'
 import * as path from 'path'
-import * as crypto from 'crypto'
 import * as util from 'node:util'
-import clipboardy from 'clipboardy'
+import { spawn } from 'child_process'
 import { PatternMatcher, MatchResult } from './patterns/matcher'
 import { ResponseQueue } from './core/response-queue'
 import { patterns } from './patterns/registry'
 import { type AppConfig } from './config/schemas.js'
-import { PassThrough } from 'stream'
-import {
-  runPreflight,
-  getConfigDirectory,
-  log,
-  warn,
-} from './core/preflight.js'
+import { runPreflight, log, warn } from './core/preflight.js'
 import {
   showNotification,
   showPatternNotification,
-  showSnapshotNotification,
 } from './utils/notifications.js'
+import { TerminalManager } from './terminal/manager'
+import {
+  ensureBackupDirectory,
+  createBackup,
+  calculateMd5,
+  saveTerminalSnapshot,
+} from './terminal/utils'
+import type { TerminalConfig } from './terminal/types'
 
-let ptyProcess: pty.IPty | undefined
-let childProcess: ChildProcess | undefined
-let isRawMode = false
 let patternMatcher: PatternMatcher
 let responseQueue: ResponseQueue
+let terminalManager: TerminalManager
 let tempMcpConfigPath: string | undefined
-let terminal: any | undefined
-let serializeAddon: any | undefined
-let screenReadInterval: NodeJS.Timeout | undefined
 let appConfig: AppConfig | undefined
-let stdinBuffer: PassThrough | undefined
-let isStdinPaused = false
 let promptPatternTriggers: string[] = []
-let pendingPromptCheck: NodeJS.Timeout | null = null
 
 const debugLog = util.debuglog('claude-composer')
-
-function getBackupDirectory(): string {
-  return path.join(getConfigDirectory(), 'backups')
-}
-
-function ensureLogsDirectory(): void {
-  const logsDir = path.join(getConfigDirectory(), 'logs')
-  if (!fs.existsSync(logsDir)) {
-    fs.mkdirSync(logsDir, { recursive: true })
-  }
-}
-
-async function saveTerminalSnapshot(): Promise<void> {
-  if (!appConfig?.allow_buffer_snapshots || !terminal || !serializeAddon) {
-    return
-  }
-
-  try {
-    ensureLogsDirectory()
-
-    const timestamp = new Date().toISOString()
-    const timestampForFilename = timestamp.replace(/[:.]/g, '-')
-    const filename = `snapshot-${timestampForFilename}.json`
-    const logpath = path.join(getConfigDirectory(), 'logs')
-    const filepath = path.join(logpath, filename)
-
-    const terminalContent = serializeAddon.serialize()
-
-    const snapshot = {
-      patternId: 'buffer-snapshot',
-      patternTitle: 'Terminal Buffer Snapshot',
-      timestamp,
-      terminalContent,
-      strippedTerminalContent: terminalContent,
-      bufferContent: terminalContent,
-      strippedBufferContent: terminalContent,
-      metadata: {
-        cols: terminal.cols,
-        rows: terminal.rows,
-        scrollback: terminal.scrollback || 0,
-        cwd: process.cwd(),
-        projectName: path.basename(process.cwd()),
-        snapshotType: 'manual-buffer-save',
-      },
-    }
-
-    fs.writeFileSync(filepath, JSON.stringify(snapshot, null, 2))
-
-    // Copy full file path to clipboard
-    try {
-      await clipboardy.write(filepath)
-    } catch (clipboardError) {
-      // Silently fail if clipboard operation fails
-    }
-
-    // Show notification if enabled
-    if (appConfig.show_notifications !== false) {
-      const projectName = path.basename(process.cwd())
-      showSnapshotNotification(projectName, appConfig)
-    }
-  } catch (error) {}
-}
-
-function calculateMd5(filePath: string): string {
-  const content = fs.readFileSync(filePath)
-  return crypto.createHash('md5').update(content).digest('hex')
-}
-
-function copyDirectory(src: string, dest: string): void {
-  if (!fs.existsSync(dest)) {
-    fs.mkdirSync(dest, { recursive: true })
-  }
-
-  const entries = fs.readdirSync(src, { withFileTypes: true })
-
-  for (const entry of entries) {
-    const srcPath = path.join(src, entry.name)
-    const destPath = path.join(dest, entry.name)
-
-    if (entry.isDirectory()) {
-      copyDirectory(srcPath, destPath)
-    } else {
-      fs.copyFileSync(srcPath, destPath)
-    }
-  }
-}
-
-function getBackupDirs(): { dir: string; mtime: number }[] {
-  const backupDir = getBackupDirectory()
-  if (!fs.existsSync(backupDir)) {
-    return []
-  }
-
-  return fs
-    .readdirSync(backupDir, { withFileTypes: true })
-    .filter(entry => entry.isDirectory())
-    .map(entry => {
-      const dirPath = path.join(backupDir, entry.name)
-      const stats = fs.statSync(dirPath)
-      return { dir: entry.name, mtime: stats.mtimeMs }
-    })
-    .sort((a, b) => a.mtime - b.mtime)
-}
-
-function ensureBackupDirectory(): void {
-  const backupDir = getBackupDirectory()
-  if (!fs.existsSync(backupDir)) {
-    fs.mkdirSync(backupDir, { recursive: true })
-  }
-}
-
-function createBackup(md5: string): void {
-  const sourceDir = path.join(os.homedir(), '.claude', 'local')
-  const backupDir = path.join(getBackupDirectory(), md5)
-
-  if (fs.existsSync(backupDir)) {
-    return
-  }
-
-  log(`※ Creating backup of current claude app`)
-
-  const existingBackups = getBackupDirs()
-  if (existingBackups.length >= 5) {
-    const oldestBackup = existingBackups[0]
-    const oldestBackupPath = path.join(getBackupDirectory(), oldestBackup.dir)
-    log(`※ Removing oldest backup: ${oldestBackup.dir}`)
-    fs.rmSync(oldestBackupPath, { recursive: true, force: true })
-  }
-
-  copyDirectory(sourceDir, backupDir)
-  log(`※ Backup created successfully`)
-}
 
 export { appConfig }
 
@@ -204,7 +62,9 @@ async function initializePatterns(): Promise<boolean> {
   patternMatcher = new PatternMatcher(
     appConfig?.log_all_pattern_matches || false,
   )
-  responseQueue = new ResponseQueue()
+  if (!responseQueue) {
+    responseQueue = new ResponseQueue()
+  }
 
   let hasActivePatterns = false
 
@@ -264,47 +124,14 @@ async function initializePatterns(): Promise<boolean> {
 }
 
 function cleanup() {
-  if (isRawMode && process.stdin.isTTY) {
-    process.stdin.setRawMode(false)
-    isRawMode = false
-  }
-
-  if (screenReadInterval) {
-    clearInterval(screenReadInterval)
-    screenReadInterval = undefined
-  }
-
-  if (pendingPromptCheck) {
-    clearTimeout(pendingPromptCheck)
-    pendingPromptCheck = null
-  }
-
-  if (terminal) {
-    terminal.dispose()
-    terminal = undefined
-  }
-
-  if (ptyProcess) {
-    try {
-      ptyProcess.kill()
-    } catch (e) {}
-  }
-
-  if (childProcess) {
-    try {
-      childProcess.kill()
-    } catch (e) {}
+  if (terminalManager) {
+    terminalManager.cleanup()
   }
 
   if (tempMcpConfigPath && fs.existsSync(tempMcpConfigPath)) {
     try {
       fs.unlinkSync(tempMcpConfigPath)
     } catch (e) {}
-  }
-
-  if (stdinBuffer) {
-    stdinBuffer.destroy()
-    stdinBuffer = undefined
   }
 }
 
@@ -345,6 +172,56 @@ function handlePatternMatches(
       showPatternNotification(match, appConfig)
     }
   }
+}
+
+function handleTerminalData(data: string): void {
+  try {
+    process.stdout.write(data)
+
+    // Update terminal buffer
+    terminalManager.updateTerminalBuffer(data)
+
+    // Check for prompt pattern triggers in output
+    const matchedTrigger = promptPatternTriggers.find(trigger =>
+      data.includes(trigger),
+    )
+    if (matchedTrigger) {
+      // Cancel any pending check
+      const state = terminalManager.getTerminalState()
+      if (state.pendingPromptCheck) {
+        clearTimeout(state.pendingPromptCheck)
+      }
+
+      // Schedule new check with debouncing
+      const timeout = setTimeout(async () => {
+        try {
+          const currentScreenContent = await terminalManager.captureSnapshot()
+          if (currentScreenContent) {
+            handlePatternMatches(currentScreenContent, 'prompt')
+          }
+        } catch (error) {}
+        terminalManager.setPendingPromptCheck(null)
+      }, 100)
+
+      terminalManager.setPendingPromptCheck(timeout)
+    }
+  } catch (error) {}
+}
+
+function handleStdinData(data: Buffer): void {
+  try {
+    // Check for space character (ASCII 32) - trigger completion patterns
+    if (data.length === 1 && data[0] === 32) {
+      terminalManager.captureSnapshot().then(snapshot => {
+        if (snapshot) {
+          handlePatternMatches(snapshot, 'completion')
+        }
+      })
+    }
+
+    // Let terminal manager handle the rest (including Ctrl+S)
+    terminalManager.handleStdinData(data)
+  } catch (error) {}
 }
 
 export async function main() {
@@ -458,13 +335,6 @@ export async function main() {
 
   ensureBackupDirectory()
 
-  if (!process.stdin.isTTY) {
-    stdinBuffer = new PassThrough()
-    process.stdin.pipe(stdinBuffer)
-    process.stdin.pause()
-    isStdinPaused = true
-  }
-
   const preflightResult = await runPreflight(process.argv)
 
   if (preflightResult.shouldExit) {
@@ -517,6 +387,13 @@ export async function main() {
   appConfig = preflightResult.appConfig
   tempMcpConfigPath = preflightResult.tempMcpConfigPath
 
+  // Initialize terminal manager and response queue
+  responseQueue = new ResponseQueue()
+  terminalManager = new TerminalManager(appConfig, responseQueue)
+  if (tempMcpConfigPath) {
+    terminalManager.setTempMcpConfigPath(tempMcpConfigPath)
+  }
+
   const defaultChildAppPath = path.join(
     os.homedir(),
     '.claude',
@@ -554,308 +431,38 @@ export async function main() {
 
   const childArgs = preflightResult.childArgs
 
+  // Initialize terminal with configuration
+  const terminalConfig: TerminalConfig = {
+    isTTY: process.stdin.isTTY || false,
+    cols: process.stdout.columns || 80,
+    rows: process.stdout.rows || 30,
+    env: process.env,
+    cwd: process.env.PWD || process.cwd(),
+    childAppPath,
+    childArgs,
+  }
+
+  await terminalManager.initialize(terminalConfig)
+
+  // Set up terminal event handlers
+  terminalManager.onData(handleTerminalData)
+
+  terminalManager.onExit((code: number) => {
+    cleanup()
+    process.exit(code)
+  })
+
+  // Set up stdin handling for interactive features
   if (process.stdin.isTTY) {
-    const cols = process.stdout.columns || 80
-    const rows = process.stdout.rows || 30
+    process.stdin.on('data', handleStdinData)
+  }
 
-    ptyProcess = pty.spawn(childAppPath, childArgs, {
-      name: 'xterm-color',
-      cols: cols,
-      rows: rows,
-      env: process.env,
-      cwd: process.env.PWD,
-    })
-
-    responseQueue.setTargets(ptyProcess, undefined)
-
-    if (hasActivePatterns) {
-      try {
-        const xtermModule = await import('@xterm/xterm')
-        const Terminal =
-          xtermModule.Terminal ||
-          xtermModule.default?.Terminal ||
-          xtermModule.default
-        const addonModule = await import('@xterm/addon-serialize')
-        const SerializeAddon =
-          addonModule.SerializeAddon ||
-          addonModule.default?.SerializeAddon ||
-          addonModule.default
-
-        terminal = new Terminal({
-          cols: cols,
-          rows: rows,
-          scrollback: 5000,
-        })
-
-        serializeAddon = new SerializeAddon()
-        terminal.loadAddon(serializeAddon)
-      } catch (error) {}
-
-      ptyProcess.onData((data: string) => {
-        try {
-          process.stdout.write(data)
-
-          // Update terminal first
-          if (terminal) {
-            terminal.write(data)
-          }
-
-          // Then check for prompt pattern triggers in output
-          const matchedTrigger = promptPatternTriggers.find(trigger =>
-            data.includes(trigger),
-          )
-          if (matchedTrigger && terminal && serializeAddon) {
-            // Cancel any pending check
-            if (pendingPromptCheck) {
-              clearTimeout(pendingPromptCheck)
-            }
-
-            // Schedule new check with debouncing
-            pendingPromptCheck = setTimeout(() => {
-              try {
-                const currentScreenContent = serializeAddon.serialize()
-                handlePatternMatches(currentScreenContent, 'prompt')
-              } catch (error) {}
-              pendingPromptCheck = null
-            }, 100)
-          }
-        } catch (error) {}
-      })
-
-      // Periodic pattern matching disabled - now event-driven
-      // if (terminal && serializeAddon) {
-      //   let lastScreenContent = ''
-      //   screenReadInterval = setInterval(() => {
-      //     if (terminal && serializeAddon) {
-      //       try {
-      //         const currentScreenContent = serializeAddon.serialize()
-      //         if (currentScreenContent !== lastScreenContent) {
-      //           handlePatternMatches(currentScreenContent)
-      //           lastScreenContent = currentScreenContent
-      //         }
-      //       } catch (error) {}
-      //     }
-      //   }, 100)
-      // }
-    } else {
-      ptyProcess.onData((data: string) => {
-        process.stdout.write(data)
-
-        // Update terminal first if it exists
-        if (terminal) {
-          terminal.write(data)
-        }
-
-        // Then check for prompt pattern triggers in output
-        const matchedTrigger = promptPatternTriggers.find(trigger =>
-          data.includes(trigger),
-        )
-        if (matchedTrigger && terminal && serializeAddon) {
-          // Cancel any pending check
-          if (pendingPromptCheck) {
-            clearTimeout(pendingPromptCheck)
-          }
-
-          // Schedule new check with debouncing
-          pendingPromptCheck = setTimeout(() => {
-            try {
-              const currentScreenContent = serializeAddon.serialize()
-              handlePatternMatches(currentScreenContent, 'prompt')
-            } catch (error) {}
-            pendingPromptCheck = null
-          }, 100)
-        }
-      })
-    }
-
-    process.stdin.removeAllListeners('data')
-
-    process.stdin.setRawMode(true)
-    isRawMode = true
-
-    process.stdin.on('data', (data: Buffer) => {
-      try {
-        // Check for space character (ASCII 32) - trigger completion patterns
-        if (data.length === 1 && data[0] === 32 && terminal && serializeAddon) {
-          try {
-            const currentScreenContent = serializeAddon.serialize()
-            handlePatternMatches(currentScreenContent, 'completion')
-          } catch (error) {}
-        }
-
-        // Check for Ctrl+S for snapshots
-        if (
-          appConfig?.allow_buffer_snapshots &&
-          data.length === 1 &&
-          data[0] === 19
-        ) {
-          saveTerminalSnapshot()
-          return
-        }
-
-        // Always pass input to child process
-        ptyProcess.write(data.toString())
-      } catch (error) {}
-    })
-
-    ptyProcess.onExit(exitCode => {
-      try {
-        cleanup()
-        process.exit(exitCode.exitCode || 0)
-      } catch (error) {
-        process.exit(1)
-      }
-    })
-
+  // Set up resize handling
+  if (process.stdin.isTTY) {
     process.stdout.on('resize', () => {
-      try {
-        const newCols = process.stdout.columns || 80
-        const newRows = process.stdout.rows || 30
-        ptyProcess.resize(newCols, newRows)
-        if (terminal) {
-          terminal.resize(newCols, newRows)
-        }
-      } catch (error) {}
-    })
-  } else {
-    childProcess = spawn(childAppPath, childArgs, {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      env: {
-        ...process.env,
-        FORCE_COLOR: '1',
-        TERM: process.env.TERM || 'xterm-256color',
-      },
-    })
-
-    responseQueue.setTargets(undefined, childProcess)
-
-    if (hasActivePatterns) {
-      try {
-        const xtermModule = await import('@xterm/xterm')
-        const Terminal =
-          xtermModule.Terminal ||
-          xtermModule.default?.Terminal ||
-          xtermModule.default
-        const addonModule = await import('@xterm/addon-serialize')
-        const SerializeAddon =
-          addonModule.SerializeAddon ||
-          addonModule.default?.SerializeAddon ||
-          addonModule.default
-
-        terminal = new Terminal({
-          cols: 80,
-          rows: 30,
-          scrollback: 5000,
-        })
-
-        serializeAddon = new SerializeAddon()
-        terminal.loadAddon(serializeAddon)
-      } catch (error) {}
-
-      if (stdinBuffer) {
-        if (isStdinPaused) {
-          process.stdin.resume()
-          isStdinPaused = false
-        }
-        stdinBuffer.pipe(childProcess.stdin!)
-      } else {
-        process.stdin.pipe(childProcess.stdin!)
-      }
-
-      childProcess.stdout!.on('data', (data: Buffer) => {
-        try {
-          const dataStr = data.toString()
-          process.stdout.write(data)
-
-          // Update terminal first
-          if (terminal) {
-            terminal.write(dataStr)
-          }
-
-          // Then check for prompt pattern triggers in output
-          const matchedTrigger = promptPatternTriggers.find(trigger =>
-            dataStr.includes(trigger),
-          )
-          if (matchedTrigger && terminal && serializeAddon) {
-            // Cancel any pending check
-            if (pendingPromptCheck) {
-              clearTimeout(pendingPromptCheck)
-            }
-
-            // Schedule new check with debouncing
-            pendingPromptCheck = setTimeout(() => {
-              try {
-                const currentScreenContent = serializeAddon.serialize()
-                handlePatternMatches(currentScreenContent, 'prompt')
-              } catch (error) {}
-              pendingPromptCheck = null
-            }, 100)
-          }
-        } catch (error) {}
-      })
-
-      // Periodic pattern matching disabled - now event-driven
-      // if (terminal && serializeAddon) {
-      //   let lastScreenContent = ''
-      //   screenReadInterval = setInterval(() => {
-      //     if (terminal && serializeAddon) {
-      //       try {
-      //         const currentScreenContent = serializeAddon.serialize()
-      //         if (currentScreenContent !== lastScreenContent) {
-      //           handlePatternMatches(currentScreenContent)
-      //           lastScreenContent = currentScreenContent
-      //         }
-      //       } catch (error) {}
-      //     }
-      //   }, 100)
-      // }
-    } else {
-      if (stdinBuffer) {
-        if (isStdinPaused) {
-          process.stdin.resume()
-          isStdinPaused = false
-        }
-        stdinBuffer.pipe(childProcess.stdin!)
-      } else {
-        process.stdin.pipe(childProcess.stdin!)
-      }
-
-      childProcess.stdout!.on('data', (data: Buffer) => {
-        try {
-          const dataStr = data.toString()
-          process.stdout.write(data)
-
-          // Update terminal first if it exists
-          if (terminal) {
-            terminal.write(dataStr)
-          }
-
-          // Then check for prompt pattern triggers in output
-          const matchedTrigger = promptPatternTriggers.find(trigger =>
-            dataStr.includes(trigger),
-          )
-          if (matchedTrigger && terminal && serializeAddon) {
-            // Small delay to ensure terminal rendering completes
-            setTimeout(() => {
-              try {
-                const currentScreenContent = serializeAddon.serialize()
-                handlePatternMatches(currentScreenContent, 'prompt')
-              } catch (error) {}
-            }, 10)
-          }
-        } catch (error) {}
-      })
-    }
-
-    childProcess.stderr!.pipe(process.stderr)
-
-    childProcess.on('exit', (code: number | null) => {
-      try {
-        cleanup()
-        process.exit(code || 0)
-      } catch (error) {
-        process.exit(1)
-      }
+      const newCols = process.stdout.columns || 80
+      const newRows = process.stdout.rows || 30
+      terminalManager.resize(newCols, newRows)
     })
   }
 }
