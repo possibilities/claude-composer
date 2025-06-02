@@ -10,6 +10,7 @@ export interface PatternConfig {
   response: string | string[] | (() => string | string[])
   type?: 'completion' | 'prompt'
   notification?: string
+  triggerText?: string
 }
 
 export interface MatchResult {
@@ -56,6 +57,82 @@ export class PatternMatcher {
     const allMatches: MatchResult[] = []
 
     for (const [id, pattern] of this.patterns) {
+      // Check if pattern contains ANSI sequences - if so, match against raw content
+      const hasAnsiPattern = pattern.sequence.some(p =>
+        this.containsAnsiSequence(p),
+      )
+      const contentToMatch = hasAnsiPattern ? content : strippedContent
+
+      const sequenceMatch = this.matchSequence(contentToMatch, pattern.sequence)
+
+      if (sequenceMatch) {
+        const response =
+          typeof pattern.config.response === 'function'
+            ? pattern.config.response()
+            : pattern.config.response
+
+        allMatches.push({
+          patternId: id,
+          patternTitle: pattern.config.title || `Unknown Pattern (${id})`,
+          response,
+          matchedText: sequenceMatch.text,
+          fullMatchedContent: sequenceMatch.fullMatchedContent,
+          firstLineNumber: sequenceMatch.firstLineNumber,
+          lastLineNumber: sequenceMatch.lastLineNumber,
+          bufferContent: content,
+          strippedBufferContent: strippedContent,
+          extractedData: sequenceMatch.extractedData,
+          notification: pattern.config.notification,
+        })
+      }
+    }
+
+    if (allMatches.length === 0) {
+      return []
+    }
+
+    const bottomMostMatch = allMatches.reduce((bottomMost, current) =>
+      current.lastLineNumber > bottomMost.lastLineNumber ? current : bottomMost,
+    )
+
+    // Get the pattern config for the bottom-most match
+    const matchedPattern = this.patterns.get(bottomMostMatch.patternId)
+    const patternType = matchedPattern?.config.type
+    const isSelfClearing = patternType === 'completion'
+
+    // Skip duplicate check for self-clearing patterns
+    if (
+      !isSelfClearing &&
+      this.previousMatch &&
+      this.previousMatch.fullMatchedContent ===
+        bottomMostMatch.fullMatchedContent
+    ) {
+      return []
+    }
+
+    this.previousMatch = bottomMostMatch
+
+    if (this.logAllMatches) {
+      this.logMatch(bottomMostMatch)
+    }
+
+    return [bottomMostMatch]
+  }
+
+  processDataByType(
+    data: string,
+    filterType: 'completion' | 'prompt',
+  ): MatchResult[] {
+    const content = data
+    const strippedContent = stripAnsi(content)
+    const allMatches: MatchResult[] = []
+
+    for (const [id, pattern] of this.patterns) {
+      // Skip patterns that don't match the filter type
+      if (pattern.config.type !== filterType) {
+        continue
+      }
+
       // Check if pattern contains ANSI sequences - if so, match against raw content
       const hasAnsiPattern = pattern.sequence.some(p =>
         this.containsAnsiSequence(p),

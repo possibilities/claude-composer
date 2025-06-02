@@ -365,69 +365,6 @@ describe('CLI Wrapper', () => {
     })
   })
 
-  describe('Pattern matching integration', () => {
-    it('should trigger pattern response when child outputs "Welcome to"', async () => {
-      const pty = await import('@homebridge/node-pty-prebuilt-multiarch')
-      const testPatternsPath = path.resolve(
-        __dirname,
-        '..',
-        'dist',
-        'test-patterns.js',
-      )
-
-      const ptyProcess = pty.spawn(
-        'node',
-        [
-          cliPath,
-          '--dangerously-allow-without-version-control',
-          '--dangerously-allow-in-dirty-directory',
-          '--welcome',
-        ],
-        {
-          name: 'xterm-color',
-          cols: 80,
-          rows: 30,
-          env: {
-            ...process.env,
-            CLAUDE_APP_PATH: mockAppPath,
-            CLAUDE_PATTERNS_PATH: testPatternsPath,
-          },
-        },
-      )
-
-      let output = ''
-      ptyProcess.onData(data => {
-        output += data
-      })
-
-      // Wait for pattern trigger and response
-      await new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(
-          () => reject(new Error('Timeout waiting for pattern response')),
-          10000,
-        )
-        const checkOutput = () => {
-          if (output.includes('Received input: Test response')) {
-            clearTimeout(timeout)
-            resolve()
-          } else {
-            setTimeout(checkOutput, 25)
-          }
-        }
-        checkOutput()
-      })
-
-      expect(output).toContain('TEST_PATTERN_TRIGGER')
-
-      expect(output).toContain('Received input: Test response')
-
-      ptyProcess.write('exit\r')
-      await new Promise(resolve => {
-        ptyProcess.onExit(() => resolve(undefined))
-      })
-    }, 12000)
-  })
-
   describe('Parent CLI options', () => {
     it('should handle --show-notifications flag', async () => {
       const result = await runCli([

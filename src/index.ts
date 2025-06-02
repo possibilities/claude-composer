@@ -18,6 +18,7 @@ import {
   warn,
 } from './core/preflight.js'
 import {
+  showNotification,
   showPatternNotification,
   showSnapshotNotification,
 } from './utils/notifications.js'
@@ -34,6 +35,7 @@ let screenReadInterval: NodeJS.Timeout | undefined
 let appConfig: AppConfig | undefined
 let stdinBuffer: PassThrough | undefined
 let isStdinPaused = false
+let promptPatternTriggers: string[] = []
 
 const debugLog = util.debuglog('claude-composer')
 
@@ -194,7 +196,15 @@ async function initializePatterns(): Promise<boolean> {
 
   let hasActivePatterns = false
 
+  // Collect first items from prompt-type patterns
+  const promptTriggers = new Set<string>()
+
   patternsToUse.forEach(pattern => {
+    // Collect trigger text from prompt-type patterns
+    if (pattern.type === 'prompt' && pattern.triggerText) {
+      promptTriggers.add(pattern.triggerText)
+    }
+
     if (
       pattern.id === 'edit-file-prompt' &&
       !appConfig.dangerously_dismiss_edit_file_prompts
@@ -234,6 +244,9 @@ async function initializePatterns(): Promise<boolean> {
       throw error
     }
   })
+
+  // Store the unique prompt triggers globally
+  promptPatternTriggers = Array.from(promptTriggers)
 
   return hasActivePatterns
 }
@@ -300,8 +313,13 @@ process.on('uncaughtException', error => {
   process.exit(1)
 })
 
-function handlePatternMatches(data: string): void {
-  const matches = patternMatcher.processData(data)
+function handlePatternMatches(
+  data: string,
+  filterType?: 'completion' | 'prompt',
+): void {
+  const matches = filterType
+    ? patternMatcher.processDataByType(data, filterType)
+    : patternMatcher.processData(data)
 
   for (const match of matches) {
     responseQueue.enqueue(match.response)
@@ -559,29 +577,65 @@ export async function main() {
       ptyProcess.onData((data: string) => {
         try {
           process.stdout.write(data)
+
+          // Update terminal first
           if (terminal) {
             terminal.write(data)
+          }
+
+          // Then check for prompt pattern triggers in output
+          const matchedTrigger = promptPatternTriggers.find(trigger =>
+            data.includes(trigger),
+          )
+          if (matchedTrigger && terminal && serializeAddon) {
+            // Small delay to ensure terminal rendering completes
+            setTimeout(() => {
+              try {
+                const currentScreenContent = serializeAddon.serialize()
+                handlePatternMatches(currentScreenContent, 'prompt')
+              } catch (error) {}
+            }, 10)
           }
         } catch (error) {}
       })
 
-      if (terminal && serializeAddon) {
-        let lastScreenContent = ''
-        screenReadInterval = setInterval(() => {
-          if (terminal && serializeAddon) {
-            try {
-              const currentScreenContent = serializeAddon.serialize()
-              if (currentScreenContent !== lastScreenContent) {
-                handlePatternMatches(currentScreenContent)
-                lastScreenContent = currentScreenContent
-              }
-            } catch (error) {}
-          }
-        }, 1)
-      }
+      // Periodic pattern matching disabled - now event-driven
+      // if (terminal && serializeAddon) {
+      //   let lastScreenContent = ''
+      //   screenReadInterval = setInterval(() => {
+      //     if (terminal && serializeAddon) {
+      //       try {
+      //         const currentScreenContent = serializeAddon.serialize()
+      //         if (currentScreenContent !== lastScreenContent) {
+      //           handlePatternMatches(currentScreenContent)
+      //           lastScreenContent = currentScreenContent
+      //         }
+      //       } catch (error) {}
+      //     }
+      //   }, 1)
+      // }
     } else {
       ptyProcess.onData((data: string) => {
         process.stdout.write(data)
+
+        // Update terminal first if it exists
+        if (terminal) {
+          terminal.write(data)
+        }
+
+        // Then check for prompt pattern triggers in output
+        const matchedTrigger = promptPatternTriggers.find(trigger =>
+          data.includes(trigger),
+        )
+        if (matchedTrigger && terminal && serializeAddon) {
+          // Small delay to ensure terminal rendering completes
+          setTimeout(() => {
+            try {
+              const currentScreenContent = serializeAddon.serialize()
+              handlePatternMatches(currentScreenContent, 'prompt')
+            } catch (error) {}
+          }, 10)
+        }
       })
     }
 
@@ -592,6 +646,15 @@ export async function main() {
 
     process.stdin.on('data', (data: Buffer) => {
       try {
+        // Check for space character (ASCII 32) - trigger completion patterns
+        if (data.length === 1 && data[0] === 32 && terminal && serializeAddon) {
+          try {
+            const currentScreenContent = serializeAddon.serialize()
+            handlePatternMatches(currentScreenContent, 'completion')
+          } catch (error) {}
+        }
+
+        // Check for Ctrl+S for snapshots
         if (
           appConfig?.allow_buffer_snapshots &&
           data.length === 1 &&
@@ -601,6 +664,7 @@ export async function main() {
           return
         }
 
+        // Always pass input to child process
         ptyProcess.write(data.toString())
       } catch (error) {}
     })
@@ -673,26 +737,43 @@ export async function main() {
         try {
           const dataStr = data.toString()
           process.stdout.write(data)
+
+          // Update terminal first
           if (terminal) {
             terminal.write(dataStr)
+          }
+
+          // Then check for prompt pattern triggers in output
+          const matchedTrigger = promptPatternTriggers.find(trigger =>
+            dataStr.includes(trigger),
+          )
+          if (matchedTrigger && terminal && serializeAddon) {
+            // Small delay to ensure terminal rendering completes
+            setTimeout(() => {
+              try {
+                const currentScreenContent = serializeAddon.serialize()
+                handlePatternMatches(currentScreenContent, 'prompt')
+              } catch (error) {}
+            }, 10)
           }
         } catch (error) {}
       })
 
-      if (terminal && serializeAddon) {
-        let lastScreenContent = ''
-        screenReadInterval = setInterval(() => {
-          if (terminal && serializeAddon) {
-            try {
-              const currentScreenContent = serializeAddon.serialize()
-              if (currentScreenContent !== lastScreenContent) {
-                handlePatternMatches(currentScreenContent)
-                lastScreenContent = currentScreenContent
-              }
-            } catch (error) {}
-          }
-        }, 1)
-      }
+      // Periodic pattern matching disabled - now event-driven
+      // if (terminal && serializeAddon) {
+      //   let lastScreenContent = ''
+      //   screenReadInterval = setInterval(() => {
+      //     if (terminal && serializeAddon) {
+      //       try {
+      //         const currentScreenContent = serializeAddon.serialize()
+      //         if (currentScreenContent !== lastScreenContent) {
+      //           handlePatternMatches(currentScreenContent)
+      //           lastScreenContent = currentScreenContent
+      //         }
+      //       } catch (error) {}
+      //     }
+      //   }, 1)
+      // }
     } else {
       if (stdinBuffer) {
         if (isStdinPaused) {
@@ -706,7 +787,27 @@ export async function main() {
 
       childProcess.stdout!.on('data', (data: Buffer) => {
         try {
+          const dataStr = data.toString()
           process.stdout.write(data)
+
+          // Update terminal first if it exists
+          if (terminal) {
+            terminal.write(dataStr)
+          }
+
+          // Then check for prompt pattern triggers in output
+          const matchedTrigger = promptPatternTriggers.find(trigger =>
+            dataStr.includes(trigger),
+          )
+          if (matchedTrigger && terminal && serializeAddon) {
+            // Small delay to ensure terminal rendering completes
+            setTimeout(() => {
+              try {
+                const currentScreenContent = serializeAddon.serialize()
+                handlePatternMatches(currentScreenContent, 'prompt')
+              } catch (error) {}
+            }, 10)
+          }
         } catch (error) {}
       })
     }

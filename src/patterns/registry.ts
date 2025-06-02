@@ -50,6 +50,7 @@ export const patterns: PatternConfig[] = [
       '{{ editDiff | multiline }}',
       'Do you want to make this edit to {{ fileName }}?',
     ],
+    triggerText: 'Edit file',
     notification: dedent(
       `
       Action: {{ title }}
@@ -64,6 +65,7 @@ export const patterns: PatternConfig[] = [
     type: 'prompt' as const,
     response: '1',
     pattern: ['Create file', 'Do you want to create {{ fileName }}?'],
+    triggerText: 'Create file',
     notification: dedent(
       `
       Action: {{ title }}
@@ -86,6 +88,7 @@ export const patterns: PatternConfig[] = [
       "2. Yes, and don't ask again for {{ commandWithoutArguments }} commands in {{ commandDir }}",
       'No, and tell Claude what to do differently',
     ],
+    triggerText: 'Bash command',
     notification: dedent(
       `
       Action: {{ title }}
@@ -102,6 +105,7 @@ export const patterns: PatternConfig[] = [
     type: 'prompt' as const,
     response: '1',
     pattern: ['Read files', 'Read({{ fileName }})', '1. Yes'],
+    triggerText: 'Read files',
     notification: dedent(
       `
       Action: {{ title }}
@@ -122,6 +126,7 @@ export const patterns: PatternConfig[] = [
       'Claude wants to fetch content from {{ domain }}',
       'No, and tell Claude what to do differently',
     ],
+    triggerText: 'Fetch',
     notification: dedent(
       `
       Action: {{ title }}
