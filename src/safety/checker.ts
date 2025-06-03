@@ -132,13 +132,13 @@ export async function handleDangerFlagsWarning(
     '\x1b[33m╔═════════════════════════════════════════════════════════════════╗\x1b[0m',
   )
   console.log(
-    '\x1b[33m║                   ⚠️  DANGER FLAGS SET ⚠️                         ║\x1b[0m',
+    '\x1b[33m║                   ⚠️  DANGER FLAGS SET ⚠️                       ║\x1b[0m',
   )
   console.log(
     '\x1b[33m╠═════════════════════════════════════════════════════════════════╣\x1b[0m',
   )
   console.log(
-    '\x1b[33m║ You have enabled dangerous flags that will accept prompts:     ║\x1b[0m',
+    '\x1b[33m║ You have enabled dangerous flags that will accept prompts:      ║\x1b[0m',
   )
   console.log(
     '\x1b[33m║                                                                 ║\x1b[0m',
@@ -146,27 +146,27 @@ export async function handleDangerFlagsWarning(
 
   if (appConfig.dangerously_accept_edit_file_prompts) {
     console.log(
-      '\x1b[33m║ • File edit prompts will be AUTO-ACCEPTED                      ║\x1b[0m',
+      '\x1b[33m║ • File edit prompts will be AUTO-ACCEPTED                       ║\x1b[0m',
     )
   }
   if (appConfig.dangerously_accept_create_file_prompts) {
     console.log(
-      '\x1b[33m║ • File creation prompts will be AUTO-ACCEPTED                  ║\x1b[0m',
+      '\x1b[33m║ • File creation prompts will be AUTO-ACCEPTED                   ║\x1b[0m',
     )
   }
   if (appConfig.dangerously_accept_bash_command_prompts) {
     console.log(
-      '\x1b[33m║ • Bash command prompts will be AUTO-ACCEPTED                   ║\x1b[0m',
+      '\x1b[33m║ • Bash command prompts will be AUTO-ACCEPTED                    ║\x1b[0m',
     )
   }
   if (appConfig.dangerously_accept_read_files_prompts) {
     console.log(
-      '\x1b[33m║ • Read files prompts will be AUTO-ACCEPTED                     ║\x1b[0m',
+      '\x1b[33m║ • Read files prompts will be AUTO-ACCEPTED                      ║\x1b[0m',
     )
   }
   if (appConfig.dangerously_accept_fetch_content_prompts) {
     console.log(
-      '\x1b[33m║ • Fetch content prompts will be AUTO-ACCEPTED                  ║\x1b[0m',
+      '\x1b[33m║ • Fetch content prompts will be AUTO-ACCEPTED                   ║\x1b[0m',
     )
   }
 
