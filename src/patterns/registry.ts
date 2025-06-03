@@ -32,7 +32,7 @@ function buildTriggerPattern(
   }
 }
 
-const patternsArray: PatternConfig[] = [
+const completionPatterns: PatternConfig[] = [
   {
     id: 'add-tree-trigger',
     title: 'Add tree',
@@ -43,6 +43,9 @@ const patternsArray: PatternConfig[] = [
     title: 'Add changes',
     ...buildTriggerPattern('ProjectChanges', '~changes ', 'git diff HEAD'),
   },
+]
+
+const promptPatterns: PatternConfig[] = [
   {
     id: 'edit-file-prompt',
     title: 'Edit file',
@@ -192,7 +195,9 @@ const patternsArray: PatternConfig[] = [
   },
 ]
 
-const validationResult = validatePatternConfigs(patternsArray)
+const allPatterns: PatternConfig[] = [...completionPatterns, ...promptPatterns]
+
+const validationResult = validatePatternConfigs(allPatterns)
 if (!validationResult.success) {
   throw new Error(
     `Invalid pattern configuration: ${JSON.stringify(validationResult.error.errors, null, 2)}`,
@@ -200,3 +205,5 @@ if (!validationResult.success) {
 }
 
 export const patterns: PatternConfig[] = validationResult.data
+
+export { completionPatterns, promptPatterns }
