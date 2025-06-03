@@ -176,46 +176,6 @@ export function createClaudeComposerCommand(): Command {
       'Make terminal snapshot notifications auto-dismiss',
     )
     .option(
-      '--dangerously-accept-edit-file-prompts',
-      'Automatically accept edit file prompts',
-    )
-    .option(
-      '--no-dangerously-accept-edit-file-prompts',
-      'Do not automatically accept edit file prompts',
-    )
-    .option(
-      '--dangerously-accept-create-file-prompts',
-      'Automatically accept create file prompts',
-    )
-    .option(
-      '--no-dangerously-accept-create-file-prompts',
-      'Do not automatically accept create file prompts',
-    )
-    .option(
-      '--dangerously-accept-bash-command-prompts',
-      'Automatically accept bash command prompts',
-    )
-    .option(
-      '--no-dangerously-accept-bash-command-prompts',
-      'Do not automatically accept bash command prompts',
-    )
-    .option(
-      '--dangerously-accept-read-files-prompts',
-      'Automatically accept read files prompts',
-    )
-    .option(
-      '--no-dangerously-accept-read-files-prompts',
-      'Do not automatically accept read files prompts',
-    )
-    .option(
-      '--dangerously-accept-fetch-content-prompts',
-      'Automatically accept fetch content prompts',
-    )
-    .option(
-      '--no-dangerously-accept-fetch-content-prompts',
-      'Do not automatically accept fetch content prompts',
-    )
-    .option(
       '--dangerously-allow-in-dirty-directory',
       'Allow running in a directory with uncommitted git changes',
     )
@@ -389,16 +349,6 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--no-sticky-accepted-confirm-notify')
   knownOptions.add('--sticky-terminal-snapshot-notifications')
   knownOptions.add('--no-sticky-terminal-snapshot-notifications')
-  knownOptions.add('--dangerously-accept-edit-file-prompts')
-  knownOptions.add('--no-dangerously-accept-edit-file-prompts')
-  knownOptions.add('--dangerously-accept-create-file-prompts')
-  knownOptions.add('--no-dangerously-accept-create-file-prompts')
-  knownOptions.add('--dangerously-accept-bash-command-prompts')
-  knownOptions.add('--no-dangerously-accept-bash-command-prompts')
-  knownOptions.add('--dangerously-accept-read-files-prompts')
-  knownOptions.add('--no-dangerously-accept-read-files-prompts')
-  knownOptions.add('--dangerously-accept-fetch-content-prompts')
-  knownOptions.add('--no-dangerously-accept-fetch-content-prompts')
   knownOptions.add('--dangerously-allow-in-dirty-directory')
   knownOptions.add('--no-dangerously-allow-in-dirty-directory')
   knownOptions.add('--dangerously-allow-without-version-control')

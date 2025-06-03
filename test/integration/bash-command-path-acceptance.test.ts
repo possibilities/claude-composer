@@ -68,7 +68,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
     switch (match.patternId) {
       case 'bash-command-prompt-format-1':
       case 'bash-command-prompt-format-2':
-        if (!appConfig.dangerously_accept_bash_command_prompts) return false
+        if (appConfig.safe) return false
         if (!mergedRuleset) return false
 
         const bashConfig = isInProjectRoot
@@ -118,7 +118,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
       }
 
       const appConfig: AppConfig = {
-        dangerously_accept_bash_command_prompts: true,
+        safe: false,
       }
 
       const ruleset: RulesetConfig = {

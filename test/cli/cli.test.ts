@@ -678,14 +678,12 @@ foo: true`
       expect(result.exitCode).toBe(0)
     })
 
-    it('should support negatable dangerous options', async () => {
+    it('should support negatable options', async () => {
       const result = await runCli(
         [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
-          '--no-dangerously-accept-edit-file-prompts',
-          '--no-dangerously-accept-create-file-prompts',
-          '--no-dangerously-accept-bash-command-prompts',
+          '--no-show-notifications',
         ],
         {
           env: { ...process.env, CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir },
@@ -696,31 +694,21 @@ foo: true`
       expect(result.stdout).toContain('Mock child app running')
     })
 
-    it('should handle --dangerously-accept-bash-command-prompts flag', async () => {
-      const result = await runCli(
-        [
-          '--dangerously-allow-without-version-control',
-          '--dangerously-allow-in-dirty-directory',
-          '--dangerously-accept-bash-command-prompts',
-          '--echo-args',
-        ],
-        {
-          env: { ...process.env, CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir },
-        },
-      )
+    it('should handle --safe flag', async () => {
+      const result = await runCli(['--safe', '--echo-args'], {
+        env: { ...process.env, CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir },
+      })
 
       expect(result.exitCode).toBe(0)
       expect(result.stdout).toContain('ARGS: --echo-args')
       const argsLine = result.stdout
         .split('\n')
         .find(line => line.includes('ARGS:'))
-      expect(argsLine).not.toContain(
-        '--dangerously-accept-bash-command-prompts',
-      )
+      expect(argsLine).not.toContain('--safe')
     })
 
-    it('should load dangerously_accept_bash_command_prompts from config', async () => {
-      const configContent = 'dangerously_accept_bash_command_prompts: true'
+    it('should load safe from config', async () => {
+      const configContent = 'safe: true'
       fs.writeFileSync(testConfigPath, configContent)
 
       const result = await runCli(
@@ -737,33 +725,25 @@ foo: true`
       expect(result.stdout).toContain('Mock child app running')
     })
 
-    it('should prioritize CLI flag over config for bash command prompts', async () => {
-      const configContent = 'dangerously_accept_bash_command_prompts: true'
+    it('should prioritize CLI flag over config for safe mode', async () => {
+      const configContent = 'safe: false'
       fs.writeFileSync(testConfigPath, configContent)
 
-      const result = await runCli(
-        [
-          '--no-dangerously-accept-bash-command-prompts',
-          '--dangerously-allow-without-version-control',
-          '--dangerously-allow-in-dirty-directory',
-        ],
-        {
-          env: { ...process.env, CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir },
-        },
-      )
+      const result = await runCli(['--safe', '--version'], {
+        env: { ...process.env, CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir },
+      })
 
       expect(result.exitCode).toBe(0)
-      expect(result.stdout).toContain('Mock child app running')
+      // Safe mode bypasses all claude-composer functionality
+      expect(result.stdout).not.toContain('※')
     })
 
-    it('should handle all accept prompts flags together', async () => {
+    it('should handle combined flags properly', async () => {
       const result = await runCli(
         [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
-          '--dangerously-accept-edit-file-prompts',
-          '--dangerously-accept-create-file-prompts',
-          '--dangerously-accept-bash-command-prompts',
+          '--show-notifications',
           '--echo-args',
         ],
         {
@@ -777,21 +757,29 @@ foo: true`
       const argsLine = result.stdout
         .split('\n')
         .find(line => line.includes('ARGS:'))
-      expect(argsLine).not.toContain('--dangerously-accept-edit-file-prompts')
-      expect(argsLine).not.toContain('--dangerously-accept-create-file-prompts')
-      expect(argsLine).not.toContain(
-        '--dangerously-accept-bash-command-prompts',
-      )
+      expect(argsLine).not.toContain('--show-notifications')
+      expect(argsLine).not.toContain('--dangerously-allow')
     })
 
-    it('should handle mixed positive and negative accept flags', async () => {
+    it('should handle rulesets configuration', async () => {
+      // Create a ruleset directory and file
+      const rulesetsDir = path.join(testConfigDir, 'rulesets')
+      fs.mkdirSync(rulesetsDir, { recursive: true })
+      const rulesetContent = `accept_project_edit_file_prompts: true
+accept_project_create_file_prompts: true
+`
+      fs.writeFileSync(
+        path.join(rulesetsDir, 'test-ruleset.yaml'),
+        rulesetContent,
+      )
+
+      const configContent = 'rulesets:\n  - test-ruleset'
+      fs.writeFileSync(testConfigPath, configContent)
+
       const result = await runCli(
         [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
-          '--dangerously-accept-edit-file-prompts',
-          '--no-dangerously-accept-create-file-prompts',
-          '--dangerously-accept-bash-command-prompts',
           '--echo-args',
         ],
         {
@@ -801,11 +789,6 @@ foo: true`
 
       expect(result.exitCode).toBe(0)
       expect(result.stdout).toContain('ARGS: --echo-args')
-      // Ensure none of the flags are passed through to child app
-      const argsLine = result.stdout
-        .split('\n')
-        .find(line => line.includes('ARGS:'))
-      expect(argsLine).toBe('ARGS: --echo-args')
     })
   })
 })

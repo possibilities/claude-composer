@@ -183,6 +183,9 @@ function checkAcceptConfig(
 }
 
 function shouldAcceptPrompt(match: MatchResult): boolean {
+  // If --safe flag is used, never auto-accept
+  if (appConfig?.safe) return false
+
   const fileName = match.extractedData?.fileName
   const directory = match.extractedData?.directory
 
@@ -193,7 +196,6 @@ function shouldAcceptPrompt(match: MatchResult): boolean {
 
   switch (match.patternId) {
     case 'edit-file-prompt':
-      if (!appConfig.dangerously_accept_edit_file_prompts) return false
       if (!mergedRuleset) return false
       return isInProjectRoot
         ? checkAcceptConfig(
@@ -207,7 +209,6 @@ function shouldAcceptPrompt(match: MatchResult): boolean {
             false,
           )
     case 'create-file-prompt':
-      if (!appConfig.dangerously_accept_create_file_prompts) return false
       if (!mergedRuleset) return false
       return isInProjectRoot
         ? checkAcceptConfig(
@@ -222,7 +223,6 @@ function shouldAcceptPrompt(match: MatchResult): boolean {
           )
     case 'bash-command-prompt-format-1':
     case 'bash-command-prompt-format-2':
-      if (!appConfig.dangerously_accept_bash_command_prompts) return false
       if (!mergedRuleset) return false
 
       const bashConfig = isInProjectRoot
@@ -254,7 +254,6 @@ function shouldAcceptPrompt(match: MatchResult): boolean {
             false,
           )
     case 'read-files-prompt':
-      if (!appConfig.dangerously_accept_read_files_prompts) return false
       if (!mergedRuleset) return false
       return isInProjectRoot
         ? checkAcceptConfig(
@@ -268,7 +267,6 @@ function shouldAcceptPrompt(match: MatchResult): boolean {
             false,
           )
     case 'fetch-content-prompt':
-      if (!appConfig.dangerously_accept_fetch_content_prompts) return false
       if (!mergedRuleset) return false
       const fetchConfig = mergedRuleset.accept_fetch_content_prompts
       if (fetchConfig === true) return true

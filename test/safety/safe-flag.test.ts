@@ -36,18 +36,6 @@ describe('--safe flag functionality', () => {
       expect(result.exitCode).toBe(1)
     })
 
-    it('should reject --safe with dangerous flags', async () => {
-      const result = await runCli({
-        args: ['--safe', '--dangerously-accept-edit-file-prompts'],
-      })
-
-      expect(result.stderr).toContain(
-        'Error: --safe flag cannot be used with other claude-composer flags',
-      )
-      expect(result.stderr).toContain('--dangerously-accept-edit-file-prompts')
-      expect(result.exitCode).toBe(1)
-    })
-
     it('should bypass all claude-composer functionality with --safe flag', async () => {
       const result = await runCli({ args: ['--safe', '--version'] })
 

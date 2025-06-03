@@ -6,6 +6,8 @@ import type {
   PreflightOptions,
   ParsedOptions,
 } from '../types/preflight.js'
+import type { RulesetConfig } from '../config/schemas.js'
+import { hasActiveAcceptanceRules } from '../config/rulesets.js'
 import { askYesNo } from '../cli/prompts.js'
 import { log, warn } from '../utils/logging.js'
 
@@ -97,18 +99,18 @@ export async function checkDirtyDirectory(
   }
 }
 
-export async function handleDangerFlagsWarning(
+export async function handleAutomaticAcceptanceWarning(
   appConfig: AppConfig,
+  mergedRuleset: RulesetConfig | undefined,
   preflightOptions?: PreflightOptions,
 ): Promise<boolean> {
-  const hasDangerFlags =
-    appConfig.dangerously_accept_edit_file_prompts ||
-    appConfig.dangerously_accept_create_file_prompts ||
-    appConfig.dangerously_accept_bash_command_prompts ||
-    appConfig.dangerously_accept_read_files_prompts ||
-    appConfig.dangerously_accept_fetch_content_prompts
+  // If --safe flag is used, skip warning
+  if (appConfig.safe) {
+    return true
+  }
 
-  if (!hasDangerFlags) {
+  // Only show warning if there are active acceptance rules
+  if (!hasActiveAcceptanceRules(mergedRuleset)) {
     return true
   }
 
@@ -117,7 +119,7 @@ export async function handleDangerFlagsWarning(
       '\x1b[33m╔════════════════════════════════════════════════════════════════╗\x1b[0m',
     )
     console.log(
-      '\x1b[33m║                      ⚠️  DANGER FLAGS SET ⚠️                   ║\x1b[0m',
+      '\x1b[33m║             ⚠️  AUTOMATIC ACCEPTANCE ENABLED ⚠️                ║\x1b[0m',
     )
     console.log(
       '\x1b[33m║ (Skipping interactive prompt in test mode)                     ║\x1b[0m',
@@ -132,56 +134,50 @@ export async function handleDangerFlagsWarning(
     '\x1b[33m╔═════════════════════════════════════════════════════════════════╗\x1b[0m',
   )
   console.log(
-    '\x1b[33m║                   ⚠️  DANGER FLAGS SET ⚠️                       ║\x1b[0m',
+    '\x1b[33m║             ⚠️  AUTOMATIC ACCEPTANCE ENABLED ⚠️                 ║\x1b[0m',
   )
   console.log(
     '\x1b[33m╠═════════════════════════════════════════════════════════════════╣\x1b[0m',
   )
   console.log(
-    '\x1b[33m║ You have enabled dangerous flags that will accept prompts:      ║\x1b[0m',
+    '\x1b[33m║ Rulesets are configured to automatically accept prompts for:    ║\x1b[0m',
   )
   console.log(
     '\x1b[33m║                                                                 ║\x1b[0m',
   )
-
-  if (appConfig.dangerously_accept_edit_file_prompts) {
-    console.log(
-      '\x1b[33m║ • File edit prompts will be AUTO-ACCEPTED                       ║\x1b[0m',
-    )
-  }
-  if (appConfig.dangerously_accept_create_file_prompts) {
-    console.log(
-      '\x1b[33m║ • File creation prompts will be AUTO-ACCEPTED                   ║\x1b[0m',
-    )
-  }
-  if (appConfig.dangerously_accept_bash_command_prompts) {
-    console.log(
-      '\x1b[33m║ • Bash command prompts will be AUTO-ACCEPTED                    ║\x1b[0m',
-    )
-  }
-  if (appConfig.dangerously_accept_read_files_prompts) {
-    console.log(
-      '\x1b[33m║ • Read files prompts will be AUTO-ACCEPTED                      ║\x1b[0m',
-    )
-  }
-  if (appConfig.dangerously_accept_fetch_content_prompts) {
-    console.log(
-      '\x1b[33m║ • Fetch content prompts will be AUTO-ACCEPTED                   ║\x1b[0m',
-    )
-  }
-
+  console.log(
+    '\x1b[33m║ • File edits and creation                                       ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║ • Bash command execution                                        ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║ • File reading operations                                       ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║ • Content fetching from URLs                                    ║\x1b[0m',
+  )
   console.log(
     '\x1b[33m║                                                                 ║\x1b[0m',
   )
   console.log(
-    '\x1b[33m║ Claude will modify files and run commands WITHOUT confirmation! ║\x1b[0m',
+    '\x1b[33m║ Claude will perform actions based on your ruleset configuration ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║ WITHOUT asking for confirmation!                                ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║                                                                 ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║ Use --safe to disable all automatic acceptance                  ║\x1b[0m',
   )
   console.log(
     '\x1b[33m╚═════════════════════════════════════════════════════════════════╝\x1b[0m',
   )
 
   const proceed = await askYesNo(
-    'Do you want to continue with these dangerous settings?',
+    'Do you want to continue with automatic acceptance enabled?',
     true,
     preflightOptions?.stdin,
     preflightOptions?.stdout,
@@ -192,29 +188,6 @@ export async function handleDangerFlagsWarning(
     return false
   }
 
-  warn('※ Continuing with dangerous flag settings active!')
+  warn('※ Continuing with automatic acceptance enabled!')
   return true
-}
-
-export function displayDangerousWarnings(appConfig: AppConfig): void {
-  if (appConfig.dangerously_accept_edit_file_prompts) {
-    warn('⚠️  WARNING: --dangerously-accept-edit-file-prompts is enabled')
-    warn('   All file edit prompts will be automatically accepted!')
-  }
-  if (appConfig.dangerously_accept_create_file_prompts) {
-    warn('⚠️  WARNING: --dangerously-accept-create-file-prompts is enabled')
-    warn('   All file creation prompts will be automatically accepted!')
-  }
-  if (appConfig.dangerously_accept_bash_command_prompts) {
-    warn('⚠️  WARNING: --dangerously-accept-bash-command-prompts is enabled')
-    warn('   All bash command prompts will be automatically accepted!')
-  }
-  if (appConfig.dangerously_accept_read_files_prompts) {
-    warn('⚠️  WARNING: --dangerously-accept-read-files-prompts is enabled')
-    warn('   All read files prompts will be automatically accepted!')
-  }
-  if (appConfig.dangerously_accept_fetch_content_prompts) {
-    warn('⚠️  WARNING: --dangerously-accept-fetch-content-prompts is enabled')
-    warn('   All fetch content prompts will be automatically accepted!')
-  }
 }

@@ -93,24 +93,9 @@ send_remote_notifications: boolean (optional)
   Only sticky notifications are sent remotely to avoid spam
   Default: false
 
-dangerously_accept_edit_file_prompts: boolean (optional)
-  Automatically accept edit file prompts without user confirmation
-  Default: false
-
-dangerously_accept_create_file_prompts: boolean (optional)
-  Automatically accept create file prompts without user confirmation
-  Default: false
-
-dangerously_accept_bash_command_prompts: boolean (optional)
-  Automatically accept bash command prompts without user confirmation
-  Default: false
-
-dangerously_accept_read_files_prompts: boolean (optional)
-  Automatically accept read files prompts without user confirmation
-  Default: false
-
-dangerously_accept_fetch_content_prompts: boolean (optional)
-  Automatically accept fetch content prompts without user confirmation
+safe: boolean (optional)
+  When enabled, disables ALL automatic acceptance regardless of ruleset configuration
+  Use this flag when you want to ensure all prompts require manual confirmation
   Default: false
 
 dangerously_allow_in_dirty_directory: boolean (optional)
@@ -248,12 +233,8 @@ sticky_notifications:
   prompted_confirmations: true
   accepted_confirmations: false
 
-# Other settings
-dangerously_accept_edit_file_prompts: false
-dangerously_accept_create_file_prompts: false
-dangerously_accept_bash_command_prompts: false
-dangerously_accept_read_files_prompts: false
-dangerously_accept_fetch_content_prompts: false
+# Safety settings
+safe: false  # When true, disables all automatic acceptance
 dangerously_allow_in_dirty_directory: false
 dangerously_allow_without_version_control: false
 toolsets:
