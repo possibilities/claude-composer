@@ -90,6 +90,7 @@ notify_work_complete: boolean (optional)
 send_remote_notifications: boolean (optional)
   Send notifications to Discord/WhatsApp when enabled
   Requires ~/.claude-composer/remote-notifications.yaml configuration file
+  Only sticky notifications are sent remotely to avoid spam
   Default: false
 
 dangerously_dismiss_edit_file_prompts: boolean (optional)
@@ -596,6 +597,87 @@ When using path-based dismissals:
 - Use --show-notifications to audit what's being auto-dismissed
 - Consider using project-specific rulesets for sensitive projects
 - Remember that dismissed prompts still execute the action
+
+
+REMOTE NOTIFICATIONS CONFIGURATION (remote-notifications.yaml)
+==============================================================
+
+Remote notifications allow you to receive Claude Composer notifications on Discord or WhatsApp.
+This is useful for monitoring long-running tasks or working on remote servers.
+
+Configuration file location: ~/.claude-composer/remote-notifications.yaml
+
+FORMAT:
+=======
+
+discord:
+  webhook_url: 'https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN'
+
+subscriber_id: 'your-name'  # Optional identifier shown in messages
+
+whatsapp:  # Not yet implemented
+  access_token: 'YOUR_WHATSAPP_ACCESS_TOKEN'
+  sender_number: '+14151234567'
+  recipient_number: '+15558675309'
+
+SETUP:
+======
+
+1. Copy the example configuration:
+   cp remote-notifications.example.yaml ~/.claude-composer/remote-notifications.yaml
+
+2. Set up Discord webhook:
+   - Go to Discord channel settings
+   - Click "Edit Channel" → "Integrations" → "Webhooks"
+   - Create new webhook and copy URL
+   - Add webhook URL to configuration file
+
+3. Enable remote notifications:
+   - CLI flag: --send-remote-notifications
+   - Or in config.yaml: send_remote_notifications: true
+
+BEHAVIOR:
+=========
+
+- Only sticky notifications are sent remotely (to avoid spam)
+- Both local desktop and remote notifications are sent
+- Discord messages include color coding by notification type:
+  - Green: Work Complete
+  - Gold: Work Complete Record
+  - Orange: Prompted Confirmations
+  - Blue: Other sticky notifications
+
+NOTIFICATION TYPES SENT REMOTELY:
+=================================
+
+1. Work Complete - When Claude Composer finishes a task
+2. Work Complete Record - When achieving longest work session
+3. Prompted Confirmations - When user confirmation is needed
+4. Explicitly Sticky Notifications - Any notification marked as undismissable
+
+NOTIFICATION TYPES NOT SENT REMOTELY:
+=====================================
+
+1. Work Started - Too frequent, not sticky by default
+2. Dismissed Confirmations - Auto-dismissed actions
+3. Terminal Snapshots - Quick notifications
+4. Regular Notifications - Any non-sticky notification
+
+TROUBLESHOOTING:
+================
+
+- Check that ~/.claude-composer/remote-notifications.yaml exists
+- Verify Discord webhook URL is correct
+- Ensure --send-remote-notifications flag is used or config is set
+- Check console for error messages about remote notification initialization
+
+TESTING YOUR SETUP:
+===================
+
+Run a command that triggers a sticky notification:
+claude-composer --send-remote-notifications --sticky-notifications echo "test"
+
+You should see both a desktop notification and a Discord message.
 
 
 CONFIGURATION PRECEDENCE
