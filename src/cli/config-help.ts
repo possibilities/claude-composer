@@ -20,21 +20,71 @@ QUICK REFERENCE
 MAIN CONFIGURATION OPTIONS (config.yaml)
 ========================================
 
+NOTIFICATION SETTINGS
+=====================
+
 show_notifications: boolean (optional)
-  Show desktop notifications for file edits, creates, and prompts
+  Master control for all notifications
+  Default: true
+
+show_confirm_notify: boolean (optional)
+  Show notifications for file operations (edit, create, bash, read, fetch)
+  Only applies when show_notifications is true
+  Default: true
+
+show_dismissed_confirm_notify: boolean (optional)
+  Show notifications for auto-dismissed actions
+  Only applies when show_confirm_notify is true
   Default: false
 
-sticky_notifications: boolean (optional)
-  Enable notifications that stay on screen until manually dismissed
-  Also enables show_notifications when set to true
-  Default: false
+show_prompted_confirm_notify: boolean (optional)
+  Show notifications when user is prompted
+  Only applies when show_confirm_notify is true
+  Default: true
 
-notify_work_started: boolean (optional)
+confirm_notify: object (optional)
+  Fine-grained control over specific confirmation types
+  Only applies when show_confirm_notify is true
+  Structure:
+    edit_file: boolean (default: true)
+    create_file: boolean (default: true)
+    bash_command: boolean (default: true)
+    read_file: boolean (default: true)
+    fetch_content: boolean (default: true)
+
+show_work_started_notifications: boolean (optional)
   Show notification when Claude Composer starts working
   Default: false
 
-notify_work_complete: boolean (optional)
+show_work_complete_notifications: boolean (optional)
   Show notification when Claude Composer is done working
+  Default: true
+
+show_work_complete_record_notifications: boolean (optional)
+  Show record-breaking notifications for longest work sessions
+  Only applies when show_work_complete_notifications is true
+  Default: true
+
+sticky_notifications: object|boolean (optional)
+  Control notification stickiness behavior
+  Can be a boolean (for backward compatibility) or object with per-type control
+  Boolean true = all notifications sticky
+  Object format:
+    global: boolean (default: false)
+    work_started: boolean (default: false)
+    work_complete: boolean (default: true)
+    work_complete_record: boolean (default: true)
+    prompted_confirmations: boolean (default: true)
+    dismissed_confirmations: boolean (default: false)
+    terminal_snapshot: boolean (default: false)
+
+# Legacy notification settings (kept for backward compatibility)
+notify_work_started: boolean (optional)
+  Deprecated: Use show_work_started_notifications instead
+  Default: false
+
+notify_work_complete: boolean (optional)
+  Deprecated: Use show_work_complete_notifications instead
   Default: true
 
 dangerously_dismiss_edit_file_prompts: boolean (optional)
@@ -172,10 +222,27 @@ dismiss_fetch_content_prompts: boolean | object (optional)
 EXAMPLE CONFIG FILE (config.yaml)
 =================================
 
+# Master notification control
 show_notifications: true
-sticky_notifications: false
-notify_work_started: false
-notify_work_complete: true
+
+# Confirmation notifications (default configuration)
+show_confirm_notify: true
+show_dismissed_confirm_notify: false
+show_prompted_confirm_notify: true
+
+# Work notifications
+show_work_started_notifications: false
+show_work_complete_notifications: true
+show_work_complete_record_notifications: true
+
+# Smart sticky defaults
+sticky_notifications:
+  work_complete: true
+  work_complete_record: true
+  prompted_confirmations: true
+  dismissed_confirmations: false
+
+# Other settings
 dangerously_dismiss_edit_file_prompts: false
 dangerously_dismiss_create_file_prompts: false
 dangerously_dismiss_bash_command_prompts: false
@@ -192,6 +259,61 @@ log_all_pattern_matches: false
 allow_buffer_snapshots: true
 allow_adding_project_tree: true
 allow_adding_project_changes: true
+
+
+EXAMPLE: Minimal Noise Configuration
+====================================
+
+# Only show prompted confirmations (sticky)
+show_notifications: true
+# All other settings use smart defaults
+
+
+EXAMPLE: Power User Configuration
+=================================
+
+# See everything
+show_notifications: true
+show_dismissed_confirm_notify: true
+show_work_started_notifications: true
+
+# Make everything sticky
+sticky_notifications:
+  global: true
+
+
+EXAMPLE: Work Tracking Only
+============================
+
+# Only work notifications, no confirmations
+show_notifications: true
+show_confirm_notify: false
+show_work_started_notifications: true
+show_work_complete_notifications: true
+
+
+EXAMPLE: Custom Confirmation Types
+==================================
+
+# Disable noisy confirmation types
+show_notifications: true
+confirm_notify:
+  edit_file: true
+  create_file: true
+  bash_command: true
+  read_file: false      # Too noisy
+  fetch_content: false  # Too noisy
+
+
+EXAMPLE: Non-Sticky Work Notifications
+======================================
+
+# Work notifications that auto-dismiss
+show_notifications: true
+show_work_complete_notifications: true
+sticky_notifications:
+  work_complete: false
+  work_complete_record: false
 
 
 EXAMPLE TOOLSET FILE (development.yaml)

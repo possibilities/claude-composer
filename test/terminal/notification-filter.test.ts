@@ -5,6 +5,7 @@ import {
   notifier,
 } from '../../src/utils/notifications'
 import { createMatchWithNotification } from '../utils/test-notification-utils'
+import { AppConfig } from '../../src/config/schemas'
 
 vi.mock('node-notifier', () => ({
   default: {
@@ -18,6 +19,20 @@ describe('Notification filtering by action type', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
+
+  const defaultAppConfig: AppConfig = {
+    show_notifications: true,
+    show_confirm_notify: true,
+    show_dismissed_confirm_notify: false,
+    show_prompted_confirm_notify: true,
+    confirm_notify: {
+      edit_file: true,
+      create_file: true,
+      bash_command: true,
+      read_file: true,
+      fetch_content: true,
+    },
+  }
 
   it('should only show notifications for patterns with notification property', () => {
     // Test matches with different action types
@@ -55,10 +70,25 @@ describe('Notification filtering by action type', () => {
       // No notification property
     }
 
-    // Test with notifications
-    showPatternNotification(inputMatchWithNotification)
-    showPatternNotification(logMatchWithNotification)
-    showPatternNotification(inputMatchWithoutNotification)
+    // Test with notifications (as prompted actions)
+    showPatternNotification(
+      inputMatchWithNotification,
+      defaultAppConfig,
+      'Prompted',
+      '❤',
+    )
+    showPatternNotification(
+      logMatchWithNotification,
+      defaultAppConfig,
+      'Prompted',
+      '❤',
+    )
+    showPatternNotification(
+      inputMatchWithoutNotification,
+      defaultAppConfig,
+      'Prompted',
+      '❤',
+    )
 
     // Should be called twice (only for matches with notification property)
     expect(mockNotify).toHaveBeenCalledTimes(2)
@@ -77,7 +107,7 @@ describe('Notification filtering by action type', () => {
       message: 'Log created: Edit File Log',
       wait: false,
       sound: false,
-      timeout: undefined,
+      timeout: 86400, // prompted confirmations are sticky by default
     })
   })
 
@@ -128,7 +158,9 @@ describe('Notification filtering by action type', () => {
     ]
 
     // Process all matches
-    matches.forEach(match => showPatternNotification(match))
+    matches.forEach(match =>
+      showPatternNotification(match, defaultAppConfig, 'Prompted', '❤'),
+    )
 
     // Should only be called for the two matches with notification property
     expect(mockNotify).toHaveBeenCalledTimes(2)
@@ -163,7 +195,7 @@ describe('Notification filtering by action type', () => {
 
     // The actual filtering by appConfig happens in index.ts
     // This test just verifies our notification function works
-    showPatternNotification(match)
+    showPatternNotification(match, defaultAppConfig, 'Prompted', '❤')
 
     expect(mockNotify).toHaveBeenCalledOnce()
     expect(mockNotify).toHaveBeenCalledWith({
@@ -171,7 +203,7 @@ describe('Notification filtering by action type', () => {
       message: 'Test notification: Test Pattern',
       wait: false,
       sound: false,
-      timeout: undefined,
+      timeout: 86400, // prompted confirmations are sticky by default
     })
   })
 })

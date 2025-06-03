@@ -5,6 +5,7 @@ import {
   notifier,
 } from '../../src/utils/notifications'
 import { createMatchWithNotification } from '../utils/test-notification-utils'
+import { AppConfig } from '../../src/config/schemas'
 
 vi.mock('node-notifier', () => ({
   default: {
@@ -19,6 +20,20 @@ describe('Notification functionality', () => {
     vi.clearAllMocks()
   })
 
+  const defaultAppConfig: AppConfig = {
+    show_notifications: true,
+    show_confirm_notify: true,
+    show_dismissed_confirm_notify: false,
+    show_prompted_confirm_notify: true,
+    confirm_notify: {
+      edit_file: true,
+      create_file: true,
+      bash_command: true,
+      read_file: true,
+      fetch_content: true,
+    },
+  }
+
   it('should call notifier.notify with correct parameters', () => {
     const match: MatchResult = {
       patternId: 'test-pattern',
@@ -31,14 +46,14 @@ describe('Notification functionality', () => {
       notification: 'Pattern triggered: {{title}}\nMatched: {{matchedText}}',
     }
 
-    showPatternNotification(match)
+    showPatternNotification(match, defaultAppConfig, 'Prompted', '❤')
 
     expect(mockNotify).toHaveBeenCalledOnce()
     expect(mockNotify).toHaveBeenCalledWith({
       title: '🤖 Claude Composer',
       message:
         'Pattern triggered: Test Notification\nMatched: Welcome to Claude Code!',
-      timeout: undefined,
+      timeout: 86400, // prompted confirmations are sticky by default
       wait: false,
       sound: false,
     })
@@ -50,20 +65,20 @@ describe('Notification functionality', () => {
       {
         patternId: 'long-pattern',
         patternTitle: 'Long Text Pattern',
-        response: 'test',
+        response: { type: 'log' },
         matchedText: longText,
-        bufferContent: 'buffer content',
-        strippedBufferContent: 'buffer content',
+        bufferContent: `Buffer with ${longText}`,
+        strippedBufferContent: `Buffer with ${longText}`,
       },
       'Pattern triggered: {{title}}\nMatched: {{matchedText}}',
     )
 
-    showPatternNotification(match)
+    showPatternNotification(match, defaultAppConfig, 'Prompted', '❤')
 
     expect(mockNotify).toHaveBeenCalledWith({
       title: '🤖 Claude Composer',
       message: `Pattern triggered: Long Text Pattern\nMatched: ${'A'.repeat(150)}`,
-      timeout: undefined,
+      timeout: 86400, // prompted confirmations are sticky by default
       wait: false,
       sound: false,
     })
@@ -72,10 +87,10 @@ describe('Notification functionality', () => {
   it('should handle different pattern action types', () => {
     const inputMatch = createMatchWithNotification(
       {
-        patternId: 'input-pattern',
-        patternTitle: 'Input Test Pattern',
-        response: ['response1', 'response2'],
-        matchedText: 'trigger text',
+        patternId: 'test-input',
+        patternTitle: 'Test Input',
+        response: '1',
+        matchedText: 'input trigger',
         bufferContent: 'buffer',
         strippedBufferContent: 'buffer',
       },
@@ -84,9 +99,9 @@ describe('Notification functionality', () => {
 
     const logMatch = createMatchWithNotification(
       {
-        patternId: 'log-pattern',
-        patternTitle: 'Log Test Pattern',
-        response: { type: 'log', path: '/tmp/log.json' },
+        patternId: 'test-log',
+        patternTitle: 'Test Log',
+        response: { type: 'log', path: '/tmp/test.log' },
         matchedText: 'log trigger',
         bufferContent: 'buffer',
         strippedBufferContent: 'buffer',
@@ -94,49 +109,47 @@ describe('Notification functionality', () => {
       'Pattern triggered: {{title}}\nAction: Log',
     )
 
-    showPatternNotification(inputMatch)
-    showPatternNotification(logMatch)
+    showPatternNotification(inputMatch, defaultAppConfig, 'Prompted', '❤')
+    showPatternNotification(logMatch, defaultAppConfig, 'Prompted', '❤')
 
     expect(mockNotify).toHaveBeenCalledTimes(2)
     expect(mockNotify).toHaveBeenNthCalledWith(1, {
       title: '🤖 Claude Composer',
-      message: 'Pattern triggered: Input Test Pattern\nAction: Input',
-      timeout: undefined,
+      message: 'Pattern triggered: Test Input\nAction: Input',
+      timeout: 86400, // prompted confirmations are sticky by default
       wait: false,
       sound: false,
     })
     expect(mockNotify).toHaveBeenNthCalledWith(2, {
       title: '🤖 Claude Composer',
-      message: 'Pattern triggered: Log Test Pattern\nAction: Log',
-      timeout: undefined,
+      message: 'Pattern triggered: Test Log\nAction: Log',
+      timeout: 86400, // prompted confirmations are sticky by default
       wait: false,
       sound: false,
     })
   })
 
   it('should strip ANSI color codes from matched text', () => {
-    const coloredText =
-      '\x1b[36mColored text\x1b[0m with \x1b[31mred\x1b[0m content'
+    const ansiText = '\x1b[31mRed Text\x1b[0m'
     const match = createMatchWithNotification(
       {
         patternId: 'ansi-pattern',
-        patternTitle: 'ANSI Color Pattern',
-        response: { type: 'log', path: '/tmp/test.log' },
-        matchedText: coloredText,
-        bufferContent: 'buffer',
-        strippedBufferContent: 'buffer',
+        patternTitle: 'ANSI Pattern',
+        response: '1',
+        matchedText: ansiText,
+        bufferContent: `Buffer with ${ansiText}`,
+        strippedBufferContent: 'Buffer with Red Text',
       },
       'Pattern triggered: {{title}}\nMatched: {{matchedText}}',
     )
 
-    showPatternNotification(match)
+    showPatternNotification(match, defaultAppConfig, 'Prompted', '❤')
 
     // The template utils should handle stripping ANSI codes
     expect(mockNotify).toHaveBeenCalledWith({
       title: '🤖 Claude Composer',
-      message:
-        'Pattern triggered: ANSI Color Pattern\nMatched: Colored text with red content',
-      timeout: undefined,
+      message: 'Pattern triggered: ANSI Pattern\nMatched: Red Text',
+      timeout: 86400, // prompted confirmations are sticky by default
       wait: false,
       sound: false,
     })
@@ -144,16 +157,16 @@ describe('Notification functionality', () => {
 
   it('should not show notification when notification property is not set', () => {
     const match: MatchResult = {
-      patternId: 'no-notification',
-      patternTitle: 'No Notification Pattern',
-      response: 'test',
-      matchedText: 'some text',
+      patternId: 'no-notify',
+      patternTitle: 'No Notification',
+      response: '1',
+      matchedText: 'test',
       bufferContent: 'buffer',
       strippedBufferContent: 'buffer',
       // No notification property
     }
 
-    showPatternNotification(match)
+    showPatternNotification(match, defaultAppConfig, undefined, undefined)
 
     expect(mockNotify).not.toHaveBeenCalled()
   })

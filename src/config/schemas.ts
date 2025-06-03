@@ -1,11 +1,56 @@
 import { z } from 'zod'
 
+// Schema for per-confirmation type settings
+export const confirmNotifySchema = z
+  .object({
+    edit_file: z.boolean().optional(),
+    create_file: z.boolean().optional(),
+    bash_command: z.boolean().optional(),
+    read_file: z.boolean().optional(),
+    fetch_content: z.boolean().optional(),
+  })
+  .strict()
+
+// Schema for sticky notifications settings (can be boolean or object)
+export const stickyNotificationsSchema = z.union([
+  z.boolean(),
+  z
+    .object({
+      global: z.boolean().optional(),
+      work_started: z.boolean().optional(),
+      work_complete: z.boolean().optional(),
+      work_complete_record: z.boolean().optional(),
+      prompted_confirmations: z.boolean().optional(),
+      dismissed_confirmations: z.boolean().optional(),
+      terminal_snapshot: z.boolean().optional(),
+    })
+    .strict(),
+])
+
 export const appConfigSchema = z
   .object({
+    // Master notification controls
     show_notifications: z.boolean().optional(),
-    sticky_notifications: z.boolean().optional(),
+
+    // Confirmation notification settings
+    show_confirm_notify: z.boolean().optional(),
+    show_dismissed_confirm_notify: z.boolean().optional(),
+    show_prompted_confirm_notify: z.boolean().optional(),
+    confirm_notify: confirmNotifySchema.optional(),
+
+    // Work notification settings
+    show_work_started_notifications: z.boolean().optional(),
+    show_work_complete_notifications: z.boolean().optional(),
+    show_work_complete_record_notifications: z.boolean().optional(),
+
+    // Stickiness settings
+    sticky_notifications: stickyNotificationsSchema.optional(),
+
+    // Legacy notification settings (kept for backward compatibility)
     notify_work_started: z.boolean().optional(),
     notify_work_complete: z.boolean().optional(),
+
+    // Dangerous dismissal settings
     dangerously_dismiss_edit_file_prompts: z.boolean().optional(),
     dangerously_dismiss_create_file_prompts: z.boolean().optional(),
     dangerously_dismiss_bash_command_prompts: z.boolean().optional(),
@@ -13,6 +58,8 @@ export const appConfigSchema = z
     dangerously_dismiss_fetch_content_prompts: z.boolean().optional(),
     dangerously_allow_in_dirty_directory: z.boolean().optional(),
     dangerously_allow_without_version_control: z.boolean().optional(),
+
+    // Other settings
     toolsets: z.array(z.string()).optional(),
     rulesets: z.array(z.string()).optional(),
     log_all_pattern_matches: z.boolean().optional(),
@@ -23,6 +70,10 @@ export const appConfigSchema = z
   .strict()
 
 export type AppConfig = z.infer<typeof appConfigSchema>
+export type ConfirmNotifyConfig = z.infer<typeof confirmNotifySchema>
+export type StickyNotificationsConfig = z.infer<
+  typeof stickyNotificationsSchema
+>
 
 export const toolsetConfigSchema = z
   .object({

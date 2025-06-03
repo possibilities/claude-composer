@@ -24,10 +24,40 @@ export interface PreflightResult {
 }
 
 export interface ParsedOptions {
+  // Master notification controls
   showNotifications?: boolean
   stickyNotifications?: boolean
+
+  // Legacy notification settings
   notifyWorkStarted?: boolean
   notifyWorkComplete?: boolean
+
+  // New confirmation notification settings
+  showConfirmNotify?: boolean
+  showDismissedConfirmNotify?: boolean
+  showPromptedConfirmNotify?: boolean
+
+  // New work notification settings
+  showWorkStartedNotifications?: boolean
+  showWorkCompleteNotifications?: boolean
+  showWorkCompleteRecordNotifications?: boolean
+
+  // Per-confirmation type settings
+  showEditFileConfirmNotify?: boolean
+  showCreateFileConfirmNotify?: boolean
+  showBashCommandConfirmNotify?: boolean
+  showReadFileConfirmNotify?: boolean
+  showFetchContentConfirmNotify?: boolean
+
+  // Per-type stickiness settings
+  stickyWorkStartedNotifications?: boolean
+  stickyWorkCompleteNotifications?: boolean
+  stickyWorkCompleteRecordNotifications?: boolean
+  stickyPromptedConfirmNotify?: boolean
+  stickyDismissedConfirmNotify?: boolean
+  stickyTerminalSnapshotNotifications?: boolean
+
+  // Dangerous dismissal settings
   dangerouslyDismissEditFilePrompts?: boolean
   dangerouslyDismissCreateFilePrompts?: boolean
   dangerouslyDismissBashCommandPrompts?: boolean
@@ -35,6 +65,8 @@ export interface ParsedOptions {
   dangerouslyDismissFetchContentPrompts?: boolean
   dangerouslyAllowInDirtyDirectory?: boolean
   dangerouslyAllowWithoutVersionControl?: boolean
+
+  // Other settings
   toolset?: string[]
   ruleset?: string[]
   ignoreGlobalConfig?: boolean

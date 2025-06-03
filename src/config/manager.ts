@@ -154,6 +154,36 @@ export class ConfigurationManager {
   }
 
   /**
+   * Migrate legacy configuration to new format
+   */
+  private migrateConfig(rawConfig: any): any {
+    const config = { ...rawConfig }
+
+    // Migrate legacy notify_work_* to show_work_*_notifications
+    if (
+      'notify_work_started' in config &&
+      !('show_work_started_notifications' in config)
+    ) {
+      config.show_work_started_notifications = config.notify_work_started
+    }
+    if (
+      'notify_work_complete' in config &&
+      !('show_work_complete_notifications' in config)
+    ) {
+      config.show_work_complete_notifications = config.notify_work_complete
+    }
+
+    // Migrate boolean sticky_notifications to object format
+    if (typeof config.sticky_notifications === 'boolean') {
+      config.sticky_notifications = {
+        global: config.sticky_notifications,
+      }
+    }
+
+    return config
+  }
+
+  /**
    * Load configuration from file
    */
   private async loadConfigFile(filePath: string): Promise<AppConfig | null> {
@@ -163,7 +193,10 @@ export class ConfigurationManager {
 
     try {
       const configContent = fs.readFileSync(filePath, 'utf8')
-      const rawConfig = yaml.parse(configContent)
+      let rawConfig = yaml.parse(configContent)
+
+      // Apply migrations for backward compatibility
+      rawConfig = this.migrateConfig(rawConfig)
 
       const result = appConfigSchema.safeParse(rawConfig)
       if (!result.success) {
@@ -377,7 +410,42 @@ export class ConfigurationManager {
    */
   private getDefaultAppConfig(): AppConfig {
     return {
+      // Master notification controls
       show_notifications: true,
+
+      // Confirmation notification settings
+      show_confirm_notify: true,
+      show_dismissed_confirm_notify: false,
+      show_prompted_confirm_notify: true,
+      confirm_notify: {
+        edit_file: true,
+        create_file: true,
+        bash_command: true,
+        read_file: true,
+        fetch_content: true,
+      },
+
+      // Work notification settings
+      show_work_started_notifications: false,
+      show_work_complete_notifications: true,
+      show_work_complete_record_notifications: true,
+
+      // Stickiness settings with smart defaults
+      sticky_notifications: {
+        global: false,
+        work_started: false,
+        work_complete: true,
+        work_complete_record: true,
+        prompted_confirmations: true,
+        dismissed_confirmations: false,
+        terminal_snapshot: false,
+      },
+
+      // Legacy notification settings (for backward compatibility)
+      notify_work_started: false,
+      notify_work_complete: true,
+
+      // Other defaults
       log_all_pattern_matches: false,
       dangerously_dismiss_edit_file_prompts: false,
       dangerously_dismiss_create_file_prompts: false,
@@ -387,7 +455,6 @@ export class ConfigurationManager {
       allow_adding_project_tree: false,
       allow_adding_project_changes: false,
       allow_buffer_snapshots: false,
-      sticky_notifications: false,
     }
   }
 }

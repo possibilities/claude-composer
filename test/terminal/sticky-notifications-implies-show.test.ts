@@ -34,7 +34,7 @@ describe('Sticky notifications implies show notifications', () => {
       },
     )
 
-    expect(result.appConfig.sticky_notifications).toBe(true)
+    expect(result.appConfig.sticky_notifications).toEqual({ global: true })
     expect(result.appConfig.show_notifications).toBe(true)
   })
 
@@ -55,7 +55,9 @@ describe('Sticky notifications implies show notifications', () => {
       },
     )
 
-    expect(result.appConfig.sticky_notifications).toBe(false)
+    // --no-sticky-notifications doesn't set sticky_notifications to false anymore
+    // It just doesn't set the global override
+    expect(result.appConfig.sticky_notifications).toBeUndefined()
     // show_notifications should remain at its default (true)
     expect(result.appConfig.show_notifications).toBe(true)
   })
@@ -79,7 +81,7 @@ show_notifications: false
       },
     )
 
-    expect(result.appConfig.sticky_notifications).toBe(true)
+    expect(result.appConfig.sticky_notifications).toEqual({ global: true })
     expect(result.appConfig.show_notifications).toBe(true)
   })
 
@@ -100,7 +102,7 @@ show_notifications: false
       },
     )
 
-    expect(result.appConfig.sticky_notifications).toBe(true)
+    expect(result.appConfig.sticky_notifications).toEqual({ global: true })
     // Explicit --no-show-notifications should take precedence
     expect(result.appConfig.show_notifications).toBe(false)
   })
@@ -121,7 +123,7 @@ show_notifications: false
         configPath,
       },
     )
-    expect(result1.appConfig.sticky_notifications).toBe(true)
+    expect(result1.appConfig.sticky_notifications).toEqual({ global: true })
     expect(result1.appConfig.show_notifications).toBe(true)
 
     // Test 2: --no-show-notifications after --sticky-notifications should disable
@@ -138,7 +140,7 @@ show_notifications: false
         configPath,
       },
     )
-    expect(result2.appConfig.sticky_notifications).toBe(true)
+    expect(result2.appConfig.sticky_notifications).toEqual({ global: true })
     expect(result2.appConfig.show_notifications).toBe(false)
 
     // Test 3: When both are present, last one wins for show_notifications
@@ -155,7 +157,7 @@ show_notifications: false
         configPath,
       },
     )
-    expect(result3.appConfig.sticky_notifications).toBe(true)
+    expect(result3.appConfig.sticky_notifications).toEqual({ global: true })
     // Since we process sticky first (which enables) then showNotifications (which was set to false)
     expect(result3.appConfig.show_notifications).toBe(false)
   })
@@ -173,9 +175,8 @@ sticky_notifications: true
       },
     )
 
-    // Config file sticky_notifications doesn't auto-enable show_notifications
-    // Only the CLI flag does
-    expect(result.appConfig.sticky_notifications).toBe(true)
+    // Config file sticky_notifications gets migrated to object format
+    expect(result.appConfig.sticky_notifications).toEqual({ global: true })
     expect(result.appConfig.show_notifications).toBe(true) // default is true
   })
 })
