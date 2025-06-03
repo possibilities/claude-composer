@@ -39,6 +39,5 @@ export function getTestEnv(configDir?: string): Record<string, string> {
   const dir = configDir || createTempConfigDir()
   return {
     CLAUDE_COMPOSER_CONFIG_DIR: dir,
-    NODE_ENV: 'test',
   }
 }

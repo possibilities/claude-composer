@@ -4,6 +4,12 @@ import * as os from 'os'
 import * as path from 'path'
 import { runPreflight } from '../../src/core/preflight'
 import { mergeRulesets } from '../../src/config/rulesets'
+import { Readable, Writable } from 'stream'
+
+// Mock the askYesNo function
+vi.mock('../../src/cli/prompts', () => ({
+  askYesNo: vi.fn().mockResolvedValue(true),
+}))
 
 describe('Ruleset CLI Integration', () => {
   const originalEnv = process.env

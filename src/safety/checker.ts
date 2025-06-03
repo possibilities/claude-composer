@@ -114,22 +114,6 @@ export async function handleAutomaticAcceptanceWarning(
     return true
   }
 
-  if (process.env.NODE_ENV?.includes('test')) {
-    console.log(
-      '\x1b[33m╔════════════════════════════════════════════════════════════════╗\x1b[0m',
-    )
-    console.log(
-      '\x1b[33m║             ⚠️  AUTOMATIC ACCEPTANCE ENABLED ⚠️                ║\x1b[0m',
-    )
-    console.log(
-      '\x1b[33m║ (Skipping interactive prompt in test mode)                     ║\x1b[0m',
-    )
-    console.log(
-      '\x1b[33m╚════════════════════════════════════════════════════════════════╝\x1b[0m',
-    )
-    return true
-  }
-
   console.log(
     '\x1b[33m╔═════════════════════════════════════════════════════════════════╗\x1b[0m',
   )
