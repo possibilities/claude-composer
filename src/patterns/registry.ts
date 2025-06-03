@@ -22,21 +22,61 @@ function extractCommandAndReasonFromPromptBody(
     // The body format is typically:
     // │                                                      │  (empty line)
     // │   command here                                       │
+    // │   (potentially more command lines)                   │
     // │   reason here                                        │
     // │                                                      │  (empty line)
 
-    // Find the actual command and reason lines (non-empty after trimming)
-    const contentLines = lines.filter(line => {
-      // Remove any remaining box characters and trim
-      const cleaned = line.replace(/[│║]/g, '').trim()
-      return cleaned.length > 0
-    })
+    // Find the actual content lines (non-empty after removing box chars)
+    const contentLines = lines
+      .map(line => {
+        // Remove any remaining box characters and trim
+        return line.replace(/[│║]/g, '').trim()
+      })
+      .filter(line => line.length > 0)
 
     if (contentLines.length >= 2) {
-      // First line is command, second is reason
-      const command = contentLines[0]
-      const reason = contentLines[1]
-      return { ...data, command, reason }
+      // Find where the reason starts (usually after a line break in the original format)
+      // The reason typically starts with a lowercase letter or specific phrases
+      let commandLines: string[] = []
+      let reasonIndex = -1
+
+      for (let i = 0; i < contentLines.length; i++) {
+        const line = contentLines[i]
+        // Common reason starters
+        if (
+          line.match(
+            /^(to |for |because |this will |this is |checking |running |executing |creating |updating |installing |removing |deleting |building |testing |fixing |adding |modifying )/i,
+          )
+        ) {
+          reasonIndex = i
+          break
+        }
+      }
+
+      if (reasonIndex > 0) {
+        // Everything before the reason is the command
+        commandLines = contentLines.slice(0, reasonIndex)
+        const reasonLines = contentLines.slice(reasonIndex)
+
+        // Join command lines with spaces, clean up extra spaces
+        const command = commandLines.join(' ').replace(/\s+/g, ' ').trim()
+        // Join reason lines similarly
+        const reason = reasonLines.join(' ').replace(/\s+/g, ' ').trim()
+
+        return { ...data, command, reason }
+      } else {
+        // If we can't identify the reason, treat all but the last line as command
+        if (contentLines.length > 1) {
+          commandLines = contentLines.slice(0, -1)
+          const command = commandLines.join(' ').replace(/\s+/g, ' ').trim()
+          const reason = contentLines[contentLines.length - 1]
+          return { ...data, command, reason }
+        } else {
+          // Single line - it's all command
+          const command = contentLines[0]
+          return { ...data, command, reason: '' }
+        }
+      }
     } else if (contentLines.length === 1) {
       // Only command, no reason
       const command = contentLines[0]
