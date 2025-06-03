@@ -124,6 +124,7 @@ describe('ActivityMonitor', () => {
           ),
         }),
         expect.any(Object),
+        expect.stringMatching(/^work_complete$|^work_complete_record$/),
       )
     })
 
@@ -366,6 +367,7 @@ Line 15
           ),
         },
         mockConfig,
+        'work_complete',
       )
     })
 
@@ -417,6 +419,7 @@ Line 15
           ),
         },
         mockConfig,
+        'work_complete',
       )
     })
   })
@@ -544,6 +547,7 @@ Line 15
           ),
         },
         expect.any(Object),
+        'work_complete',
       )
     })
 

@@ -79,10 +79,13 @@ describe('Sticky notifications', () => {
     }
 
     const stickyConfig: AppConfig = {
+      show_notifications: true,
+      show_confirm_notify: true,
+      show_prompted_confirm_notify: true,
       sticky_notifications: true,
     }
 
-    showPatternNotification(match, stickyConfig)
+    showPatternNotification(match, stickyConfig, 'Prompted', '✋')
 
     expect(mockNotify).toHaveBeenCalledWith({
       title: '🤖 Claude Composer',

@@ -1,4 +1,4 @@
-import { showNotification } from '../utils/notifications'
+import { showNotification, NotificationType } from '../utils/notifications'
 import type { AppConfig } from '../config/schemas'
 import { CONFIG_PATHS } from '../config/paths'
 import * as fs from 'fs'
@@ -63,6 +63,22 @@ export class ActivityMonitor {
         // Start timing the activity
         if (!this.activityStartTime) {
           this.activityStartTime = currentTime
+
+          // Send work started notification if enabled
+          const showWorkStarted =
+            this.appConfig.show_work_started_notifications ??
+            this.appConfig.notify_work_started ??
+            false
+          if (showWorkStarted) {
+            const projectName = process.cwd().split('/').pop() || 'Unknown'
+            showNotification(
+              {
+                message: `Claude Composer is starting work 🚀\nProject: ${projectName}`,
+              },
+              this.appConfig,
+              'work_started',
+            )
+          }
         }
       }
 
@@ -96,31 +112,48 @@ export class ActivityMonitor {
   private triggerNotification(): void {
     const projectName = process.cwd().split('/').pop() || 'Unknown'
 
+    // Check if work complete notifications are enabled (new or legacy setting)
+    const showWorkComplete =
+      this.appConfig.show_work_complete_notifications ??
+      this.appConfig.notify_work_complete ??
+      true
+
+    if (!showWorkComplete) {
+      return
+    }
+
     // Calculate activity duration
     if (this.activityStartTime) {
       const duration = Date.now() - this.activityStartTime
       const recordBroken = this.checkAndUpdateRecord(duration, projectName)
 
-      if (recordBroken && this.appConfig.notify_work_complete !== false) {
-        this.showRecordBrokenNotification(duration, projectName)
-      } else if (this.appConfig.notify_work_complete !== false) {
+      if (recordBroken) {
+        // Check if record-breaking notifications are enabled
+        const showRecordNotifications =
+          this.appConfig.show_work_complete_record_notifications ?? true
+        if (showRecordNotifications) {
+          this.showRecordBrokenNotification(duration, projectName)
+        }
+      } else {
         const formattedDuration = this.formatDuration(duration)
         showNotification(
           {
             message: `Claude Composer is done working 🏁\nProject: ${projectName}\nDuration: ${formattedDuration}`,
           },
           this.appConfig,
+          'work_complete',
         )
       }
 
       // Reset activity start time
       this.activityStartTime = null
-    } else if (this.appConfig.notify_work_complete !== false) {
+    } else {
       showNotification(
         {
           message: `Claude Composer is done working 🏁\nProject: ${projectName}`,
         },
         this.appConfig,
+        'work_complete',
       )
     }
   }
@@ -240,6 +273,7 @@ export class ActivityMonitor {
         sound: true,
       },
       this.appConfig,
+      'work_complete_record',
     )
   }
 }

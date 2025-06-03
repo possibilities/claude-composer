@@ -32,6 +32,140 @@ export function createClaudeComposerCommand(): Command {
       'Show notification when Claude Composer is done working (default)',
     )
     .option('--no-notify-work-complete', 'Disable work complete notifications')
+    // New notification settings
+    .option(
+      '--show-confirm-notify',
+      'Show notifications for file operations (default)',
+    )
+    .option('--no-show-confirm-notify', 'Hide all file operation notifications')
+    .option(
+      '--show-dismissed-confirm-notify',
+      'Show notifications for auto-dismissed actions',
+    )
+    .option(
+      '--no-show-dismissed-confirm-notify',
+      'Hide auto-dismissed notifications (default)',
+    )
+    .option(
+      '--show-prompted-confirm-notify',
+      'Show notifications when prompted (default)',
+    )
+    .option('--no-show-prompted-confirm-notify', 'Hide prompted notifications')
+    // New work notification settings
+    .option(
+      '--show-work-started-notifications',
+      'Show work started notification',
+    )
+    .option(
+      '--no-show-work-started-notifications',
+      'Hide work started notification (default)',
+    )
+    .option(
+      '--show-work-complete-notifications',
+      'Show work complete notification (default)',
+    )
+    .option(
+      '--no-show-work-complete-notifications',
+      'Hide work complete notification',
+    )
+    .option(
+      '--show-work-complete-record-notifications',
+      'Show record-breaking notification (default)',
+    )
+    .option(
+      '--no-show-work-complete-record-notifications',
+      'Hide record-breaking notification',
+    )
+    // Per-confirmation type flags
+    .option(
+      '--show-edit-file-confirm-notify',
+      'Show notifications for file edits',
+    )
+    .option(
+      '--no-show-edit-file-confirm-notify',
+      'Hide notifications for file edits',
+    )
+    .option(
+      '--show-create-file-confirm-notify',
+      'Show notifications for file creates',
+    )
+    .option(
+      '--no-show-create-file-confirm-notify',
+      'Hide notifications for file creates',
+    )
+    .option(
+      '--show-bash-command-confirm-notify',
+      'Show notifications for bash commands',
+    )
+    .option(
+      '--no-show-bash-command-confirm-notify',
+      'Hide notifications for bash commands',
+    )
+    .option(
+      '--show-read-file-confirm-notify',
+      'Show notifications for file reads',
+    )
+    .option(
+      '--no-show-read-file-confirm-notify',
+      'Hide notifications for file reads',
+    )
+    .option(
+      '--show-fetch-content-confirm-notify',
+      'Show notifications for content fetches',
+    )
+    .option(
+      '--no-show-fetch-content-confirm-notify',
+      'Hide notifications for content fetches',
+    )
+    // Per-type stickiness flags
+    .option(
+      '--sticky-work-started-notifications',
+      'Make work started notifications sticky',
+    )
+    .option(
+      '--no-sticky-work-started-notifications',
+      'Make work started notifications auto-dismiss',
+    )
+    .option(
+      '--sticky-work-complete-notifications',
+      'Make work complete notifications sticky',
+    )
+    .option(
+      '--no-sticky-work-complete-notifications',
+      'Make work complete notifications auto-dismiss',
+    )
+    .option(
+      '--sticky-work-complete-record-notifications',
+      'Make record-breaking notifications sticky',
+    )
+    .option(
+      '--no-sticky-work-complete-record-notifications',
+      'Make record-breaking notifications auto-dismiss',
+    )
+    .option(
+      '--sticky-prompted-confirm-notify',
+      'Make prompted confirmation notifications sticky',
+    )
+    .option(
+      '--no-sticky-prompted-confirm-notify',
+      'Make prompted confirmation notifications auto-dismiss',
+    )
+    .option(
+      '--sticky-dismissed-confirm-notify',
+      'Make dismissed confirmation notifications sticky',
+    )
+    .option(
+      '--no-sticky-dismissed-confirm-notify',
+      'Make dismissed confirmation notifications auto-dismiss',
+    )
+    .option(
+      '--sticky-terminal-snapshot-notifications',
+      'Make terminal snapshot notifications sticky',
+    )
+    .option(
+      '--no-sticky-terminal-snapshot-notifications',
+      'Make terminal snapshot notifications auto-dismiss',
+    )
     .option(
       '--dangerously-dismiss-edit-file-prompts',
       'Automatically dismiss edit file prompts',
@@ -205,6 +339,44 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--no-notify-work-started')
   knownOptions.add('--notify-work-complete')
   knownOptions.add('--no-notify-work-complete')
+  // New notification settings
+  knownOptions.add('--show-confirm-notify')
+  knownOptions.add('--no-show-confirm-notify')
+  knownOptions.add('--show-dismissed-confirm-notify')
+  knownOptions.add('--no-show-dismissed-confirm-notify')
+  knownOptions.add('--show-prompted-confirm-notify')
+  knownOptions.add('--no-show-prompted-confirm-notify')
+  // New work notification settings
+  knownOptions.add('--show-work-started-notifications')
+  knownOptions.add('--no-show-work-started-notifications')
+  knownOptions.add('--show-work-complete-notifications')
+  knownOptions.add('--no-show-work-complete-notifications')
+  knownOptions.add('--show-work-complete-record-notifications')
+  knownOptions.add('--no-show-work-complete-record-notifications')
+  // Per-confirmation type flags
+  knownOptions.add('--show-edit-file-confirm-notify')
+  knownOptions.add('--no-show-edit-file-confirm-notify')
+  knownOptions.add('--show-create-file-confirm-notify')
+  knownOptions.add('--no-show-create-file-confirm-notify')
+  knownOptions.add('--show-bash-command-confirm-notify')
+  knownOptions.add('--no-show-bash-command-confirm-notify')
+  knownOptions.add('--show-read-file-confirm-notify')
+  knownOptions.add('--no-show-read-file-confirm-notify')
+  knownOptions.add('--show-fetch-content-confirm-notify')
+  knownOptions.add('--no-show-fetch-content-confirm-notify')
+  // Per-type stickiness flags
+  knownOptions.add('--sticky-work-started-notifications')
+  knownOptions.add('--no-sticky-work-started-notifications')
+  knownOptions.add('--sticky-work-complete-notifications')
+  knownOptions.add('--no-sticky-work-complete-notifications')
+  knownOptions.add('--sticky-work-complete-record-notifications')
+  knownOptions.add('--no-sticky-work-complete-record-notifications')
+  knownOptions.add('--sticky-prompted-confirm-notify')
+  knownOptions.add('--no-sticky-prompted-confirm-notify')
+  knownOptions.add('--sticky-dismissed-confirm-notify')
+  knownOptions.add('--no-sticky-dismissed-confirm-notify')
+  knownOptions.add('--sticky-terminal-snapshot-notifications')
+  knownOptions.add('--no-sticky-terminal-snapshot-notifications')
   knownOptions.add('--dangerously-dismiss-edit-file-prompts')
   knownOptions.add('--no-dangerously-dismiss-edit-file-prompts')
   knownOptions.add('--dangerously-dismiss-create-file-prompts')

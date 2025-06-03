@@ -128,9 +128,15 @@ export async function runPreflight(
   }
 
   if (parsedOptions.stickyNotifications !== undefined) {
-    appConfig.sticky_notifications = parsedOptions.stickyNotifications
+    // Handle --sticky-notifications flag (global override)
     if (parsedOptions.stickyNotifications === true) {
+      appConfig.sticky_notifications = { global: true }
       appConfig.show_notifications = true
+    } else if (parsedOptions.stickyNotifications === false) {
+      // --no-sticky-notifications means use per-type settings
+      if (typeof appConfig.sticky_notifications === 'boolean') {
+        appConfig.sticky_notifications = { global: false }
+      }
     }
   }
 
@@ -183,6 +189,108 @@ export async function runPreflight(
   }
   if (parsedOptions.notifyWorkComplete !== undefined) {
     appConfig.notify_work_complete = parsedOptions.notifyWorkComplete
+  }
+
+  // New confirmation notification settings
+  if (parsedOptions.showConfirmNotify !== undefined) {
+    appConfig.show_confirm_notify = parsedOptions.showConfirmNotify
+  }
+  if (parsedOptions.showDismissedConfirmNotify !== undefined) {
+    appConfig.show_dismissed_confirm_notify =
+      parsedOptions.showDismissedConfirmNotify
+  }
+  if (parsedOptions.showPromptedConfirmNotify !== undefined) {
+    appConfig.show_prompted_confirm_notify =
+      parsedOptions.showPromptedConfirmNotify
+  }
+
+  // New work notification settings
+  if (parsedOptions.showWorkStartedNotifications !== undefined) {
+    appConfig.show_work_started_notifications =
+      parsedOptions.showWorkStartedNotifications
+  }
+  if (parsedOptions.showWorkCompleteNotifications !== undefined) {
+    appConfig.show_work_complete_notifications =
+      parsedOptions.showWorkCompleteNotifications
+  }
+  if (parsedOptions.showWorkCompleteRecordNotifications !== undefined) {
+    appConfig.show_work_complete_record_notifications =
+      parsedOptions.showWorkCompleteRecordNotifications
+  }
+
+  // Per-confirmation type settings
+  if (
+    parsedOptions.showEditFileConfirmNotify !== undefined ||
+    parsedOptions.showCreateFileConfirmNotify !== undefined ||
+    parsedOptions.showBashCommandConfirmNotify !== undefined ||
+    parsedOptions.showReadFileConfirmNotify !== undefined ||
+    parsedOptions.showFetchContentConfirmNotify !== undefined
+  ) {
+    if (!appConfig.confirm_notify) {
+      appConfig.confirm_notify = {}
+    }
+    if (parsedOptions.showEditFileConfirmNotify !== undefined) {
+      appConfig.confirm_notify.edit_file =
+        parsedOptions.showEditFileConfirmNotify
+    }
+    if (parsedOptions.showCreateFileConfirmNotify !== undefined) {
+      appConfig.confirm_notify.create_file =
+        parsedOptions.showCreateFileConfirmNotify
+    }
+    if (parsedOptions.showBashCommandConfirmNotify !== undefined) {
+      appConfig.confirm_notify.bash_command =
+        parsedOptions.showBashCommandConfirmNotify
+    }
+    if (parsedOptions.showReadFileConfirmNotify !== undefined) {
+      appConfig.confirm_notify.read_file =
+        parsedOptions.showReadFileConfirmNotify
+    }
+    if (parsedOptions.showFetchContentConfirmNotify !== undefined) {
+      appConfig.confirm_notify.fetch_content =
+        parsedOptions.showFetchContentConfirmNotify
+    }
+  }
+
+  // Per-type stickiness settings
+  if (
+    parsedOptions.stickyWorkStartedNotifications !== undefined ||
+    parsedOptions.stickyWorkCompleteNotifications !== undefined ||
+    parsedOptions.stickyWorkCompleteRecordNotifications !== undefined ||
+    parsedOptions.stickyPromptedConfirmNotify !== undefined ||
+    parsedOptions.stickyDismissedConfirmNotify !== undefined ||
+    parsedOptions.stickyTerminalSnapshotNotifications !== undefined
+  ) {
+    // Initialize sticky_notifications as object if it's boolean or undefined
+    if (
+      typeof appConfig.sticky_notifications !== 'object' ||
+      !appConfig.sticky_notifications
+    ) {
+      appConfig.sticky_notifications = {}
+    }
+    if (parsedOptions.stickyWorkStartedNotifications !== undefined) {
+      appConfig.sticky_notifications.work_started =
+        parsedOptions.stickyWorkStartedNotifications
+    }
+    if (parsedOptions.stickyWorkCompleteNotifications !== undefined) {
+      appConfig.sticky_notifications.work_complete =
+        parsedOptions.stickyWorkCompleteNotifications
+    }
+    if (parsedOptions.stickyWorkCompleteRecordNotifications !== undefined) {
+      appConfig.sticky_notifications.work_complete_record =
+        parsedOptions.stickyWorkCompleteRecordNotifications
+    }
+    if (parsedOptions.stickyPromptedConfirmNotify !== undefined) {
+      appConfig.sticky_notifications.prompted_confirmations =
+        parsedOptions.stickyPromptedConfirmNotify
+    }
+    if (parsedOptions.stickyDismissedConfirmNotify !== undefined) {
+      appConfig.sticky_notifications.dismissed_confirmations =
+        parsedOptions.stickyDismissedConfirmNotify
+    }
+    if (parsedOptions.stickyTerminalSnapshotNotifications !== undefined) {
+      appConfig.sticky_notifications.terminal_snapshot =
+        parsedOptions.stickyTerminalSnapshotNotifications
+    }
   }
 
   let toolsetArgs: string[] = []
