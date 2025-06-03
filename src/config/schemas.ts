@@ -47,6 +47,21 @@ export const dismissPromptConfigSchema = z.union([
 
 export type DismissPromptConfig = z.infer<typeof dismissPromptConfigSchema>
 
+export const dismissFetchContentConfigSchema = z.union([
+  z.boolean(),
+  z
+    .object({
+      domains: z
+        .array(z.string())
+        .min(1, 'Domains array must have at least one domain'),
+    })
+    .strict(),
+])
+
+export type DismissFetchContentConfig = z.infer<
+  typeof dismissFetchContentConfigSchema
+>
+
 export const rulesetConfigSchema = z
   .object({
     dismiss_project_edit_file_prompts: dismissPromptConfigSchema.optional(),
@@ -57,7 +72,7 @@ export const rulesetConfigSchema = z
     dismiss_global_create_file_prompts: dismissPromptConfigSchema.optional(),
     dismiss_global_bash_command_prompts: dismissPromptConfigSchema.optional(),
     dismiss_global_read_files_prompts: dismissPromptConfigSchema.optional(),
-    dismiss_fetch_content_prompts: z.boolean().optional(),
+    dismiss_fetch_content_prompts: dismissFetchContentConfigSchema.optional(),
   })
   .strict()
 

@@ -140,6 +140,26 @@ process.on('uncaughtException', error => {
   process.exit(1)
 })
 
+function matchDomain(domain: string, patterns: string[]): boolean {
+  for (const pattern of patterns) {
+    if (pattern === domain) {
+      return true
+    }
+
+    if (pattern.includes('*')) {
+      const regexPattern = pattern
+        .split('*')
+        .map(part => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+        .join('.*')
+      const regex = new RegExp(`^${regexPattern}$`)
+      if (regex.test(domain)) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
 function checkDismissConfig(
   config: boolean | { paths: string[] } | undefined,
   filePath: string,
@@ -231,7 +251,15 @@ function shouldDismissPrompt(match: MatchResult): boolean {
     case 'fetch-content-prompt':
       if (!appConfig.dangerously_dismiss_fetch_content_prompts) return false
       if (!mergedRuleset) return false
-      return mergedRuleset.dismiss_fetch_content_prompts === true
+      const fetchConfig = mergedRuleset.dismiss_fetch_content_prompts
+      if (fetchConfig === true) return true
+      if (fetchConfig === false || !fetchConfig) return false
+      if (typeof fetchConfig === 'object' && 'domains' in fetchConfig) {
+        const domain = match.data?.domain
+        if (!domain) return false
+        return matchDomain(domain, fetchConfig.domains)
+      }
+      return false
     default:
       return false
   }
