@@ -19,7 +19,7 @@ describe('Subcommand Detection', () => {
           'foo',
         ],
       })
-      expect(result.stdout).toContain('※ Bypassing Claude Composer')
+      expect(result.stdout).toContain('※ Accepting Claude Composer')
       expect(result.stdout).toContain('※ Running Claude Code subcommand: foo')
     })
 
@@ -31,7 +31,7 @@ describe('Subcommand Detection', () => {
           'this is a prompt',
         ],
       })
-      expect(result.stdout).not.toContain('※ Bypassing Claude Composer')
+      expect(result.stdout).not.toContain('※ Accepting Claude Composer')
     })
 
     it('should not detect when first arg is an option', async () => {
@@ -42,7 +42,7 @@ describe('Subcommand Detection', () => {
           '--some-option',
         ],
       })
-      expect(result.stdout).not.toContain('※ Bypassing Claude Composer')
+      expect(result.stdout).not.toContain('※ Accepting Claude Composer')
     })
 
     it('should detect subcommand after options', async () => {
@@ -54,7 +54,7 @@ describe('Subcommand Detection', () => {
           'deploy',
         ],
       })
-      expect(result.stdout).toContain('※ Bypassing Claude Composer')
+      expect(result.stdout).toContain('※ Accepting Claude Composer')
       expect(result.stdout).toContain(
         '※ Running Claude Code subcommand: deploy',
       )
@@ -68,7 +68,7 @@ describe('Subcommand Detection', () => {
           'run-tests',
         ],
       })
-      expect(result.stdout).toContain('※ Bypassing Claude Composer')
+      expect(result.stdout).toContain('※ Accepting Claude Composer')
       expect(result.stdout).toContain(
         '※ Running Claude Code subcommand: run-tests',
       )
@@ -84,7 +84,7 @@ describe('Subcommand Detection', () => {
           'some additional text',
         ],
       })
-      expect(result.stdout).toContain('※ Bypassing Claude Composer')
+      expect(result.stdout).toContain('※ Accepting Claude Composer')
       expect(result.stdout).toContain('※ Running Claude Code subcommand: build')
     })
   })

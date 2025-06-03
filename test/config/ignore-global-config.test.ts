@@ -22,9 +22,9 @@ describe('--ignore-global-config flag', () => {
     const configPath = path.join(tempConfigDir, 'config.yaml')
     const testConfig = `
 show_notifications: true
-dangerously_dismiss_edit_file_prompts: true
-dangerously_dismiss_create_file_prompts: true
-dangerously_dismiss_bash_command_prompts: true
+dangerously_accept_edit_file_prompts: true
+dangerously_accept_create_file_prompts: true
+dangerously_accept_bash_command_prompts: true
 `
     fs.writeFileSync(configPath, testConfig)
   })
@@ -59,13 +59,13 @@ dangerously_dismiss_bash_command_prompts: true
 
     // Should NOT see the dangerous flag warnings (which would appear if config was loaded)
     expect(result.stdout).not.toContain(
-      'WARNING: --dangerously-dismiss-edit-file-prompts is enabled',
+      'WARNING: --dangerously-accept-edit-file-prompts is enabled',
     )
     expect(result.stdout).not.toContain(
-      'WARNING: --dangerously-dismiss-create-file-prompts is enabled',
+      'WARNING: --dangerously-accept-create-file-prompts is enabled',
     )
     expect(result.stdout).not.toContain(
-      'WARNING: --dangerously-dismiss-bash-command-prompts is enabled',
+      'WARNING: --dangerously-accept-bash-command-prompts is enabled',
     )
   })
 

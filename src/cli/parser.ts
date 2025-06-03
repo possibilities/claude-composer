@@ -39,12 +39,12 @@ export function createClaudeComposerCommand(): Command {
     )
     .option('--no-show-confirm-notify', 'Hide all file operation notifications')
     .option(
-      '--show-dismissed-confirm-notify',
-      'Show notifications for auto-dismissed actions',
+      '--show-accepted-confirm-notify',
+      'Show notifications for auto-accepted actions',
     )
     .option(
-      '--no-show-dismissed-confirm-notify',
-      'Hide auto-dismissed notifications (default)',
+      '--no-show-accepted-confirm-notify',
+      'Hide auto-accepted notifications (default)',
     )
     .option(
       '--show-prompted-confirm-notify',
@@ -160,12 +160,12 @@ export function createClaudeComposerCommand(): Command {
       'Make prompted confirmation notifications auto-dismiss',
     )
     .option(
-      '--sticky-dismissed-confirm-notify',
-      'Make dismissed confirmation notifications sticky',
+      '--sticky-accepted-confirm-notify',
+      'Make accepted confirmation notifications sticky',
     )
     .option(
-      '--no-sticky-dismissed-confirm-notify',
-      'Make dismissed confirmation notifications auto-dismiss',
+      '--no-sticky-accepted-confirm-notify',
+      'Make accepted confirmation notifications auto-dismiss',
     )
     .option(
       '--sticky-terminal-snapshot-notifications',
@@ -176,44 +176,44 @@ export function createClaudeComposerCommand(): Command {
       'Make terminal snapshot notifications auto-dismiss',
     )
     .option(
-      '--dangerously-dismiss-edit-file-prompts',
-      'Automatically dismiss edit file prompts',
+      '--dangerously-accept-edit-file-prompts',
+      'Automatically accept edit file prompts',
     )
     .option(
-      '--no-dangerously-dismiss-edit-file-prompts',
-      'Do not automatically dismiss edit file prompts',
+      '--no-dangerously-accept-edit-file-prompts',
+      'Do not automatically accept edit file prompts',
     )
     .option(
-      '--dangerously-dismiss-create-file-prompts',
-      'Automatically dismiss create file prompts',
+      '--dangerously-accept-create-file-prompts',
+      'Automatically accept create file prompts',
     )
     .option(
-      '--no-dangerously-dismiss-create-file-prompts',
-      'Do not automatically dismiss create file prompts',
+      '--no-dangerously-accept-create-file-prompts',
+      'Do not automatically accept create file prompts',
     )
     .option(
-      '--dangerously-dismiss-bash-command-prompts',
-      'Automatically dismiss bash command prompts',
+      '--dangerously-accept-bash-command-prompts',
+      'Automatically accept bash command prompts',
     )
     .option(
-      '--no-dangerously-dismiss-bash-command-prompts',
-      'Do not automatically dismiss bash command prompts',
+      '--no-dangerously-accept-bash-command-prompts',
+      'Do not automatically accept bash command prompts',
     )
     .option(
-      '--dangerously-dismiss-read-files-prompts',
-      'Automatically dismiss read files prompts',
+      '--dangerously-accept-read-files-prompts',
+      'Automatically accept read files prompts',
     )
     .option(
-      '--no-dangerously-dismiss-read-files-prompts',
-      'Do not automatically dismiss read files prompts',
+      '--no-dangerously-accept-read-files-prompts',
+      'Do not automatically accept read files prompts',
     )
     .option(
-      '--dangerously-dismiss-fetch-content-prompts',
-      'Automatically dismiss fetch content prompts',
+      '--dangerously-accept-fetch-content-prompts',
+      'Automatically accept fetch content prompts',
     )
     .option(
-      '--no-dangerously-dismiss-fetch-content-prompts',
-      'Do not automatically dismiss fetch content prompts',
+      '--no-dangerously-accept-fetch-content-prompts',
+      'Do not automatically accept fetch content prompts',
     )
     .option(
       '--dangerously-allow-in-dirty-directory',
@@ -351,8 +351,8 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   // New notification settings
   knownOptions.add('--show-confirm-notify')
   knownOptions.add('--no-show-confirm-notify')
-  knownOptions.add('--show-dismissed-confirm-notify')
-  knownOptions.add('--no-show-dismissed-confirm-notify')
+  knownOptions.add('--show-accepted-confirm-notify')
+  knownOptions.add('--no-show-accepted-confirm-notify')
   knownOptions.add('--show-prompted-confirm-notify')
   knownOptions.add('--no-show-prompted-confirm-notify')
   // New work notification settings
@@ -385,20 +385,20 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--no-sticky-work-complete-record-notifications')
   knownOptions.add('--sticky-prompted-confirm-notify')
   knownOptions.add('--no-sticky-prompted-confirm-notify')
-  knownOptions.add('--sticky-dismissed-confirm-notify')
-  knownOptions.add('--no-sticky-dismissed-confirm-notify')
+  knownOptions.add('--sticky-accepted-confirm-notify')
+  knownOptions.add('--no-sticky-accepted-confirm-notify')
   knownOptions.add('--sticky-terminal-snapshot-notifications')
   knownOptions.add('--no-sticky-terminal-snapshot-notifications')
-  knownOptions.add('--dangerously-dismiss-edit-file-prompts')
-  knownOptions.add('--no-dangerously-dismiss-edit-file-prompts')
-  knownOptions.add('--dangerously-dismiss-create-file-prompts')
-  knownOptions.add('--no-dangerously-dismiss-create-file-prompts')
-  knownOptions.add('--dangerously-dismiss-bash-command-prompts')
-  knownOptions.add('--no-dangerously-dismiss-bash-command-prompts')
-  knownOptions.add('--dangerously-dismiss-read-files-prompts')
-  knownOptions.add('--no-dangerously-dismiss-read-files-prompts')
-  knownOptions.add('--dangerously-dismiss-fetch-content-prompts')
-  knownOptions.add('--no-dangerously-dismiss-fetch-content-prompts')
+  knownOptions.add('--dangerously-accept-edit-file-prompts')
+  knownOptions.add('--no-dangerously-accept-edit-file-prompts')
+  knownOptions.add('--dangerously-accept-create-file-prompts')
+  knownOptions.add('--no-dangerously-accept-create-file-prompts')
+  knownOptions.add('--dangerously-accept-bash-command-prompts')
+  knownOptions.add('--no-dangerously-accept-bash-command-prompts')
+  knownOptions.add('--dangerously-accept-read-files-prompts')
+  knownOptions.add('--no-dangerously-accept-read-files-prompts')
+  knownOptions.add('--dangerously-accept-fetch-content-prompts')
+  knownOptions.add('--no-dangerously-accept-fetch-content-prompts')
   knownOptions.add('--dangerously-allow-in-dirty-directory')
   knownOptions.add('--no-dangerously-allow-in-dirty-directory')
   knownOptions.add('--dangerously-allow-without-version-control')

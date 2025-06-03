@@ -19,7 +19,7 @@ vi.mock('../../src/utils/notifications', () => ({
 // Import after mocking
 import { isFileInProjectRoot } from '../../src/utils/file-utils'
 
-describe('Bash Command Path-based Dismissal Integration', () => {
+describe('Bash Command Path-based Acceptance Integration', () => {
   const mockIsFileInProjectRoot = isFileInProjectRoot as ReturnType<
     typeof vi.fn
   >
@@ -29,8 +29,8 @@ describe('Bash Command Path-based Dismissal Integration', () => {
     vi.clearAllMocks()
   })
 
-  // Replicate the checkDismissConfig logic from index.ts
-  function checkDismissConfig(
+  // Replicate the checkAcceptConfig logic from index.ts
+  function checkAcceptConfig(
     config: boolean | { paths: string[] } | undefined,
     filePath: string,
     isProjectContext: boolean,
@@ -51,8 +51,8 @@ describe('Bash Command Path-based Dismissal Integration', () => {
     return false
   }
 
-  // Replicate the shouldDismissPrompt logic from index.ts with path support
-  function shouldDismissPrompt(
+  // Replicate the shouldAcceptPrompt logic from index.ts with path support
+  function shouldAcceptPrompt(
     match: MatchResult,
     appConfig: AppConfig,
     mergedRuleset: RulesetConfig | undefined,
@@ -68,14 +68,14 @@ describe('Bash Command Path-based Dismissal Integration', () => {
     switch (match.patternId) {
       case 'bash-command-prompt-format-1':
       case 'bash-command-prompt-format-2':
-        if (!appConfig.dangerously_dismiss_bash_command_prompts) return false
+        if (!appConfig.dangerously_accept_bash_command_prompts) return false
         if (!mergedRuleset) return false
 
         const bashConfig = isInProjectRoot
-          ? mergedRuleset.dismiss_project_bash_command_prompts
-          : mergedRuleset.dismiss_global_bash_command_prompts
+          ? mergedRuleset.accept_project_bash_command_prompts
+          : mergedRuleset.accept_global_bash_command_prompts
 
-        // If config is path-based but no directory is available, don't dismiss
+        // If config is path-based but no directory is available, don't accept
         if (
           bashConfig &&
           typeof bashConfig === 'object' &&
@@ -87,13 +87,13 @@ describe('Bash Command Path-based Dismissal Integration', () => {
         }
 
         return isInProjectRoot
-          ? checkDismissConfig(
-              mergedRuleset.dismiss_project_bash_command_prompts,
+          ? checkAcceptConfig(
+              mergedRuleset.accept_project_bash_command_prompts,
               checkPath,
               true,
             )
-          : checkDismissConfig(
-              mergedRuleset.dismiss_global_bash_command_prompts,
+          : checkAcceptConfig(
+              mergedRuleset.accept_global_bash_command_prompts,
               checkPath,
               false,
             )
@@ -102,8 +102,8 @@ describe('Bash Command Path-based Dismissal Integration', () => {
     }
   }
 
-  describe('Path-based bash command dismissal', () => {
-    it('should dismiss bash command when directory matches path pattern', () => {
+  describe('Path-based bash command acceptance', () => {
+    it('should accept bash command when directory matches path pattern', () => {
       // Setup: command running in src/utils directory
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-1',
@@ -118,11 +118,11 @@ describe('Bash Command Path-based Dismissal Integration', () => {
       }
 
       const appConfig: AppConfig = {
-        dangerously_dismiss_bash_command_prompts: true,
+        dangerously_accept_bash_command_prompts: true,
       }
 
       const ruleset: RulesetConfig = {
-        dismiss_project_bash_command_prompts: {
+        accept_project_bash_command_prompts: {
           paths: ['src/**', 'test/**'],
         },
       }
@@ -130,11 +130,11 @@ describe('Bash Command Path-based Dismissal Integration', () => {
       // Mock that we're in project root
       mockIsFileInProjectRoot.mockReturnValue(true)
 
-      const result = shouldDismissPrompt(match, appConfig, ruleset)
+      const result = shouldAcceptPrompt(match, appConfig, ruleset)
       expect(result).toBe(true)
     })
 
-    it('should not dismiss bash command when directory does not match pattern', () => {
+    it('should not accept bash command when directory does not match pattern', () => {
       // Setup: command running in node_modules directory
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-1',
@@ -149,11 +149,11 @@ describe('Bash Command Path-based Dismissal Integration', () => {
       }
 
       const appConfig: AppConfig = {
-        dangerously_dismiss_bash_command_prompts: true,
+        dangerously_accept_bash_command_prompts: true,
       }
 
       const ruleset: RulesetConfig = {
-        dismiss_project_bash_command_prompts: {
+        accept_project_bash_command_prompts: {
           paths: ['src/**', 'test/**'],
         },
       }
@@ -161,11 +161,11 @@ describe('Bash Command Path-based Dismissal Integration', () => {
       // Mock that we're in project root
       mockIsFileInProjectRoot.mockReturnValue(true)
 
-      const result = shouldDismissPrompt(match, appConfig, ruleset)
+      const result = shouldAcceptPrompt(match, appConfig, ruleset)
       expect(result).toBe(false)
     })
 
-    it('should not dismiss when no directory is provided with path config', () => {
+    it('should not accept when no directory is provided with path config', () => {
       // Setup: format-2 prompt without directory
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-2',
@@ -180,11 +180,11 @@ describe('Bash Command Path-based Dismissal Integration', () => {
       }
 
       const appConfig: AppConfig = {
-        dangerously_dismiss_bash_command_prompts: true,
+        dangerously_accept_bash_command_prompts: true,
       }
 
       const ruleset: RulesetConfig = {
-        dismiss_project_bash_command_prompts: {
+        accept_project_bash_command_prompts: {
           paths: ['src/**'],
         },
       }
@@ -192,11 +192,11 @@ describe('Bash Command Path-based Dismissal Integration', () => {
       // Mock that we're in project root
       mockIsFileInProjectRoot.mockReturnValue(true)
 
-      const result = shouldDismissPrompt(match, appConfig, ruleset)
+      const result = shouldAcceptPrompt(match, appConfig, ruleset)
       expect(result).toBe(false)
     })
 
-    it('should dismiss all commands when config is boolean true', () => {
+    it('should accept all commands when config is boolean true', () => {
       // Setup: any command with boolean config
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-2',
@@ -211,17 +211,17 @@ describe('Bash Command Path-based Dismissal Integration', () => {
       }
 
       const appConfig: AppConfig = {
-        dangerously_dismiss_bash_command_prompts: true,
+        dangerously_accept_bash_command_prompts: true,
       }
 
       const ruleset: RulesetConfig = {
-        dismiss_project_bash_command_prompts: true, // boolean true
+        accept_project_bash_command_prompts: true, // boolean true
       }
 
       // Mock that we're in project root
       mockIsFileInProjectRoot.mockReturnValue(true)
 
-      const result = shouldDismissPrompt(match, appConfig, ruleset)
+      const result = shouldAcceptPrompt(match, appConfig, ruleset)
       expect(result).toBe(true)
     })
 
@@ -240,14 +240,14 @@ describe('Bash Command Path-based Dismissal Integration', () => {
       }
 
       const appConfig: AppConfig = {
-        dangerously_dismiss_bash_command_prompts: true,
+        dangerously_accept_bash_command_prompts: true,
       }
 
       const ruleset: RulesetConfig = {
-        dismiss_project_bash_command_prompts: {
+        accept_project_bash_command_prompts: {
           paths: ['src/**'],
         },
-        dismiss_global_bash_command_prompts: {
+        accept_global_bash_command_prompts: {
           paths: ['/tmp/**', '/var/**'],
         },
       }
@@ -255,7 +255,7 @@ describe('Bash Command Path-based Dismissal Integration', () => {
       // Mock that we're NOT in project root
       mockIsFileInProjectRoot.mockReturnValue(false)
 
-      const result = shouldDismissPrompt(match, appConfig, ruleset)
+      const result = shouldAcceptPrompt(match, appConfig, ruleset)
       expect(result).toBe(true)
     })
 
@@ -273,11 +273,11 @@ describe('Bash Command Path-based Dismissal Integration', () => {
       }
 
       const appConfig: AppConfig = {
-        dangerously_dismiss_bash_command_prompts: true,
+        dangerously_accept_bash_command_prompts: true,
       }
 
       const ruleset: RulesetConfig = {
-        dismiss_project_bash_command_prompts: {
+        accept_project_bash_command_prompts: {
           paths: ['src/**'],
         },
       }
@@ -285,14 +285,14 @@ describe('Bash Command Path-based Dismissal Integration', () => {
       // Mock that we're in project root
       mockIsFileInProjectRoot.mockReturnValue(true)
 
-      const result = shouldDismissPrompt(match, appConfig, ruleset)
+      const result = shouldAcceptPrompt(match, appConfig, ruleset)
       expect(result).toBe(true)
     })
   })
 
   describe('Special notification handling', () => {
     // This tests the notification logic that would be in handlePatternMatches
-    function shouldShowUndismissableNotification(
+    function shouldShowUnacceptableNotification(
       match: MatchResult,
       mergedRuleset: RulesetConfig | undefined,
     ): boolean {
@@ -303,8 +303,8 @@ describe('Bash Command Path-based Dismissal Integration', () => {
       ) {
         const isInProjectRoot = mockIsFileInProjectRoot(process.cwd())
         const bashConfig = isInProjectRoot
-          ? mergedRuleset?.dismiss_project_bash_command_prompts
-          : mergedRuleset?.dismiss_global_bash_command_prompts
+          ? mergedRuleset?.accept_project_bash_command_prompts
+          : mergedRuleset?.accept_global_bash_command_prompts
 
         if (
           bashConfig &&
@@ -317,7 +317,7 @@ describe('Bash Command Path-based Dismissal Integration', () => {
       return false
     }
 
-    it('should show undismissable notification for missing directory with path config', () => {
+    it('should show unacceptable notification for missing directory with path config', () => {
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-2',
         type: 'prompt',
@@ -331,18 +331,18 @@ describe('Bash Command Path-based Dismissal Integration', () => {
       }
 
       const ruleset: RulesetConfig = {
-        dismiss_project_bash_command_prompts: {
+        accept_project_bash_command_prompts: {
           paths: ['src/**'],
         },
       }
 
       mockIsFileInProjectRoot.mockReturnValue(true)
 
-      const shouldShow = shouldShowUndismissableNotification(match, ruleset)
+      const shouldShow = shouldShowUnacceptableNotification(match, ruleset)
       expect(shouldShow).toBe(true)
     })
 
-    it('should not show undismissable notification with boolean config', () => {
+    it('should not show unacceptable notification with boolean config', () => {
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-2',
         type: 'prompt',
@@ -356,16 +356,16 @@ describe('Bash Command Path-based Dismissal Integration', () => {
       }
 
       const ruleset: RulesetConfig = {
-        dismiss_project_bash_command_prompts: true, // boolean
+        accept_project_bash_command_prompts: true, // boolean
       }
 
       mockIsFileInProjectRoot.mockReturnValue(true)
 
-      const shouldShow = shouldShowUndismissableNotification(match, ruleset)
+      const shouldShow = shouldShowUnacceptableNotification(match, ruleset)
       expect(shouldShow).toBe(false)
     })
 
-    it('should not show undismissable notification when directory is present', () => {
+    it('should not show unacceptable notification when directory is present', () => {
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-1',
         type: 'prompt',
@@ -379,14 +379,14 @@ describe('Bash Command Path-based Dismissal Integration', () => {
       }
 
       const ruleset: RulesetConfig = {
-        dismiss_project_bash_command_prompts: {
+        accept_project_bash_command_prompts: {
           paths: ['src/**'],
         },
       }
 
       mockIsFileInProjectRoot.mockReturnValue(true)
 
-      const shouldShow = shouldShowUndismissableNotification(match, ruleset)
+      const shouldShow = shouldShowUnacceptableNotification(match, ruleset)
       expect(shouldShow).toBe(false)
     })
   })

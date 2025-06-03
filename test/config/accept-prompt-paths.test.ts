@@ -7,11 +7,11 @@ import { mergeRulesets } from '../../src/config/rulesets'
 import type { RulesetConfig } from '../../src/config/schemas'
 import picomatch from 'picomatch'
 
-describe('Dismiss Prompt Path Patterns', () => {
+describe('Accept Prompt Path Patterns', () => {
   const originalEnv = process.env
   const testConfigDir = path.join(
     os.tmpdir(),
-    'test-dismiss-paths-' + Date.now(),
+    'test-accept-paths-' + Date.now(),
   )
   const rulesetsDir = path.join(testConfigDir, 'rulesets')
 
@@ -31,11 +31,11 @@ describe('Dismiss Prompt Path Patterns', () => {
   describe('Path pattern configuration', () => {
     it('should load ruleset with path patterns', async () => {
       const rulesetContent = `
-dismiss_project_edit_file_prompts:
+accept_project_edit_file_prompts:
   paths:
     - "**/*.test.ts"
     - "src/**/*.js"
-dismiss_project_create_file_prompts:
+accept_project_create_file_prompts:
   paths:
     - "dist/**"
     - "*.tmp"
@@ -45,10 +45,10 @@ dismiss_project_create_file_prompts:
       const result = await loadRulesetFile('paths')
 
       expect(result).toEqual({
-        dismiss_project_edit_file_prompts: {
+        accept_project_edit_file_prompts: {
           paths: ['**/*.test.ts', 'src/**/*.js'],
         },
-        dismiss_project_create_file_prompts: {
+        accept_project_create_file_prompts: {
           paths: ['dist/**', '*.tmp'],
         },
       })
@@ -56,20 +56,20 @@ dismiss_project_create_file_prompts:
 
     it('should merge path arrays from multiple rulesets', () => {
       const ruleset1: RulesetConfig = {
-        dismiss_project_edit_file_prompts: {
+        accept_project_edit_file_prompts: {
           paths: ['**/*.test.ts'],
         },
       }
 
       const ruleset2: RulesetConfig = {
-        dismiss_project_edit_file_prompts: {
+        accept_project_edit_file_prompts: {
           paths: ['**/*.spec.ts', '**/*.test.ts'],
         },
       }
 
       const merged = mergeRulesets([ruleset1, ruleset2])
 
-      expect(merged.dismiss_project_edit_file_prompts).toEqual({
+      expect(merged.accept_project_edit_file_prompts).toEqual({
         paths: ['**/*.test.ts', '**/*.spec.ts'],
       })
     })
@@ -103,23 +103,23 @@ dismiss_project_create_file_prompts:
 
     it('should handle mixed boolean and path configurations', async () => {
       const rulesetContent = `
-dismiss_project_edit_file_prompts: true
-dismiss_project_create_file_prompts:
+accept_project_edit_file_prompts: true
+accept_project_create_file_prompts:
   paths:
     - "**/*.generated.*"
     - "build/**"
-dismiss_global_edit_file_prompts: false
+accept_global_edit_file_prompts: false
 `
       fs.writeFileSync(path.join(rulesetsDir, 'mixed.yaml'), rulesetContent)
 
       const result = await loadRulesetFile('mixed')
 
       expect(result).toEqual({
-        dismiss_project_edit_file_prompts: true,
-        dismiss_project_create_file_prompts: {
+        accept_project_edit_file_prompts: true,
+        accept_project_create_file_prompts: {
           paths: ['**/*.generated.*', 'build/**'],
         },
-        dismiss_global_edit_file_prompts: false,
+        accept_global_edit_file_prompts: false,
       })
     })
   })

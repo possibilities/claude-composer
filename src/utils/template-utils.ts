@@ -6,7 +6,7 @@ import { stripBoxChars } from './strip-box-chars'
 export function replacePlaceholders(
   template: string,
   match: MatchResult,
-  actionResponse?: 'Dismissed' | 'Prompted',
+  actionResponse?: 'Accepted' | 'Prompted',
   actionResponseIcon?: string,
 ): string {
   let result = template

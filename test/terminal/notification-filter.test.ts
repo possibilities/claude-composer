@@ -23,7 +23,7 @@ describe('Notification filtering by action type', () => {
   const defaultAppConfig: AppConfig = {
     show_notifications: true,
     show_confirm_notify: true,
-    show_dismissed_confirm_notify: false,
+    show_accepted_confirm_notify: false,
     show_prompted_confirm_notify: true,
     confirm_notify: {
       edit_file: true,

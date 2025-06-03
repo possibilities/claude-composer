@@ -31,18 +31,18 @@ describe('Ruleset Loader', () => {
   describe('loadRulesetFile', () => {
     it('should load a valid ruleset file', async () => {
       const rulesetContent = `
-dismiss_project_edit_file_prompts: true
-dismiss_project_create_file_prompts: false
-dismiss_project_bash_command_prompts: true
+accept_project_edit_file_prompts: true
+accept_project_create_file_prompts: false
+accept_project_bash_command_prompts: true
 `
       fs.writeFileSync(path.join(rulesetsDir, 'test.yaml'), rulesetContent)
 
       const result = await loadRulesetFile('test')
 
       expect(result).toEqual({
-        dismiss_project_edit_file_prompts: true,
-        dismiss_project_create_file_prompts: false,
-        dismiss_project_bash_command_prompts: true,
+        accept_project_edit_file_prompts: true,
+        accept_project_create_file_prompts: false,
+        accept_project_bash_command_prompts: true,
       })
     })
 
@@ -56,14 +56,14 @@ dismiss_project_bash_command_prompts: true
 
     it('should load partial ruleset configuration', async () => {
       const rulesetContent = `
-dismiss_project_edit_file_prompts: true
+accept_project_edit_file_prompts: true
 `
       fs.writeFileSync(path.join(rulesetsDir, 'partial.yaml'), rulesetContent)
 
       const result = await loadRulesetFile('partial')
 
       expect(result).toEqual({
-        dismiss_project_edit_file_prompts: true,
+        accept_project_edit_file_prompts: true,
       })
     })
 
@@ -75,7 +75,7 @@ dismiss_project_edit_file_prompts: true
 
     it('should throw error for invalid YAML', async () => {
       const invalidYaml = `{
-dismiss_project_edit_file_prompts: true
+accept_project_edit_file_prompts: true
   invalid: syntax
 `
       fs.writeFileSync(path.join(rulesetsDir, 'invalid.yaml'), invalidYaml)
@@ -87,7 +87,7 @@ dismiss_project_edit_file_prompts: true
 
     it('should validate schema and reject invalid fields', async () => {
       const invalidContent = `
-dismiss_project_edit_file_prompts: true
+accept_project_edit_file_prompts: true
 invalid_field: "should not be here"
 `
       fs.writeFileSync(
@@ -102,7 +102,7 @@ invalid_field: "should not be here"
 
     it('should validate schema and reject non-boolean values', async () => {
       const invalidContent = `
-dismiss_project_edit_file_prompts: "yes"
+accept_project_edit_file_prompts: "yes"
 `
       fs.writeFileSync(
         path.join(rulesetsDir, 'invalid-type.yaml'),
@@ -116,33 +116,33 @@ dismiss_project_edit_file_prompts: "yes"
 
     it('should handle all possible ruleset fields', async () => {
       const fullContent = `
-dismiss_project_edit_file_prompts: true
-dismiss_project_create_file_prompts: false
-dismiss_project_bash_command_prompts: true
-dismiss_global_edit_file_prompts: false
-dismiss_global_create_file_prompts: true
-dismiss_global_bash_command_prompts: false
+accept_project_edit_file_prompts: true
+accept_project_create_file_prompts: false
+accept_project_bash_command_prompts: true
+accept_global_edit_file_prompts: false
+accept_global_create_file_prompts: true
+accept_global_bash_command_prompts: false
 `
       fs.writeFileSync(path.join(rulesetsDir, 'full.yaml'), fullContent)
 
       const result = await loadRulesetFile('full')
 
       expect(result).toEqual({
-        dismiss_project_edit_file_prompts: true,
-        dismiss_project_create_file_prompts: false,
-        dismiss_project_bash_command_prompts: true,
-        dismiss_global_edit_file_prompts: false,
-        dismiss_global_create_file_prompts: true,
-        dismiss_global_bash_command_prompts: false,
+        accept_project_edit_file_prompts: true,
+        accept_project_create_file_prompts: false,
+        accept_project_bash_command_prompts: true,
+        accept_global_edit_file_prompts: false,
+        accept_global_create_file_prompts: true,
+        accept_global_bash_command_prompts: false,
       })
     })
 
     it('should handle YAML comments', async () => {
       const contentWithComments = `
 # This ruleset is for development
-dismiss_project_edit_file_prompts: true # Allow edits inside
-dismiss_project_create_file_prompts: false # But confirm creates
-# dismiss_project_bash_command_prompts: true # Commented out
+accept_project_edit_file_prompts: true # Allow edits inside
+accept_project_create_file_prompts: false # But confirm creates
+# accept_project_bash_command_prompts: true # Commented out
 `
       fs.writeFileSync(
         path.join(rulesetsDir, 'comments.yaml'),
@@ -152,16 +152,16 @@ dismiss_project_create_file_prompts: false # But confirm creates
       const result = await loadRulesetFile('comments')
 
       expect(result).toEqual({
-        dismiss_project_edit_file_prompts: true,
-        dismiss_project_create_file_prompts: false,
+        accept_project_edit_file_prompts: true,
+        accept_project_create_file_prompts: false,
       })
     })
 
     it('should handle different YAML formats', async () => {
       const jsonStyleContent = `
 {
-  "dismiss_project_edit_file_prompts": true,
-  "dismiss_project_create_file_prompts": false
+  "accept_project_edit_file_prompts": true,
+  "accept_project_create_file_prompts": false
 }
 `
       fs.writeFileSync(
@@ -172,8 +172,8 @@ dismiss_project_create_file_prompts: false # But confirm creates
       const result = await loadRulesetFile('json-style')
 
       expect(result).toEqual({
-        dismiss_project_edit_file_prompts: true,
-        dismiss_project_create_file_prompts: false,
+        accept_project_edit_file_prompts: true,
+        accept_project_create_file_prompts: false,
       })
     })
   })

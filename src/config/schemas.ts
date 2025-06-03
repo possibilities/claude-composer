@@ -21,7 +21,7 @@ export const stickyNotificationsSchema = z.union([
       work_complete: z.boolean().optional(),
       work_complete_record: z.boolean().optional(),
       prompted_confirmations: z.boolean().optional(),
-      dismissed_confirmations: z.boolean().optional(),
+      accepted_confirmations: z.boolean().optional(),
       terminal_snapshot: z.boolean().optional(),
     })
     .strict(),
@@ -34,7 +34,7 @@ export const appConfigSchema = z
 
     // Confirmation notification settings
     show_confirm_notify: z.boolean().optional(),
-    show_dismissed_confirm_notify: z.boolean().optional(),
+    show_accepted_confirm_notify: z.boolean().optional(),
     show_prompted_confirm_notify: z.boolean().optional(),
     confirm_notify: confirmNotifySchema.optional(),
 
@@ -53,12 +53,12 @@ export const appConfigSchema = z
     // Remote notification settings
     send_remote_notifications: z.boolean().optional(),
 
-    // Dangerous dismissal settings
-    dangerously_dismiss_edit_file_prompts: z.boolean().optional(),
-    dangerously_dismiss_create_file_prompts: z.boolean().optional(),
-    dangerously_dismiss_bash_command_prompts: z.boolean().optional(),
-    dangerously_dismiss_read_files_prompts: z.boolean().optional(),
-    dangerously_dismiss_fetch_content_prompts: z.boolean().optional(),
+    // Dangerous acceptance settings
+    dangerously_accept_edit_file_prompts: z.boolean().optional(),
+    dangerously_accept_create_file_prompts: z.boolean().optional(),
+    dangerously_accept_bash_command_prompts: z.boolean().optional(),
+    dangerously_accept_read_files_prompts: z.boolean().optional(),
+    dangerously_accept_fetch_content_prompts: z.boolean().optional(),
     dangerously_allow_in_dirty_directory: z.boolean().optional(),
     dangerously_allow_without_version_control: z.boolean().optional(),
 
@@ -88,7 +88,7 @@ export const toolsetConfigSchema = z
 
 export type ToolsetConfig = z.infer<typeof toolsetConfigSchema>
 
-export const dismissPromptConfigSchema = z.union([
+export const acceptPromptConfigSchema = z.union([
   z.boolean(),
   z
     .object({
@@ -99,9 +99,9 @@ export const dismissPromptConfigSchema = z.union([
     .strict(),
 ])
 
-export type DismissPromptConfig = z.infer<typeof dismissPromptConfigSchema>
+export type AcceptPromptConfig = z.infer<typeof acceptPromptConfigSchema>
 
-export const dismissFetchContentConfigSchema = z.union([
+export const acceptFetchContentConfigSchema = z.union([
   z.boolean(),
   z
     .object({
@@ -112,21 +112,21 @@ export const dismissFetchContentConfigSchema = z.union([
     .strict(),
 ])
 
-export type DismissFetchContentConfig = z.infer<
-  typeof dismissFetchContentConfigSchema
+export type AcceptFetchContentConfig = z.infer<
+  typeof acceptFetchContentConfigSchema
 >
 
 export const rulesetConfigSchema = z
   .object({
-    dismiss_project_edit_file_prompts: dismissPromptConfigSchema.optional(),
-    dismiss_project_create_file_prompts: dismissPromptConfigSchema.optional(),
-    dismiss_project_bash_command_prompts: dismissPromptConfigSchema.optional(),
-    dismiss_project_read_files_prompts: dismissPromptConfigSchema.optional(),
-    dismiss_global_edit_file_prompts: dismissPromptConfigSchema.optional(),
-    dismiss_global_create_file_prompts: dismissPromptConfigSchema.optional(),
-    dismiss_global_bash_command_prompts: dismissPromptConfigSchema.optional(),
-    dismiss_global_read_files_prompts: dismissPromptConfigSchema.optional(),
-    dismiss_fetch_content_prompts: dismissFetchContentConfigSchema.optional(),
+    accept_project_edit_file_prompts: acceptPromptConfigSchema.optional(),
+    accept_project_create_file_prompts: acceptPromptConfigSchema.optional(),
+    accept_project_bash_command_prompts: acceptPromptConfigSchema.optional(),
+    accept_project_read_files_prompts: acceptPromptConfigSchema.optional(),
+    accept_global_edit_file_prompts: acceptPromptConfigSchema.optional(),
+    accept_global_create_file_prompts: acceptPromptConfigSchema.optional(),
+    accept_global_bash_command_prompts: acceptPromptConfigSchema.optional(),
+    accept_global_read_files_prompts: acceptPromptConfigSchema.optional(),
+    accept_fetch_content_prompts: acceptFetchContentConfigSchema.optional(),
   })
   .strict()
 

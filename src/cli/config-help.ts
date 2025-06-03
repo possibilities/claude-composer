@@ -13,7 +13,7 @@ QUICK REFERENCE
 ===============
 - Main config: General settings, dangerous flags, toolsets, rulesets
 - Toolsets: Control which tools are allowed/disallowed, MCP servers
-- Rulesets: Fine-grained prompt dismissal rules with path/domain patterns
+- Rulesets: Fine-grained prompt acceptance rules with path/domain patterns
 - Path patterns: Use globs for file/directory matching (**, *, ?, etc.)
 - Domain patterns: Use wildcards for domain matching (*.example.com)
 
@@ -32,8 +32,8 @@ show_confirm_notify: boolean (optional)
   Only applies when show_notifications is true
   Default: true
 
-show_dismissed_confirm_notify: boolean (optional)
-  Show notifications for auto-dismissed actions
+show_accepted_confirm_notify: boolean (optional)
+  Show notifications for auto-accepted actions
   Only applies when show_confirm_notify is true
   Default: false
 
@@ -75,7 +75,7 @@ sticky_notifications: object|boolean (optional)
     work_complete: boolean (default: true)
     work_complete_record: boolean (default: true)
     prompted_confirmations: boolean (default: true)
-    dismissed_confirmations: boolean (default: false)
+    accepted_confirmations: boolean (default: false)
     terminal_snapshot: boolean (default: false)
 
 # Legacy notification settings (kept for backward compatibility)
@@ -93,24 +93,24 @@ send_remote_notifications: boolean (optional)
   Only sticky notifications are sent remotely to avoid spam
   Default: false
 
-dangerously_dismiss_edit_file_prompts: boolean (optional)
-  Automatically dismiss edit file prompts without user confirmation
+dangerously_accept_edit_file_prompts: boolean (optional)
+  Automatically accept edit file prompts without user confirmation
   Default: false
 
-dangerously_dismiss_create_file_prompts: boolean (optional)
-  Automatically dismiss create file prompts without user confirmation
+dangerously_accept_create_file_prompts: boolean (optional)
+  Automatically accept create file prompts without user confirmation
   Default: false
 
-dangerously_dismiss_bash_command_prompts: boolean (optional)
-  Automatically dismiss bash command prompts without user confirmation
+dangerously_accept_bash_command_prompts: boolean (optional)
+  Automatically accept bash command prompts without user confirmation
   Default: false
 
-dangerously_dismiss_read_files_prompts: boolean (optional)
-  Automatically dismiss read files prompts without user confirmation
+dangerously_accept_read_files_prompts: boolean (optional)
+  Automatically accept read files prompts without user confirmation
   Default: false
 
-dangerously_dismiss_fetch_content_prompts: boolean (optional)
-  Automatically dismiss fetch content prompts without user confirmation
+dangerously_accept_fetch_content_prompts: boolean (optional)
+  Automatically accept fetch content prompts without user confirmation
   Default: false
 
 dangerously_allow_in_dirty_directory: boolean (optional)
@@ -167,60 +167,60 @@ mcp: record (optional)
 RULESET CONFIGURATION OPTIONS (<name>.yaml)
 ==========================================
 
-dismiss_project_edit_file_prompts: boolean | object (optional)
-  Automatically dismiss edit file prompts for files in project root
-  Can be a boolean (dismisses all) or an object with glob patterns:
-    paths: array of glob patterns to match files for auto-dismissal
+accept_project_edit_file_prompts: boolean | object (optional)
+  Automatically accept edit file prompts for files in project root
+  Can be a boolean (acceptes all) or an object with glob patterns:
+    paths: array of glob patterns to match files for auto-acceptance
   Default: false
 
-dismiss_project_create_file_prompts: boolean | object (optional)
-  Automatically dismiss create file prompts for files in project root
-  Can be a boolean (dismisses all) or an object with glob patterns:
-    paths: array of glob patterns to match files for auto-dismissal
+accept_project_create_file_prompts: boolean | object (optional)
+  Automatically accept create file prompts for files in project root
+  Can be a boolean (acceptes all) or an object with glob patterns:
+    paths: array of glob patterns to match files for auto-acceptance
   Default: false
 
-dismiss_project_bash_command_prompts: boolean | object (optional)
-  Automatically dismiss bash command prompts running in project root
-  Can be a boolean (dismisses all) or an object with directory glob patterns:
+accept_project_bash_command_prompts: boolean | object (optional)
+  Automatically accept bash command prompts running in project root
+  Can be a boolean (acceptes all) or an object with directory glob patterns:
     paths: array of directory glob patterns to match command directories
-  Note: Commands without directory info cannot be dismissed by path patterns
+  Note: Commands without directory info cannot be accepted by path patterns
   Default: false
 
-dismiss_project_read_files_prompts: boolean | object (optional)
-  Automatically dismiss read files prompts for files in project root
-  Can be a boolean (dismisses all) or an object with glob patterns:
-    paths: array of glob patterns to match files for auto-dismissal
+accept_project_read_files_prompts: boolean | object (optional)
+  Automatically accept read files prompts for files in project root
+  Can be a boolean (acceptes all) or an object with glob patterns:
+    paths: array of glob patterns to match files for auto-acceptance
   Default: false
 
-dismiss_global_edit_file_prompts: boolean | object (optional)
-  Automatically dismiss edit file prompts for files outside the project
-  Can be a boolean (dismisses all) or an object with glob patterns:
-    paths: array of glob patterns to match files for auto-dismissal
+accept_global_edit_file_prompts: boolean | object (optional)
+  Automatically accept edit file prompts for files outside the project
+  Can be a boolean (acceptes all) or an object with glob patterns:
+    paths: array of glob patterns to match files for auto-acceptance
   Default: false
 
-dismiss_global_create_file_prompts: boolean | object (optional)
-  Automatically dismiss create file prompts for files outside the project
-  Can be a boolean (dismisses all) or an object with glob patterns:
-    paths: array of glob patterns to match files for auto-dismissal
+accept_global_create_file_prompts: boolean | object (optional)
+  Automatically accept create file prompts for files outside the project
+  Can be a boolean (acceptes all) or an object with glob patterns:
+    paths: array of glob patterns to match files for auto-acceptance
   Default: false
 
-dismiss_global_bash_command_prompts: boolean | object (optional)
-  Automatically dismiss bash command prompts running outside the project
-  Can be a boolean (dismisses all) or an object with directory glob patterns:
+accept_global_bash_command_prompts: boolean | object (optional)
+  Automatically accept bash command prompts running outside the project
+  Can be a boolean (acceptes all) or an object with directory glob patterns:
     paths: array of directory glob patterns to match command directories
-  Note: Commands without directory info cannot be dismissed by path patterns
+  Note: Commands without directory info cannot be accepted by path patterns
   Default: false
 
-dismiss_global_read_files_prompts: boolean | object (optional)
-  Automatically dismiss read files prompts for files outside the project
-  Can be a boolean (dismisses all) or an object with glob patterns:
-    paths: array of glob patterns to match files for auto-dismissal
+accept_global_read_files_prompts: boolean | object (optional)
+  Automatically accept read files prompts for files outside the project
+  Can be a boolean (acceptes all) or an object with glob patterns:
+    paths: array of glob patterns to match files for auto-acceptance
   Default: false
 
-dismiss_fetch_content_prompts: boolean | object (optional)
-  Automatically dismiss fetch content prompts for specified domains
-  Can be a boolean (dismisses all) or an object with domain patterns:
-    domains: array of domain patterns to match for auto-dismissal
+accept_fetch_content_prompts: boolean | object (optional)
+  Automatically accept fetch content prompts for specified domains
+  Can be a boolean (acceptes all) or an object with domain patterns:
+    domains: array of domain patterns to match for auto-acceptance
   Domain patterns support wildcards (*) for flexible matching
   Default: false
 
@@ -233,7 +233,7 @@ show_notifications: true
 
 # Confirmation notifications (default configuration)
 show_confirm_notify: true
-show_dismissed_confirm_notify: false
+show_accepted_confirm_notify: false
 show_prompted_confirm_notify: true
 
 # Work notifications
@@ -246,14 +246,14 @@ sticky_notifications:
   work_complete: true
   work_complete_record: true
   prompted_confirmations: true
-  dismissed_confirmations: false
+  accepted_confirmations: false
 
 # Other settings
-dangerously_dismiss_edit_file_prompts: false
-dangerously_dismiss_create_file_prompts: false
-dangerously_dismiss_bash_command_prompts: false
-dangerously_dismiss_read_files_prompts: false
-dangerously_dismiss_fetch_content_prompts: false
+dangerously_accept_edit_file_prompts: false
+dangerously_accept_create_file_prompts: false
+dangerously_accept_bash_command_prompts: false
+dangerously_accept_read_files_prompts: false
+dangerously_accept_fetch_content_prompts: false
 dangerously_allow_in_dirty_directory: false
 dangerously_allow_without_version_control: false
 toolsets:
@@ -280,7 +280,7 @@ EXAMPLE: Power User Configuration
 
 # See everything
 show_notifications: true
-show_dismissed_confirm_notify: true
+show_accepted_confirm_notify: true
 show_work_started_notifications: true
 
 # Make everything sticky
@@ -314,7 +314,7 @@ confirm_notify:
 EXAMPLE: Non-Sticky Work Notifications
 ======================================
 
-# Work notifications that auto-dismiss
+# Work notifications that auto-accept
 show_notifications: true
 show_work_complete_notifications: true
 sticky_notifications:
@@ -342,75 +342,75 @@ mcp:
 EXAMPLE RULESET FILE (safe-mode.yaml)
 =====================================
 
-# Boolean format - dismisses all prompts of this type
-dismiss_project_edit_file_prompts: true
-dismiss_project_create_file_prompts: true
-dismiss_project_bash_command_prompts: true
-dismiss_project_read_files_prompts: true
-dismiss_global_edit_file_prompts: false
-dismiss_global_create_file_prompts: false
-dismiss_global_bash_command_prompts: false
-dismiss_global_read_files_prompts: false
-dismiss_fetch_content_prompts: false
+# Boolean format - acceptes all prompts of this type
+accept_project_edit_file_prompts: true
+accept_project_create_file_prompts: true
+accept_project_bash_command_prompts: true
+accept_project_read_files_prompts: true
+accept_global_edit_file_prompts: false
+accept_global_create_file_prompts: false
+accept_global_bash_command_prompts: false
+accept_global_read_files_prompts: false
+accept_fetch_content_prompts: false
 
 
-EXAMPLE RULESET FILE WITH PATHS (selective-dismiss.yaml)
+EXAMPLE RULESET FILE WITH PATHS (selective-accept.yaml)
 =========================================================
 
-# Object format - only dismisses prompts for files matching the patterns
-dismiss_project_edit_file_prompts:
+# Object format - only acceptes prompts for files matching the patterns
+accept_project_edit_file_prompts:
   paths:
     - "**/*.test.ts"
     - "**/*.spec.js"
     - "src/generated/**/*"
 
-dismiss_project_create_file_prompts:
+accept_project_create_file_prompts:
   paths:
     - "dist/**/*"
     - "build/**/*"
     - "**/*.d.ts"
 
-# Bash command dismissal with directory patterns
-dismiss_project_bash_command_prompts:
+# Bash command acceptance with directory patterns
+accept_project_bash_command_prompts:
   paths:
-    - "src/**"      # Auto-dismiss commands in src directory
-    - "test/**"     # Auto-dismiss commands in test directory
-    - "scripts/**"  # Auto-dismiss commands in scripts directory
+    - "src/**"      # Auto-accept commands in src directory
+    - "test/**"     # Auto-accept commands in test directory
+    - "scripts/**"  # Auto-accept commands in scripts directory
 
-dismiss_global_bash_command_prompts:
+accept_global_bash_command_prompts:
   paths:
-    - "~/code/**"   # Auto-dismiss commands in code directory
-    - "/tmp/**"     # Auto-dismiss commands in temp directory
+    - "~/code/**"   # Auto-accept commands in code directory
+    - "/tmp/**"     # Auto-accept commands in temp directory
 
-dismiss_project_read_files_prompts:
+accept_project_read_files_prompts:
   paths:
     - "node_modules/**/*"
     - "**/*.lock"
     - ".git/**/*"
 
-# Global dismissals with specific patterns
-dismiss_global_edit_file_prompts:
+# Global acceptances with specific patterns
+accept_global_edit_file_prompts:
   paths:
     - "~/.config/**/*"
     - "/tmp/**/*"
 
-dismiss_global_create_file_prompts: false  # Never auto-dismiss global creates
+accept_global_create_file_prompts: false  # Never auto-accept global creates
 
-dismiss_global_bash_command_prompts: false
+accept_global_bash_command_prompts: false
 
-dismiss_global_read_files_prompts:
+accept_global_read_files_prompts:
   paths:
     - "/etc/**/*"
     - "/usr/**/*"
 
-dismiss_fetch_content_prompts: false
+accept_fetch_content_prompts: false
 
 
-EXAMPLE RULESET FILE WITH DOMAIN FILTERING (domain-dismiss.yaml)
+EXAMPLE RULESET FILE WITH DOMAIN FILTERING (domain-accept.yaml)
 ================================================================
 
-# Allow dismissing fetch content prompts only for specific domains
-dismiss_fetch_content_prompts:
+# Allow accepting fetch content prompts only for specific domains
+accept_fetch_content_prompts:
   domains:
     - "github.com"              # Exact match
     - "*.shopify.com"          # Match any subdomain of shopify.com
@@ -419,89 +419,89 @@ dismiss_fetch_content_prompts:
     - "*.trusted-partner.net"  # Match all subdomains of trusted-partner.net
 
 # Mix with other configurations
-dismiss_project_edit_file_prompts: true
-dismiss_project_bash_command_prompts: false
+accept_project_edit_file_prompts: true
+accept_project_bash_command_prompts: false
 
 
-COMPREHENSIVE EXAMPLE RULESET (advanced-dismiss.yaml)
+COMPREHENSIVE EXAMPLE RULESET (advanced-accept.yaml)
 =====================================================
 
-# Project-level dismissals (relative to project root)
-dismiss_project_edit_file_prompts:
+# Project-level acceptances (relative to project root)
+accept_project_edit_file_prompts:
   paths:
     - "**/*.generated.ts"      # Auto-generated files
     - "dist/**/*"              # Build output
     - "**/*.min.js"            # Minified files
     - "src/vendor/**/*"        # Third-party code
 
-dismiss_project_create_file_prompts:
+accept_project_create_file_prompts:
   paths:
     - "dist/**/*"              # Build directory
     - "coverage/**/*"          # Test coverage
     - "**/*.d.ts"              # TypeScript declarations
     - ".next/**/*"             # Next.js build files
 
-dismiss_project_bash_command_prompts:
+accept_project_bash_command_prompts:
   paths:
     - "src/**"                 # Source code directories
     - "test/**"                # Test directories
     - "scripts/**"             # Script directories
     - "."                      # Project root itself
 
-dismiss_project_read_files_prompts: true  # Allow all reads in project
+accept_project_read_files_prompts: true  # Allow all reads in project
 
-# Global-level dismissals (absolute paths)
-dismiss_global_edit_file_prompts:
+# Global-level acceptances (absolute paths)
+accept_global_edit_file_prompts:
   paths:
     - "~/.config/**/*"         # User config files
     - "~/.local/**/*"          # User local files
     - "/tmp/**/*"              # Temporary files
 
-dismiss_global_create_file_prompts: false  # Never auto-create outside project
+accept_global_create_file_prompts: false  # Never auto-create outside project
 
-dismiss_global_bash_command_prompts:
+accept_global_bash_command_prompts:
   paths:
     - "~/code/**"              # Personal code directory
     - "~/projects/**"          # Projects directory
     - "/tmp/**"                # Temp directory
     - "/var/tmp/**"            # Var temp directory
 
-dismiss_global_read_files_prompts:
+accept_global_read_files_prompts:
   paths:
     - "/usr/local/**/*"        # Local installations
     - "/opt/**/*"              # Optional software
     - "~/.npm/**/*"            # NPM cache
 
-# Domain-based dismissal for fetch content
-dismiss_fetch_content_prompts:
+# Domain-based acceptance for fetch content
+accept_fetch_content_prompts:
   domains:
     - "*.github.com"           # GitHub and subdomains
     - "docs.*.com"             # Documentation sites
     - "localhost:*"            # Local development
 
 
-PATH-BASED DISMISSAL CONFIGURATIONS
+PATH-BASED ACCEPTANCE CONFIGURATIONS
 ===================================
 
-All dismiss prompt options support both boolean and path-based configurations:
+All accept prompt options support both boolean and path-based configurations:
 
 Boolean Format:
-  true  - Automatically dismiss ALL prompts of this type
-  false - Never automatically dismiss prompts of this type (default)
+  true  - Automatically accept ALL prompts of this type
+  false - Never automatically accept prompts of this type (default)
 
 Object Format:
   paths: [array of glob patterns]
-  Only dismisses prompts for files/directories matching the patterns
+  Only acceptes prompts for files/directories matching the patterns
 
-File-based Dismissals (edit, create, read):
+File-based Acceptals (edit, create, read):
   - Patterns match against file paths
   - Project patterns use relative paths from project root
   - Global patterns use absolute paths
 
-Directory-based Dismissals (bash commands):
+Directory-based Acceptals (bash commands):
   - Patterns match against the directory where the command runs
   - Only works for prompts that include directory information
-  - Commands without directory info will show an undismissable warning
+  - Commands without directory info will show an unacceptable warning
 
 
 GLOB PATTERN MATCHING
@@ -529,15 +529,15 @@ Directory Pattern Examples:
 - "test/**" - any test directory
 
 Important Notes:
-- Multiple patterns are combined with OR logic (ANY match allows dismissal)
-- The main config dangerously_dismiss_* flags must be enabled
+- Multiple patterns are combined with OR logic (ANY match allows acceptance)
+- The main config dangerously_accept_* flags must be enabled
 - Path matching is case-sensitive on case-sensitive filesystems
 
 
 DOMAIN PATTERN MATCHING FOR FETCH CONTENT PROMPTS
 ==================================================
 
-When using the object format with domains for dismiss_fetch_content_prompts,
+When using the object format with domains for accept_fetch_content_prompts,
 domain patterns are matched using the following rules:
 
 - Exact domain matching: "github.com" matches only github.com
@@ -554,20 +554,20 @@ Domain Pattern Examples:
 Important Notes:
 - Domain matching is case-sensitive
 - Multiple patterns are combined with OR logic (matches if ANY pattern matches)
-- The main config dangerously_dismiss_fetch_content_prompts flag must be enabled
+- The main config dangerously_accept_fetch_content_prompts flag must be enabled
 - Domain is extracted from the fetch content prompt automatically
 
 
-TROUBLESHOOTING PATH-BASED DISMISSALS
+TROUBLESHOOTING PATH-BASED ACCEPTANCES
 =====================================
 
 Common Issues and Solutions:
 
 1. Bash commands without directory information:
    - Some prompts don't include directory context
-   - These cannot be dismissed with path patterns
-   - You'll see: "UNDISMISSABLE DIALOG BECAUSE NO DIRECTORY IS SPECIFIED"
-   - Solution: Use boolean true to dismiss all, or handle individually
+   - These cannot be accepted with path patterns
+   - You'll see: "UNACCEPTABLE DIALOG BECAUSE NO DIRECTORY IS SPECIFIED"
+   - Solution: Use boolean true to accept all, or handle individually
 
 2. Patterns not matching as expected:
    - Check if using project vs global context correctly
@@ -577,7 +577,7 @@ Common Issues and Solutions:
 
 3. Testing your patterns:
    - Start with broader patterns and narrow down
-   - Use --show-notifications to see what's being dismissed
+   - Use --show-notifications to see what's being accepted
    - Check the notification to see the actual path being matched
 
 4. Common useful patterns:
@@ -591,12 +591,12 @@ Common Issues and Solutions:
 SECURITY CONSIDERATIONS
 =======================
 
-When using path-based dismissals:
-- Be specific with patterns to avoid unintended dismissals
+When using path-based acceptances:
+- Be specific with patterns to avoid unintended acceptances
 - Review your patterns regularly
-- Use --show-notifications to audit what's being auto-dismissed
+- Use --show-notifications to audit what's being auto-accepted
 - Consider using project-specific rulesets for sensitive projects
-- Remember that dismissed prompts still execute the action
+- Remember that accepted prompts still execute the action
 
 
 REMOTE NOTIFICATIONS CONFIGURATION (remote-notifications.yaml)
