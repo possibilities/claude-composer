@@ -107,7 +107,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
       // Setup: command running in src/utils directory
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-1',
-        type: 'prompt',
+        type: 'confirmation',
         response: '1',
         extractedData: {
           directory: 'src/utils',

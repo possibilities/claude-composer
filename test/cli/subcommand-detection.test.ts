@@ -19,8 +19,8 @@ describe('Subcommand Detection', () => {
           'foo',
         ],
       })
-      expect(result.stdout).toContain('※ Accepting Claude Composer')
-      expect(result.stdout).toContain('※ Running Claude Code subcommand: foo')
+      expect(result.output).toContain('※ Accepting Claude Composer')
+      expect(result.output).toContain('※ Running Claude Code subcommand: foo')
     })
 
     it('should not detect quoted string with spaces as subcommand', async () => {
@@ -31,7 +31,7 @@ describe('Subcommand Detection', () => {
           'this is a prompt',
         ],
       })
-      expect(result.stdout).not.toContain('※ Accepting Claude Composer')
+      expect(result.output).not.toContain('※ Accepting Claude Composer')
     })
 
     it('should not detect when first arg is an option', async () => {
@@ -54,8 +54,8 @@ describe('Subcommand Detection', () => {
           'deploy',
         ],
       })
-      expect(result.stdout).toContain('※ Accepting Claude Composer')
-      expect(result.stdout).toContain(
+      expect(result.output).toContain('※ Accepting Claude Composer')
+      expect(result.output).toContain(
         '※ Running Claude Code subcommand: deploy',
       )
     })
@@ -68,8 +68,8 @@ describe('Subcommand Detection', () => {
           'run-tests',
         ],
       })
-      expect(result.stdout).toContain('※ Accepting Claude Composer')
-      expect(result.stdout).toContain(
+      expect(result.output).toContain('※ Accepting Claude Composer')
+      expect(result.output).toContain(
         '※ Running Claude Code subcommand: run-tests',
       )
     })
@@ -84,8 +84,8 @@ describe('Subcommand Detection', () => {
           'some additional text',
         ],
       })
-      expect(result.stdout).toContain('※ Accepting Claude Composer')
-      expect(result.stdout).toContain('※ Running Claude Code subcommand: build')
+      expect(result.output).toContain('※ Accepting Claude Composer')
+      expect(result.output).toContain('※ Running Claude Code subcommand: build')
     })
   })
 })

@@ -171,7 +171,7 @@ export const patternConfigSchema = z
       z.array(z.string()),
       z.function().returns(z.union([z.string(), z.array(z.string())])),
     ]),
-    type: z.enum(['completion', 'prompt']).optional(),
+    type: z.enum(['expansion', 'confirmation']).optional(),
     notification: z.string().optional(),
     triggerText: z.string().optional(),
     transformExtractedData: z
@@ -182,14 +182,15 @@ export const patternConfigSchema = z
   })
   .refine(
     data => {
-      // triggerText is only allowed on prompt type patterns
-      if (data.triggerText && data.type !== 'prompt') {
+      // triggerText is only allowed on confirmation type patterns
+      if (data.triggerText && data.type !== 'confirmation') {
         return false
       }
       return true
     },
     {
-      message: 'triggerText is only allowed on patterns with type "prompt"',
+      message:
+        'triggerText is only allowed on patterns with type "confirmation"',
     },
   )
 
