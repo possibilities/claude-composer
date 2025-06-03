@@ -223,6 +223,24 @@ function shouldDismissPrompt(match: MatchResult): boolean {
     case 'bash-command-prompt-format-2':
       if (!appConfig.dangerously_dismiss_bash_command_prompts) return false
       if (!mergedRuleset) return false
+
+      const bashConfig = isInProjectRoot
+        ? mergedRuleset.dismiss_project_bash_command_prompts
+        : mergedRuleset.dismiss_global_bash_command_prompts
+
+      // If config is path-based but no directory is available, don't dismiss
+      if (
+        bashConfig &&
+        typeof bashConfig === 'object' &&
+        'paths' in bashConfig
+      ) {
+        if (!directory) {
+          // Special handling for format-2 which doesn't extract directory
+          // This will be handled in the notification logic
+          return false
+        }
+      }
+
       return isInProjectRoot
         ? checkDismissConfig(
             mergedRuleset.dismiss_project_bash_command_prompts,
@@ -294,6 +312,36 @@ function handlePatternMatches(
     }
 
     if (appConfig.show_notifications !== false && match.notification) {
+      // Special handling for bash commands with path-based config but no directory
+      if (
+        (match.patternId === 'bash-command-prompt-format-1' ||
+          match.patternId === 'bash-command-prompt-format-2') &&
+        !match.extractedData?.directory
+      ) {
+        const isInProjectRoot = isFileInProjectRoot(process.cwd())
+        const bashConfig = isInProjectRoot
+          ? mergedRuleset?.dismiss_project_bash_command_prompts
+          : mergedRuleset?.dismiss_global_bash_command_prompts
+
+        if (
+          bashConfig &&
+          typeof bashConfig === 'object' &&
+          'paths' in bashConfig
+        ) {
+          // Show special undismissable notification
+          showNotification(
+            {
+              title: '🚨 Claude Composer',
+              message: 'UNDISMISSABLE DIALOG BECAUSE NO DIRECTORY IS SPECIFIED',
+              timeout: false, // Always sticky
+              sound: true,
+            },
+            appConfig,
+          )
+          return
+        }
+      }
+
       showPatternNotification(
         match,
         appConfig,
