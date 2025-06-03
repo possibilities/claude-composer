@@ -147,8 +147,11 @@ dismiss_global_read_files_prompts: boolean | object (optional)
     paths: array of glob patterns to match files for auto-dismissal
   Default: false
 
-dismiss_fetch_content_prompts: boolean (optional)
-  Automatically dismiss fetch content prompts (not location-aware)
+dismiss_fetch_content_prompts: boolean | object (optional)
+  Automatically dismiss fetch content prompts for specified domains
+  Can be a boolean (dismisses all) or an object with domain patterns:
+    domains: array of domain patterns to match for auto-dismissal
+  Domain patterns support wildcards (*) for flexible matching
   Default: false
 
 
@@ -252,6 +255,23 @@ dismiss_global_read_files_prompts:
 dismiss_fetch_content_prompts: false
 
 
+EXAMPLE RULESET FILE WITH DOMAIN FILTERING (domain-dismiss.yaml)
+================================================================
+
+# Allow dismissing fetch content prompts only for specific domains
+dismiss_fetch_content_prompts:
+  domains:
+    - "github.com"              # Exact match
+    - "*.shopify.com"          # Match any subdomain of shopify.com
+    - "docs.*.com"             # Match docs subdomain of any .com domain
+    - "api.*.io"               # Match api subdomain of any .io domain
+    - "*.trusted-partner.net"  # Match all subdomains of trusted-partner.net
+
+# Mix with other configurations
+dismiss_project_edit_file_prompts: true
+dismiss_project_bash_command_prompts: false
+
+
 GLOB PATTERN MATCHING FOR DISMISS PROMPTS
 ==========================================
 
@@ -278,6 +298,30 @@ Important Notes:
 - Multiple patterns are combined with OR logic (matches if ANY pattern matches)
 - The main config dangerously_dismiss_* flags must be enabled for these to work
 - Path matching is case-sensitive on case-sensitive filesystems
+
+
+DOMAIN PATTERN MATCHING FOR FETCH CONTENT PROMPTS
+==================================================
+
+When using the object format with domains for dismiss_fetch_content_prompts,
+domain patterns are matched using the following rules:
+
+- Exact domain matching: "github.com" matches only github.com
+- Wildcard (*) can be used for flexible matching
+- Single wildcard matches any characters greedily in both directions
+
+Domain Pattern Examples:
+- "github.com" - matches exactly github.com
+- "*.github.com" - matches any subdomain of github.com (e.g., api.github.com)
+- "docs.*" - matches docs subdomain of any domain (e.g., docs.google.com)
+- "*.example.*" - matches any subdomain of example with any TLD
+- "*" - matches any domain (effectively same as boolean true)
+
+Important Notes:
+- Domain matching is case-sensitive
+- Multiple patterns are combined with OR logic (matches if ANY pattern matches)
+- The main config dangerously_dismiss_fetch_content_prompts flag must be enabled
+- Domain is extracted from the fetch content prompt automatically
 
 
 CONFIGURATION PRECEDENCE
