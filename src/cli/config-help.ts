@@ -103,36 +103,48 @@ mcp: record (optional)
 RULESET CONFIGURATION OPTIONS (<name>.yaml)
 ==========================================
 
-dismiss_project_edit_file_prompts: boolean (optional)
+dismiss_project_edit_file_prompts: boolean | object (optional)
   Automatically dismiss edit file prompts for files in project root
+  Can be a boolean (dismisses all) or an object with glob patterns:
+    paths: array of glob patterns to match files for auto-dismissal
   Default: false
 
-dismiss_project_create_file_prompts: boolean (optional)
+dismiss_project_create_file_prompts: boolean | object (optional)
   Automatically dismiss create file prompts for files in project root
+  Can be a boolean (dismisses all) or an object with glob patterns:
+    paths: array of glob patterns to match files for auto-dismissal
   Default: false
 
 dismiss_project_bash_command_prompts: boolean (optional)
   Automatically dismiss bash command prompts running in project root
   Default: false
 
-dismiss_project_read_files_prompts: boolean (optional)
+dismiss_project_read_files_prompts: boolean | object (optional)
   Automatically dismiss read files prompts for files in project root
+  Can be a boolean (dismisses all) or an object with glob patterns:
+    paths: array of glob patterns to match files for auto-dismissal
   Default: false
 
-dismiss_global_edit_file_prompts: boolean (optional)
+dismiss_global_edit_file_prompts: boolean | object (optional)
   Automatically dismiss edit file prompts for files outside the project
+  Can be a boolean (dismisses all) or an object with glob patterns:
+    paths: array of glob patterns to match files for auto-dismissal
   Default: false
 
-dismiss_global_create_file_prompts: boolean (optional)
+dismiss_global_create_file_prompts: boolean | object (optional)
   Automatically dismiss create file prompts for files outside the project
+  Can be a boolean (dismisses all) or an object with glob patterns:
+    paths: array of glob patterns to match files for auto-dismissal
   Default: false
 
 dismiss_global_bash_command_prompts: boolean (optional)
   Automatically dismiss bash command prompts running outside the project
   Default: false
 
-dismiss_global_read_files_prompts: boolean (optional)
+dismiss_global_read_files_prompts: boolean | object (optional)
   Automatically dismiss read files prompts for files outside the project
+  Can be a boolean (dismisses all) or an object with glob patterns:
+    paths: array of glob patterns to match files for auto-dismissal
   Default: false
 
 dismiss_fetch_content_prompts: boolean (optional)
@@ -185,6 +197,7 @@ mcp:
 EXAMPLE RULESET FILE (safe-mode.yaml)
 =====================================
 
+# Boolean format - dismisses all prompts of this type
 dismiss_project_edit_file_prompts: true
 dismiss_project_create_file_prompts: true
 dismiss_project_bash_command_prompts: true
@@ -194,6 +207,77 @@ dismiss_global_create_file_prompts: false
 dismiss_global_bash_command_prompts: false
 dismiss_global_read_files_prompts: false
 dismiss_fetch_content_prompts: false
+
+
+EXAMPLE RULESET FILE WITH PATHS (selective-dismiss.yaml)
+=========================================================
+
+# Object format - only dismisses prompts for files matching the patterns
+dismiss_project_edit_file_prompts:
+  paths:
+    - "**/*.test.ts"
+    - "**/*.spec.js"
+    - "src/generated/**/*"
+
+dismiss_project_create_file_prompts:
+  paths:
+    - "dist/**/*"
+    - "build/**/*"
+    - "**/*.d.ts"
+
+# Mix of boolean and object formats
+dismiss_project_bash_command_prompts: true  # Dismiss all bash prompts in project
+
+dismiss_project_read_files_prompts:
+  paths:
+    - "node_modules/**/*"
+    - "**/*.lock"
+    - ".git/**/*"
+
+# Global dismissals with specific patterns
+dismiss_global_edit_file_prompts:
+  paths:
+    - "~/.config/**/*"
+    - "/tmp/**/*"
+
+dismiss_global_create_file_prompts: false  # Never auto-dismiss global creates
+
+dismiss_global_bash_command_prompts: false
+
+dismiss_global_read_files_prompts:
+  paths:
+    - "/etc/**/*"
+    - "/usr/**/*"
+
+dismiss_fetch_content_prompts: false
+
+
+GLOB PATTERN MATCHING FOR DISMISS PROMPTS
+==========================================
+
+When using the object format with paths for dismiss prompt configurations,
+glob patterns are matched using the following rules:
+
+- Patterns use standard glob syntax (powered by picomatch)
+- ** matches any number of directories
+- * matches any characters except path separators
+- ? matches a single character
+- [abc] matches any character in the set
+- {a,b,c} matches any of the alternatives
+
+Pattern Examples:
+- "**/*.ts" - all TypeScript files in any directory
+- "src/**/*" - all files under the src directory
+- "*.{js,jsx,ts,tsx}" - all JavaScript and TypeScript files in current directory
+- "test/**/*.test.js" - all test files ending in .test.js under test directory
+- "!**/*.min.js" - exclude minified JavaScript files (when used with other patterns)
+
+Important Notes:
+- Patterns are evaluated relative to the project root for project_* settings
+- Patterns are evaluated as absolute paths for global_* settings
+- Multiple patterns are combined with OR logic (matches if ANY pattern matches)
+- The main config dangerously_dismiss_* flags must be enabled for these to work
+- Path matching is case-sensitive on case-sensitive filesystems
 
 
 CONFIGURATION PRECEDENCE
