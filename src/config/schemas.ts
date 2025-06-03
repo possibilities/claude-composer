@@ -34,16 +34,29 @@ export const toolsetConfigSchema = z
 
 export type ToolsetConfig = z.infer<typeof toolsetConfigSchema>
 
+export const dismissPromptConfigSchema = z.union([
+  z.boolean(),
+  z
+    .object({
+      paths: z
+        .array(z.string())
+        .min(1, 'Paths array must have at least one pattern'),
+    })
+    .strict(),
+])
+
+export type DismissPromptConfig = z.infer<typeof dismissPromptConfigSchema>
+
 export const rulesetConfigSchema = z
   .object({
-    dismiss_project_edit_file_prompts: z.boolean().optional(),
-    dismiss_project_create_file_prompts: z.boolean().optional(),
-    dismiss_project_bash_command_prompts: z.boolean().optional(),
-    dismiss_project_read_files_prompts: z.boolean().optional(),
-    dismiss_global_edit_file_prompts: z.boolean().optional(),
-    dismiss_global_create_file_prompts: z.boolean().optional(),
-    dismiss_global_bash_command_prompts: z.boolean().optional(),
-    dismiss_global_read_files_prompts: z.boolean().optional(),
+    dismiss_project_edit_file_prompts: dismissPromptConfigSchema.optional(),
+    dismiss_project_create_file_prompts: dismissPromptConfigSchema.optional(),
+    dismiss_project_bash_command_prompts: dismissPromptConfigSchema.optional(),
+    dismiss_project_read_files_prompts: dismissPromptConfigSchema.optional(),
+    dismiss_global_edit_file_prompts: dismissPromptConfigSchema.optional(),
+    dismiss_global_create_file_prompts: dismissPromptConfigSchema.optional(),
+    dismiss_global_bash_command_prompts: dismissPromptConfigSchema.optional(),
+    dismiss_global_read_files_prompts: dismissPromptConfigSchema.optional(),
     dismiss_fetch_content_prompts: z.boolean().optional(),
   })
   .strict()

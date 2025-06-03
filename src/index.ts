@@ -4,6 +4,7 @@ import * as path from 'path'
 import * as util from 'node:util'
 import { spawn } from 'child_process'
 import { fileURLToPath } from 'node:url'
+import picomatch from 'picomatch'
 import { PatternMatcher, MatchResult } from './patterns/matcher'
 import { ResponseQueue } from './core/response-queue'
 import { patterns } from './patterns/registry'
@@ -139,6 +140,27 @@ process.on('uncaughtException', error => {
   process.exit(1)
 })
 
+function checkDismissConfig(
+  config: boolean | { paths: string[] } | undefined,
+  filePath: string,
+  isProjectContext: boolean,
+): boolean {
+  if (config === true) return true
+  if (config === false || config === undefined) return false
+
+  if (typeof config === 'object' && 'paths' in config) {
+    const normalizedPath = path.normalize(filePath)
+    const pathToCheck = isProjectContext
+      ? path.relative(process.cwd(), normalizedPath) || '.'
+      : normalizedPath
+
+    const isMatch = picomatch(config.paths)
+    return isMatch(pathToCheck)
+  }
+
+  return false
+}
+
 function shouldDismissPrompt(match: MatchResult): boolean {
   const fileName = match.extractedData?.fileName
   const directory = match.extractedData?.directory
@@ -153,27 +175,59 @@ function shouldDismissPrompt(match: MatchResult): boolean {
       if (!appConfig.dangerously_dismiss_edit_file_prompts) return false
       if (!mergedRuleset) return false
       return isInProjectRoot
-        ? mergedRuleset.dismiss_project_edit_file_prompts === true
-        : mergedRuleset.dismiss_global_edit_file_prompts === true
+        ? checkDismissConfig(
+            mergedRuleset.dismiss_project_edit_file_prompts,
+            checkPath,
+            true,
+          )
+        : checkDismissConfig(
+            mergedRuleset.dismiss_global_edit_file_prompts,
+            checkPath,
+            false,
+          )
     case 'create-file-prompt':
       if (!appConfig.dangerously_dismiss_create_file_prompts) return false
       if (!mergedRuleset) return false
       return isInProjectRoot
-        ? mergedRuleset.dismiss_project_create_file_prompts === true
-        : mergedRuleset.dismiss_global_create_file_prompts === true
+        ? checkDismissConfig(
+            mergedRuleset.dismiss_project_create_file_prompts,
+            checkPath,
+            true,
+          )
+        : checkDismissConfig(
+            mergedRuleset.dismiss_global_create_file_prompts,
+            checkPath,
+            false,
+          )
     case 'bash-command-prompt-format-1':
     case 'bash-command-prompt-format-2':
       if (!appConfig.dangerously_dismiss_bash_command_prompts) return false
       if (!mergedRuleset) return false
       return isInProjectRoot
-        ? mergedRuleset.dismiss_project_bash_command_prompts === true
-        : mergedRuleset.dismiss_global_bash_command_prompts === true
+        ? checkDismissConfig(
+            mergedRuleset.dismiss_project_bash_command_prompts,
+            checkPath,
+            true,
+          )
+        : checkDismissConfig(
+            mergedRuleset.dismiss_global_bash_command_prompts,
+            checkPath,
+            false,
+          )
     case 'read-files-prompt':
       if (!appConfig.dangerously_dismiss_read_files_prompts) return false
       if (!mergedRuleset) return false
       return isInProjectRoot
-        ? mergedRuleset.dismiss_project_read_files_prompts === true
-        : mergedRuleset.dismiss_global_read_files_prompts === true
+        ? checkDismissConfig(
+            mergedRuleset.dismiss_project_read_files_prompts,
+            checkPath,
+            true,
+          )
+        : checkDismissConfig(
+            mergedRuleset.dismiss_global_read_files_prompts,
+            checkPath,
+            false,
+          )
     case 'fetch-content-prompt':
       if (!appConfig.dangerously_dismiss_fetch_content_prompts) return false
       if (!mergedRuleset) return false

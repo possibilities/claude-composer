@@ -1,18 +1,46 @@
-import type { RulesetConfig } from './schemas'
+import type { RulesetConfig, DismissPromptConfig } from './schemas'
 
 export function mergeRulesets(rulesets: RulesetConfig[]): RulesetConfig {
   const merged: RulesetConfig = {}
 
   for (const ruleset of rulesets) {
     for (const [key, value] of Object.entries(ruleset)) {
-      // Use the least restrictive setting - if any ruleset has true, use true
+      const currentValue = merged[key as keyof RulesetConfig]
+
+      if (key === 'dismiss_fetch_content_prompts') {
+        if (value === true) {
+          merged[key] = true
+        } else if (currentValue === undefined && value === false) {
+          merged[key] = false
+        }
+        continue
+      }
+
       if (value === true) {
-        merged[key as keyof RulesetConfig] = true
+        merged[key as keyof RulesetConfig] = true as any
       } else if (
-        merged[key as keyof RulesetConfig] === undefined &&
-        value === false
+        typeof value === 'object' &&
+        value !== null &&
+        'paths' in value
       ) {
-        merged[key as keyof RulesetConfig] = false
+        if (currentValue === true) {
+          continue
+        } else if (
+          typeof currentValue === 'object' &&
+          currentValue !== null &&
+          'paths' in currentValue
+        ) {
+          const mergedPaths = [
+            ...new Set([...currentValue.paths, ...value.paths]),
+          ]
+          merged[key as keyof RulesetConfig] = { paths: mergedPaths } as any
+        } else {
+          merged[key as keyof RulesetConfig] = value as any
+        }
+      } else if (value === false) {
+        if (currentValue === undefined) {
+          merged[key as keyof RulesetConfig] = false as any
+        }
       }
     }
   }
