@@ -102,8 +102,7 @@ const promptPatterns: PatternConfig[] = [
     triggerText: 'Edit file',
     notification: dedent(
       `
-      Response: {{ actionResponse }} {{ actionResponseIcon }}
-      Action: {{ title }}
+      {{ title }}: {{ actionResponse }} {{ actionResponseIcon }}
       Project: {{ project }}
       File: {{ fileName }}
       `,
@@ -118,8 +117,7 @@ const promptPatterns: PatternConfig[] = [
     triggerText: 'Create file',
     notification: dedent(
       `
-      Response: {{ actionResponse }} {{ actionResponseIcon }}
-      Action: {{ title }}
+      {{ title }}: {{ actionResponse }} {{ actionResponseIcon }}
       Project: {{ project }}
       File: {{ fileName }}
       `,
@@ -141,8 +139,7 @@ const promptPatterns: PatternConfig[] = [
     triggerText: 'Bash command',
     notification: dedent(
       `
-      Response: {{ actionResponse }} {{ actionResponseIcon }}
-      Action: {{ title }} (a)
+      {{ title }}: {{ actionResponse }} {{ actionResponseIcon }}
       Project: {{ project }}
       Command: {{ command }}
       Reason: {{ reason }}
@@ -166,8 +163,7 @@ const promptPatterns: PatternConfig[] = [
     triggerText: 'Bash command',
     notification: dedent(
       `
-      Response: {{ actionResponse }} {{ actionResponseIcon }}
-      Action: {{ title }} (b)
+      {{ title }} [2]: {{ actionResponse }} {{ actionResponseIcon }}
       Project: {{ project }}
       Command: {{ command }}
       Reason: {{ reason }}
@@ -185,8 +181,7 @@ const promptPatterns: PatternConfig[] = [
     triggerText: 'Read files',
     notification: dedent(
       `
-      Response: {{ actionResponse }} {{ actionResponseIcon }}
-      Action: {{ title }}
+      {{ title }}: {{ actionResponse }} {{ actionResponseIcon }}
       Project: {{ project }}
       File: {{ fileName }}
       `,
@@ -207,8 +202,7 @@ const promptPatterns: PatternConfig[] = [
     triggerText: 'Fetch',
     notification: dedent(
       `
-      Response: {{ actionResponse }} {{ actionResponseIcon }}
-      Action: {{ title }}
+      {{ title }}: {{ actionResponse }} {{ actionResponseIcon }}
       Project: {{ project }}
       Domain: {{ domain }}
       URL: {{ url }}
