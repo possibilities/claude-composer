@@ -8,7 +8,6 @@ const envSchema = z.object({
   configDir: z.string().optional(),
   appPath: z.string().optional(),
   patternsPath: z.string().optional(),
-  nodeEnv: z.string().optional(),
   home: z.string(),
   pwd: z.string().optional(),
   forceColor: z.string().optional(),
@@ -36,7 +35,6 @@ export function parseEnvironment(): EnvironmentConfig {
     configDir: process.env[ENV_VARS.CONFIG_DIR],
     appPath: process.env[ENV_VARS.APP_PATH],
     patternsPath: process.env[ENV_VARS.PATTERNS_PATH],
-    nodeEnv: process.env[ENV_VARS.NODE_ENV],
     home: process.env[ENV_VARS.HOME] || process.env.HOME || os.homedir(),
     pwd: process.env[ENV_VARS.PWD],
     forceColor: process.env[ENV_VARS.FORCE_COLOR],
@@ -50,20 +48,6 @@ export function parseEnvironment(): EnvironmentConfig {
   }
 
   return result.data
-}
-
-/**
- * Check if running in test environment
- */
-export function isTestEnvironment(): boolean {
-  return process.env[ENV_VARS.NODE_ENV] === 'test'
-}
-
-/**
- * Check if running in development environment
- */
-export function isDevelopmentEnvironment(): boolean {
-  return process.env[ENV_VARS.NODE_ENV] === 'development'
 }
 
 /**

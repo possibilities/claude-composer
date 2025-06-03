@@ -21,10 +21,7 @@ export async function askYesNo(
     let tty: fs.ReadStream | undefined
 
     try {
-      if (
-        !process.env.NODE_ENV?.includes('test') &&
-        fs.existsSync('/dev/tty')
-      ) {
+      if (fs.existsSync('/dev/tty')) {
         tty = fs.createReadStream('/dev/tty', { flags: 'r' })
 
         const openTimeout = setTimeout(() => {
