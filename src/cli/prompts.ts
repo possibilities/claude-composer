@@ -25,29 +25,62 @@ export async function askYesNo(
         !process.env.NODE_ENV?.includes('test') &&
         fs.existsSync('/dev/tty')
       ) {
-        tty = fs.createReadStream('/dev/tty')
-        await new Promise((resolve, reject) => {
-          tty!.once('error', reject)
-          tty!.once('open', resolve)
-        })
-        ttyInput = tty
+        tty = fs.createReadStream('/dev/tty', { flags: 'r' })
+
+        const openTimeout = setTimeout(() => {
+          if (tty) {
+            tty.destroy()
+            tty = undefined
+          }
+        }, 1000)
+
+        try {
+          await new Promise<void>((resolve, reject) => {
+            tty!.once('error', err => {
+              clearTimeout(openTimeout)
+              reject(err)
+            })
+            tty!.once('open', () => {
+              clearTimeout(openTimeout)
+              resolve()
+            })
+          })
+          ttyInput = tty
+        } catch (err) {
+          clearTimeout(openTimeout)
+          if (tty) {
+            tty.destroy()
+          }
+          return !defaultNo
+        }
       }
     } catch (error) {
       if (tty) {
-        tty.close()
+        tty.destroy()
       }
+      return !defaultNo
     }
 
     const rl = readline.createInterface({
       input: ttyInput,
       output,
+      terminal: false,
     })
 
     return new Promise(resolve => {
-      rl.question('', answer => {
+      const questionTimeout = setTimeout(() => {
         rl.close()
         if (tty) {
-          tty.close()
+          tty.destroy()
+        }
+        resolve(!defaultNo)
+      }, 30000)
+
+      rl.question('', answer => {
+        clearTimeout(questionTimeout)
+        rl.close()
+        if (tty) {
+          tty.destroy()
         }
 
         const normalizedAnswer = answer.trim().toLowerCase()
@@ -57,6 +90,15 @@ export async function askYesNo(
         } else {
           resolve(normalizedAnswer === 'y' || normalizedAnswer === 'yes')
         }
+      })
+
+      rl.on('SIGINT', () => {
+        clearTimeout(questionTimeout)
+        rl.close()
+        if (tty) {
+          tty.destroy()
+        }
+        process.exit(130)
       })
     })
   } else {
