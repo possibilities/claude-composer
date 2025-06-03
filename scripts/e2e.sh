@@ -16,7 +16,13 @@ git commit -m "Let's frikken go"
 date > /tmp/claude-composer-e2e-date1.txt
 date > /tmp/claude-composer-e2e-date2.txt
 date > /tmp/claude-composer-e2e-date3.txt
-${cli_path} --go-off "$(cat <<'EOF'
+${cli_path} \
+  --dangerously-dismiss-edit-file-prompts \
+  --dangerously-dismiss-create-file-prompts \
+  --dangerously-dismiss-bash-command-prompts \
+  --dangerously-dismiss-read-files-prompts \
+  --dangerously-dismiss-fetch-content-prompts \
+"$(cat <<'EOF'
 Perform step by step:
 - Create a file called funny-words.txt with a funny word on each line. 5 lines.
 - Run `ls -lsa /tmp | grep e2e-date` in the current directory

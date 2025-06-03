@@ -40,7 +40,6 @@ export interface ParsedOptions {
   ignoreGlobalConfig?: boolean
   defaultToolsets?: boolean
   defaultRulesets?: boolean
-  goOff?: boolean
   logAllPatternMatches?: boolean
   allowBufferSnapshots?: boolean
   allowAddingProjectTree?: boolean

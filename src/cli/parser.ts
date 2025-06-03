@@ -108,7 +108,6 @@ export function createClaudeComposerCommand(): Command {
       '--no-default-rulesets',
       'Ignore default rulesets from the main config file',
     )
-    .option('--go-off', 'Go off. Full auto mode. What could go wrong?')
     .option(
       '--log-all-pattern-matches',
       'Log all pattern matches to ~/.claude-composer/logs/pattern-matches-<pattern.id>.jsonl',

@@ -97,98 +97,6 @@ export async function checkDirtyDirectory(
   }
 }
 
-export async function handleGoOffMode(
-  options: ParsedOptions,
-  preflightOptions?: PreflightOptions,
-): Promise<boolean> {
-  if (!options.goOff) {
-    return false
-  }
-
-  if (
-    options.dangerouslyDismissEditFilePrompts !== undefined ||
-    options.dangerouslyDismissCreateFilePrompts !== undefined ||
-    options.dangerouslyDismissBashCommandPrompts !== undefined ||
-    options.dangerouslyDismissReadFilesPrompts !== undefined ||
-    options.dangerouslyDismissFetchContentPrompts !== undefined
-  ) {
-    throw new Error(
-      'Cannot use --go-off with individual dangerous prompt flags\n' +
-        'The go-off flag already sets all dangerous prompt dismissals',
-    )
-  }
-
-  console.log(
-    '\x1b[31m╔════════════════════════════════════════════════════════════════╗\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m║                       🚨 DANGER ZONE 🚨                        ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m╠════════════════════════════════════════════════════════════════╣\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m║ You have enabled --go-off                                      ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m║                                                                ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m║ This will:                                                     ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m║ • Automatically dismiss ALL file edit prompts                  ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m║ • Automatically dismiss ALL file creation prompts              ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m║ • Automatically dismiss ALL bash command prompts               ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m║ • Automatically dismiss ALL read files prompts                 ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m║ • Automatically dismiss ALL fetch content prompts              ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m║                                                                ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m║ Claude will have FULL CONTROL to modify files and run commands ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m║ without ANY confirmation!                                      ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m║                                                                ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m║    This is EXTREMELY DANGEROUS and should only be used when    ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m║    you fully trust the AI and understand the risks!            ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[31m╚════════════════════════════════════════════════════════════════╝\x1b[0m',
-  )
-
-  const proceed = await askYesNo(
-    'Are you ABSOLUTELY SURE you want to continue?',
-    true,
-    preflightOptions?.stdin,
-    preflightOptions?.stdout,
-  )
-
-  if (!proceed) {
-    log('※ Good choice. Exiting safely.')
-    return false
-  }
-
-  warn('※ Go-off mode activated - All safety prompts disabled!')
-  return true
-}
-
 export async function handleDangerFlagsWarning(
   appConfig: AppConfig,
   preflightOptions?: PreflightOptions,
@@ -267,15 +175,6 @@ export async function handleDangerFlagsWarning(
   )
   console.log(
     '\x1b[33m║ Claude will modify files and run commands WITHOUT confirmation! ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[33m║                                                                 ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[33m║ Consider using --go-off instead for the full go-off experience  ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[33m║ if you want to dismiss ALL safety prompts at once.              ║\x1b[0m',
   )
   console.log(
     '\x1b[33m╚═════════════════════════════════════════════════════════════════╝\x1b[0m',

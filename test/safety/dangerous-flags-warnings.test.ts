@@ -205,28 +205,6 @@ dangerously_dismiss_bash_command_prompts: true
     )
   })
 
-  test('does not show danger flags warning when --go-off is used', async () => {
-    const result = await runCliInteractive({
-      args: ['--dangerously-allow-in-dirty-directory', '--go-off'],
-      env: {
-        CLAUDE_COMPOSER_CONFIG_DIR: path.join(tmpDir, '.claude-composer'),
-        PWD: tmpDir,
-      },
-      cwd: tmpDir,
-      interactions: [
-        {
-          waitFor: 'Are you ABSOLUTELY SURE you want to continue?',
-          respond: 'y\n',
-        },
-      ],
-    })
-
-    // Should show the --go-off warning but not the danger flags warning
-    expect(result.output).toContain('🚨 DANGER ZONE 🚨')
-    expect(result.output).toContain('You have enabled --go-off')
-    expect(result.output).not.toContain('⚠️  DANGER FLAGS SET ⚠️')
-  })
-
   test('skips interactive prompt in test mode and continues', async () => {
     const result = await runCliInteractive({
       args: [

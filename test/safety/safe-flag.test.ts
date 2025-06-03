@@ -48,16 +48,6 @@ describe('--safe flag functionality', () => {
       expect(result.exitCode).toBe(1)
     })
 
-    it('should reject --safe with --go-off flag', async () => {
-      const result = await runCli({ args: ['--safe', '--go-off'] })
-
-      expect(result.stderr).toContain(
-        'Error: --safe flag cannot be used with other claude-composer flags',
-      )
-      expect(result.stderr).toContain('--go-off')
-      expect(result.exitCode).toBe(1)
-    })
-
     it('should bypass all claude-composer functionality with --safe flag', async () => {
       const result = await runCli({ args: ['--safe', '--version'] })
 

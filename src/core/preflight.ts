@@ -19,7 +19,6 @@ import {
   checkChildAppPath,
   checkVersionControl,
   checkDirtyDirectory,
-  handleGoOffMode,
   handleDangerFlagsWarning,
   displayDangerousWarnings,
 } from '../safety/checker.js'
@@ -355,41 +354,6 @@ export async function runPreflight(
   }
 
   try {
-    const goOffAccepted = await handleGoOffMode(parsedOptions, options)
-    if (parsedOptions.goOff && !goOffAccepted) {
-      return {
-        appConfig,
-        toolsetArgs,
-        rulesetArgs,
-        childArgs,
-        shouldExit: true,
-        exitCode: 0,
-        knownOptions,
-      }
-    }
-    if (goOffAccepted) {
-      appConfig.dangerously_dismiss_edit_file_prompts = true
-      appConfig.dangerously_dismiss_create_file_prompts = true
-      appConfig.dangerously_dismiss_bash_command_prompts = true
-      appConfig.dangerously_dismiss_read_files_prompts = true
-      appConfig.dangerously_dismiss_fetch_content_prompts = true
-    }
-  } catch (error) {
-    console.error(
-      `\x1b[31m※ Error: ${error instanceof Error ? error.message : error}\x1b[0m`,
-    )
-    return {
-      appConfig,
-      toolsetArgs,
-      rulesetArgs,
-      childArgs,
-      shouldExit: true,
-      exitCode: 1,
-      knownOptions,
-    }
-  }
-
-  try {
     checkGitInstalled()
   } catch (error) {
     console.error(`※ ${error instanceof Error ? error.message : error}`)
@@ -466,21 +430,16 @@ export async function runPreflight(
     log('※ Notifications are enabled')
   }
 
-  if (!parsedOptions.goOff) {
-    const dangerFlagsAccepted = await handleDangerFlagsWarning(
+  const dangerFlagsAccepted = await handleDangerFlagsWarning(appConfig, options)
+  if (!dangerFlagsAccepted) {
+    return {
       appConfig,
-      options,
-    )
-    if (!dangerFlagsAccepted) {
-      return {
-        appConfig,
-        toolsetArgs,
-        rulesetArgs,
-        childArgs,
-        shouldExit: true,
-        exitCode: 0,
-        knownOptions,
-      }
+      toolsetArgs,
+      rulesetArgs,
+      childArgs,
+      shouldExit: true,
+      exitCode: 0,
+      knownOptions,
     }
   }
 
