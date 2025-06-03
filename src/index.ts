@@ -3,6 +3,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as util from 'node:util'
 import { spawn } from 'child_process'
+import { fileURLToPath } from 'node:url'
 import { PatternMatcher, MatchResult } from './patterns/matcher'
 import { ResponseQueue } from './core/response-queue'
 import { patterns } from './patterns/registry'
@@ -342,7 +343,9 @@ export async function main() {
 
   if (process.argv.includes('--version') || process.argv.includes('-v')) {
     try {
-      const packageJsonPath = path.resolve('./package.json')
+      const currentFilePath = fileURLToPath(import.meta.url)
+      const currentDir = path.dirname(currentFilePath)
+      const packageJsonPath = path.resolve(currentDir, '..', 'package.json')
       const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
       console.log(`${packageJson.version} (Claude Composer)`)
     } catch (error) {
