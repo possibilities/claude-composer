@@ -3,27 +3,6 @@ import { execSync } from 'child_process'
 import { stripBoxChars } from '../utils/strip-box-chars'
 import dedent from 'dedent'
 
-type ExtractedData = {
-  body?: string
-  [key: string]: any
-}
-
-function extractCommandAndReasonFromPromptBody(
-  data: ExtractedData,
-): ExtractedData {
-  if (data.body) {
-    const lines = stripBoxChars(data.body)
-      .split('\r\n')
-      .map(line => line.trim())
-      .filter(line => line.length > 0)
-    const command = lines.slice(0, -1).join(' ')
-    const reason = lines[lines.length - 1]
-    console.log({ command, reason })
-    return { ...data, command, reason }
-  }
-  return data
-}
-
 function followedByCursor(str: string): string {
   return `${str}\x1b[7m \x1b[0m`
 }
@@ -125,7 +104,18 @@ const promptPatterns: PatternConfig[] = [
       Reason: {{ reason }}
       `,
     ),
-    transformExtractedData: extractCommandAndReasonFromPromptBody,
+    transformExtractedData: data => {
+      if (data.body) {
+        const lines = stripBoxChars(data.body)
+          .split('\r\n')
+          .map(line => line.trim())
+          .filter(line => line.length > 0)
+        const command = lines.slice(0, -1).join(' ')
+        const reason = lines[lines.length - 1]
+        return { ...data, command, reason }
+      }
+      return data
+    },
   },
   {
     id: 'bash-command-prompt-format-2',
@@ -156,7 +146,6 @@ const promptPatterns: PatternConfig[] = [
           .filter(line => line.length > 0)
         const command = lines.slice(0, -1).join(' ')
         const reason = lines[lines.length - 1]
-        console.log({ command, reason })
         return { ...data, command, reason }
       }
       return data
