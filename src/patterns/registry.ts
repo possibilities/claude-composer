@@ -12,13 +12,36 @@ function extractCommandAndReasonFromPromptBody(
   data: ExtractedData,
 ): ExtractedData {
   if (data.body) {
-    const lines = stripBoxChars(data.body)
-      .split('\r\n')
+    // Strip box characters and split into lines
+    const stripped = stripBoxChars(data.body)
+    const lines = stripped
+      .split(/\r?\n/)
       .map(line => line.trim())
       .filter(line => line.length > 0)
-    const command = lines.slice(0, -1).join(' ')
-    const reason = lines[lines.length - 1]
-    return { ...data, command, reason }
+
+    // The body format is typically:
+    // │                                                      │  (empty line)
+    // │   command here                                       │
+    // │   reason here                                        │
+    // │                                                      │  (empty line)
+
+    // Find the actual command and reason lines (non-empty after trimming)
+    const contentLines = lines.filter(line => {
+      // Remove any remaining box characters and trim
+      const cleaned = line.replace(/[│║]/g, '').trim()
+      return cleaned.length > 0
+    })
+
+    if (contentLines.length >= 2) {
+      // First line is command, second is reason
+      const command = contentLines[0]
+      const reason = contentLines[1]
+      return { ...data, command, reason }
+    } else if (contentLines.length === 1) {
+      // Only command, no reason
+      const command = contentLines[0]
+      return { ...data, command, reason: '' }
+    }
   }
   return data
 }
@@ -137,6 +160,7 @@ const promptPatterns: PatternConfig[] = [
       'Bash command',
       '{{ body | multiline }}',
       'Do you want to proceed',
+      '1. Yes',
       '2. No',
     ],
     triggerText: 'Bash command',
@@ -147,6 +171,7 @@ const promptPatterns: PatternConfig[] = [
       Project: {{ project }}
       Command: {{ command }}
       Reason: {{ reason }}
+      Directory: {{ directory }}
       `,
     ),
     transformExtractedData: extractCommandAndReasonFromPromptBody,
