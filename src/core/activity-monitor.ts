@@ -77,7 +77,7 @@ export class ActivityMonitor {
               },
               this.appConfig,
               'work_started',
-            )
+            ).catch(err => console.error('Failed to send notification:', err))
           }
         }
       }
@@ -142,7 +142,7 @@ export class ActivityMonitor {
           },
           this.appConfig,
           'work_complete',
-        )
+        ).catch(err => console.error('Failed to send notification:', err))
       }
 
       // Reset activity start time
@@ -154,7 +154,7 @@ export class ActivityMonitor {
         },
         this.appConfig,
         'work_complete',
-      )
+      ).catch(err => console.error('Failed to send notification:', err))
     }
   }
 
@@ -274,6 +274,6 @@ export class ActivityMonitor {
       },
       this.appConfig,
       'work_complete_record',
-    )
+    ).catch(err => console.error('Failed to send notification:', err))
   }
 }

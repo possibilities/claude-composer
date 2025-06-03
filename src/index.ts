@@ -15,6 +15,7 @@ import {
   showPatternNotification,
 } from './utils/notifications.js'
 import { TerminalManager } from './terminal/manager'
+import { RemoteNotificationService } from './services/remote-notifications'
 import {
   ensureBackupDirectory,
   createBackup,
@@ -337,7 +338,7 @@ function handlePatternMatches(
               sound: true,
             },
             appConfig,
-          )
+          ).catch(err => console.error('Failed to send notification:', err))
           return
         }
       }
@@ -347,7 +348,7 @@ function handlePatternMatches(
         appConfig,
         actionResponse,
         actionResponseIcon,
-      )
+      ).catch(err => console.error('Failed to send notification:', err))
     }
   }
 }
@@ -557,6 +558,17 @@ export async function main() {
   mergedRuleset = preflightResult.mergedRuleset
   tempMcpConfigPath = preflightResult.tempMcpConfigPath
 
+  // Initialize remote notification service if enabled
+  if (appConfig?.send_remote_notifications) {
+    const remoteService = RemoteNotificationService.getInstance()
+    const initialized = await remoteService.initialize()
+    if (!initialized) {
+      warn(
+        '※ Remote notifications enabled but initialization failed. Check ~/.claude-composer/remote-notifications.yaml',
+      )
+    }
+  }
+
   responseQueue = new ResponseQueue()
   terminalManager = new TerminalManager(appConfig, responseQueue)
   if (tempMcpConfigPath) {
@@ -605,7 +617,7 @@ export async function main() {
         message: `Claude Composer started working 🚀\nProject: ${projectName}`,
       },
       appConfig,
-    )
+    ).catch(err => console.error('Failed to send notification:', err))
   }
 
   const childArgs = preflightResult.childArgs

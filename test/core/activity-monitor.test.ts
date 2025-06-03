@@ -14,7 +14,7 @@ describe('ActivityMonitor', () => {
 
   beforeEach(() => {
     vi.useFakeTimers()
-    mockShowNotification = vi.fn()
+    mockShowNotification = vi.fn().mockResolvedValue(undefined)
     vi.mocked(notifications.showNotification).mockImplementation(
       mockShowNotification,
     )

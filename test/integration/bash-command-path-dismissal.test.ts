@@ -12,8 +12,8 @@ vi.mock('../../src/utils/file-utils', () => ({
 
 // Mock the notifications module
 vi.mock('../../src/utils/notifications', () => ({
-  showNotification: vi.fn(),
-  showPatternNotification: vi.fn(),
+  showNotification: vi.fn().mockResolvedValue(undefined),
+  showPatternNotification: vi.fn().mockResolvedValue(undefined),
 }))
 
 // Import after mocking

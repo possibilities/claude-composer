@@ -34,7 +34,7 @@ describe('Notification filtering by action type', () => {
     },
   }
 
-  it('should only show notifications for patterns with notification property', () => {
+  it('should only show notifications for patterns with notification property', async () => {
     // Test matches with different action types
     const inputMatchWithNotification = createMatchWithNotification(
       {
@@ -71,19 +71,19 @@ describe('Notification filtering by action type', () => {
     }
 
     // Test with notifications (as prompted actions)
-    showPatternNotification(
+    await showPatternNotification(
       inputMatchWithNotification,
       defaultAppConfig,
       'Prompted',
       '❤',
     )
-    showPatternNotification(
+    await showPatternNotification(
       logMatchWithNotification,
       defaultAppConfig,
       'Prompted',
       '❤',
     )
-    showPatternNotification(
+    await showPatternNotification(
       inputMatchWithoutNotification,
       defaultAppConfig,
       'Prompted',
@@ -111,7 +111,7 @@ describe('Notification filtering by action type', () => {
     })
   })
 
-  it('should handle multiple patterns correctly', () => {
+  it('should handle multiple patterns correctly', async () => {
     const matches: Array<
       MatchResult | ReturnType<typeof createMatchWithNotification>
     > = [
@@ -158,9 +158,9 @@ describe('Notification filtering by action type', () => {
     ]
 
     // Process all matches
-    matches.forEach(match =>
-      showPatternNotification(match, defaultAppConfig, 'Prompted', '❤'),
-    )
+    for (const match of matches) {
+      await showPatternNotification(match, defaultAppConfig, 'Prompted', '❤')
+    }
 
     // Should only be called for the two matches with notification property
     expect(mockNotify).toHaveBeenCalledTimes(2)
@@ -180,7 +180,7 @@ describe('Notification filtering by action type', () => {
     )
   })
 
-  it('should respect appConfig.show_notifications setting', () => {
+  it('should respect appConfig.show_notifications setting', async () => {
     const match = createMatchWithNotification(
       {
         patternId: 'test-pattern',
@@ -195,7 +195,7 @@ describe('Notification filtering by action type', () => {
 
     // The actual filtering by appConfig happens in index.ts
     // This test just verifies our notification function works
-    showPatternNotification(match, defaultAppConfig, 'Prompted', '❤')
+    await showPatternNotification(match, defaultAppConfig, 'Prompted', '❤')
 
     expect(mockNotify).toHaveBeenCalledOnce()
     expect(mockNotify).toHaveBeenCalledWith({

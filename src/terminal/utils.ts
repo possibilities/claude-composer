@@ -60,7 +60,9 @@ export async function saveTerminalSnapshot(
 
     if (appConfig.show_notifications !== false) {
       const projectName = path.basename(process.cwd())
-      showSnapshotNotification(projectName, appConfig)
+      showSnapshotNotification(projectName, appConfig).catch(err =>
+        console.error('Failed to send notification:', err),
+      )
     }
   } catch (error) {}
 }

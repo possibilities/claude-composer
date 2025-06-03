@@ -11,6 +11,6 @@ export function createMatchWithNotification(
   }
 }
 
-export function testShowNotification(match: MatchResult): void {
-  showPatternNotification(match)
+export async function testShowNotification(match: MatchResult): Promise<void> {
+  await showPatternNotification(match)
 }

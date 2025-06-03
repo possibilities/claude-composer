@@ -21,12 +21,12 @@ describe('Sticky notifications', () => {
     vi.clearAllMocks()
   })
 
-  it('should use timeout: 86400 when sticky_notifications is true', () => {
+  it('should use timeout: 86400 when sticky_notifications is true', async () => {
     const appConfig: AppConfig = {
       sticky_notifications: true,
     }
 
-    showNotification({ message: 'Test message' }, appConfig)
+    await showNotification({ message: 'Test message' }, appConfig)
 
     expect(mockNotify).toHaveBeenCalledWith({
       title: '🤖 Claude Composer',
@@ -37,12 +37,12 @@ describe('Sticky notifications', () => {
     })
   })
 
-  it('should use timeout: undefined when sticky_notifications is false', () => {
+  it('should use timeout: undefined when sticky_notifications is false', async () => {
     const appConfig: AppConfig = {
       sticky_notifications: false,
     }
 
-    showNotification({ message: 'Test message' }, appConfig)
+    await showNotification({ message: 'Test message' }, appConfig)
 
     expect(mockNotify).toHaveBeenCalledWith({
       title: '🤖 Claude Composer',
@@ -53,10 +53,10 @@ describe('Sticky notifications', () => {
     })
   })
 
-  it('should use timeout: undefined when sticky_notifications is not set', () => {
+  it('should use timeout: undefined when sticky_notifications is not set', async () => {
     const appConfig: AppConfig = {}
 
-    showNotification({ message: 'Test message' }, appConfig)
+    await showNotification({ message: 'Test message' }, appConfig)
 
     expect(mockNotify).toHaveBeenCalledWith({
       title: '🤖 Claude Composer',
@@ -67,7 +67,7 @@ describe('Sticky notifications', () => {
     })
   })
 
-  it('should respect sticky setting in pattern notifications', () => {
+  it('should respect sticky setting in pattern notifications', async () => {
     const match: MatchResult = {
       patternId: 'test-pattern',
       patternTitle: 'Test Pattern',
@@ -85,7 +85,7 @@ describe('Sticky notifications', () => {
       sticky_notifications: true,
     }
 
-    showPatternNotification(match, stickyConfig, 'Prompted', '✋')
+    await showPatternNotification(match, stickyConfig, 'Prompted', '✋')
 
     expect(mockNotify).toHaveBeenCalledWith({
       title: '🤖 Claude Composer',
@@ -96,12 +96,12 @@ describe('Sticky notifications', () => {
     })
   })
 
-  it('should respect sticky setting in snapshot notifications', () => {
+  it('should respect sticky setting in snapshot notifications', async () => {
     const stickyConfig: AppConfig = {
       sticky_notifications: true,
     }
 
-    showSnapshotNotification('my-project', stickyConfig)
+    await showSnapshotNotification('my-project', stickyConfig)
 
     expect(mockNotify).toHaveBeenCalledWith({
       title: '📸 Claude Composer',
@@ -113,13 +113,13 @@ describe('Sticky notifications', () => {
     })
   })
 
-  it('should allow explicit timeout to override sticky setting', () => {
+  it('should allow explicit timeout to override sticky setting', async () => {
     const stickyConfig: AppConfig = {
       sticky_notifications: true,
     }
 
     // Explicit timeout should override the sticky setting
-    showNotification({ message: 'Test', timeout: 10 }, stickyConfig)
+    await showNotification({ message: 'Test', timeout: 10 }, stickyConfig)
 
     expect(mockNotify).toHaveBeenCalledWith({
       title: '🤖 Claude Composer',
