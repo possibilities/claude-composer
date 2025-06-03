@@ -360,7 +360,11 @@ Line 15
       customMonitor.checkSnapshot(snapshotWithoutText)
 
       expect(mockShowNotification).toHaveBeenCalledWith(
-        { message: expect.stringContaining('Claude Composer is done working') },
+        {
+          message: expect.stringMatching(
+            /Claude Composer is done working[\s\S]*Duration:/i,
+          ),
+        },
         mockConfig,
       )
     })
@@ -409,7 +413,7 @@ Line 15
       expect(mockShowNotification).toHaveBeenCalledWith(
         {
           message: expect.stringMatching(
-            /Claude Composer is done working\nProject: .+/,
+            /Claude Composer is done working\nProject: .+\nDuration: .+/,
           ),
         },
         mockConfig,
@@ -531,7 +535,7 @@ Line 15
       vi.advanceTimersByTime(2100)
       monitor.checkSnapshot(snapshotWithoutText)
 
-      // Should still show regular notification
+      // Should still show regular notification (without duration since start time is missing)
       expect(mockShowNotification).toHaveBeenCalledOnce()
       expect(mockShowNotification).toHaveBeenCalledWith(
         { message: expect.stringContaining('Claude Composer is done working') },

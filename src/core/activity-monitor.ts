@@ -104,9 +104,10 @@ export class ActivityMonitor {
       if (recordBroken && this.appConfig.notify_work_complete !== false) {
         this.showRecordBrokenNotification(duration, projectName)
       } else if (this.appConfig.notify_work_complete !== false) {
+        const formattedDuration = this.formatDuration(duration)
         showNotification(
           {
-            message: `Claude Composer is done working\nProject: ${projectName}`,
+            message: `Claude Composer is done working\nProject: ${projectName}\nDuration: ${formattedDuration}`,
           },
           this.appConfig,
         )
