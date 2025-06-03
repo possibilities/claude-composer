@@ -14,11 +14,11 @@ git init
 git add .
 git commit -m "Let's frikken go"
 ${cli_path} \
-    --dangerously-dismiss-edit-file-prompts \
-    --dangerously-dismiss-create-file-prompts \
-    --dangerously-dismiss-bash-command-prompts \
-    --dangerously-dismiss-read-files-prompts \
-    --dangerously-dismiss-fetch-content-prompts \
+    --dangerously-accept-edit-file-prompts \
+    --dangerously-accept-create-file-prompts \
+    --dangerously-accept-bash-command-prompts \
+    --dangerously-accept-read-files-prompts \
+    --dangerously-accept-fetch-content-prompts \
 "$(cat <<'EOF'
 Perform step by step:
 - Create a file called funny-words.txt with a funny word on each line. 5 lines.

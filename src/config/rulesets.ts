@@ -1,7 +1,7 @@
 import type {
   RulesetConfig,
-  DismissPromptConfig,
-  DismissFetchContentConfig,
+  AcceptPromptConfig,
+  AcceptFetchContentConfig,
 } from './schemas'
 
 export function mergeRulesets(rulesets: RulesetConfig[]): RulesetConfig {
@@ -11,7 +11,7 @@ export function mergeRulesets(rulesets: RulesetConfig[]): RulesetConfig {
     for (const [key, value] of Object.entries(ruleset)) {
       const currentValue = merged[key as keyof RulesetConfig]
 
-      if (key === 'dismiss_fetch_content_prompts') {
+      if (key === 'accept_fetch_content_prompts') {
         if (value === true) {
           merged[key] = true
         } else if (

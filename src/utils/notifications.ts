@@ -18,7 +18,7 @@ export type NotificationType =
   | 'work_complete'
   | 'work_complete_record'
   | 'prompted_confirmation'
-  | 'dismissed_confirmation'
+  | 'accepted_confirmation'
   | 'terminal_snapshot'
 
 export function getNotificationStickiness(
@@ -49,8 +49,8 @@ export function getNotificationStickiness(
       return stickyConfig?.work_complete_record ?? true
     case 'prompted_confirmation':
       return stickyConfig?.prompted_confirmations ?? true
-    case 'dismissed_confirmation':
-      return stickyConfig?.dismissed_confirmations ?? false
+    case 'accepted_confirmation':
+      return stickyConfig?.accepted_confirmations ?? false
     case 'terminal_snapshot':
       return stickyConfig?.terminal_snapshot ?? false
     default:
@@ -66,7 +66,7 @@ export function showNotification(
   // Determine if notification should be sticky
   let isSticky = false
   if (options.timeout === false) {
-    // Explicit sticky request (like undismissable dialog)
+    // Explicit sticky request (like unacceptable dialog)
     isSticky = true
   } else if (notificationType) {
     isSticky = getNotificationStickiness(notificationType, appConfig)
@@ -120,7 +120,7 @@ export function getPatternType(
 export function showPatternNotification(
   match: MatchResult,
   appConfig?: AppConfig,
-  actionResponse?: 'Dismissed' | 'Prompted',
+  actionResponse?: 'Accepted' | 'Prompted',
   actionResponseIcon?: string,
 ): void {
   if (!match.notification || !appConfig) {
@@ -133,11 +133,11 @@ export function showPatternNotification(
   // Check confirmation notifications enabled
   if (appConfig.show_confirm_notify === false) return
 
-  // Check dismissed vs prompted
-  const isDismissed = actionResponse === 'Dismissed'
+  // Check accepted vs prompted
+  const isAccepted = actionResponse === 'Accepted'
   const isPrompted = actionResponse === 'Prompted'
 
-  if (isDismissed && !appConfig.show_dismissed_confirm_notify) return
+  if (isAccepted && !appConfig.show_accepted_confirm_notify) return
   if (isPrompted && appConfig.show_prompted_confirm_notify === false) return
 
   // Check per-type control
@@ -147,8 +147,8 @@ export function showPatternNotification(
   }
 
   // Determine notification type for stickiness
-  const notificationType: NotificationType = isDismissed
-    ? 'dismissed_confirmation'
+  const notificationType: NotificationType = isAccepted
+    ? 'accepted_confirmation'
     : 'prompted_confirmation'
 
   const message = replacePlaceholders(

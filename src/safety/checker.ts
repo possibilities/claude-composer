@@ -102,11 +102,11 @@ export async function handleDangerFlagsWarning(
   preflightOptions?: PreflightOptions,
 ): Promise<boolean> {
   const hasDangerFlags =
-    appConfig.dangerously_dismiss_edit_file_prompts ||
-    appConfig.dangerously_dismiss_create_file_prompts ||
-    appConfig.dangerously_dismiss_bash_command_prompts ||
-    appConfig.dangerously_dismiss_read_files_prompts ||
-    appConfig.dangerously_dismiss_fetch_content_prompts
+    appConfig.dangerously_accept_edit_file_prompts ||
+    appConfig.dangerously_accept_create_file_prompts ||
+    appConfig.dangerously_accept_bash_command_prompts ||
+    appConfig.dangerously_accept_read_files_prompts ||
+    appConfig.dangerously_accept_fetch_content_prompts
 
   if (!hasDangerFlags) {
     return true
@@ -138,35 +138,35 @@ export async function handleDangerFlagsWarning(
     '\x1b[33m╠═════════════════════════════════════════════════════════════════╣\x1b[0m',
   )
   console.log(
-    '\x1b[33m║ You have enabled dangerous flags that will dismiss prompts:     ║\x1b[0m',
+    '\x1b[33m║ You have enabled dangerous flags that will accept prompts:     ║\x1b[0m',
   )
   console.log(
     '\x1b[33m║                                                                 ║\x1b[0m',
   )
 
-  if (appConfig.dangerously_dismiss_edit_file_prompts) {
+  if (appConfig.dangerously_accept_edit_file_prompts) {
     console.log(
-      '\x1b[33m║ • File edit prompts will be AUTO-DISMISSED                      ║\x1b[0m',
+      '\x1b[33m║ • File edit prompts will be AUTO-ACCEPTED                      ║\x1b[0m',
     )
   }
-  if (appConfig.dangerously_dismiss_create_file_prompts) {
+  if (appConfig.dangerously_accept_create_file_prompts) {
     console.log(
-      '\x1b[33m║ • File creation prompts will be AUTO-DISMISSED                  ║\x1b[0m',
+      '\x1b[33m║ • File creation prompts will be AUTO-ACCEPTED                  ║\x1b[0m',
     )
   }
-  if (appConfig.dangerously_dismiss_bash_command_prompts) {
+  if (appConfig.dangerously_accept_bash_command_prompts) {
     console.log(
-      '\x1b[33m║ • Bash command prompts will be AUTO-DISMISSED                   ║\x1b[0m',
+      '\x1b[33m║ • Bash command prompts will be AUTO-ACCEPTED                   ║\x1b[0m',
     )
   }
-  if (appConfig.dangerously_dismiss_read_files_prompts) {
+  if (appConfig.dangerously_accept_read_files_prompts) {
     console.log(
-      '\x1b[33m║ • Read files prompts will be AUTO-DISMISSED                     ║\x1b[0m',
+      '\x1b[33m║ • Read files prompts will be AUTO-ACCEPTED                     ║\x1b[0m',
     )
   }
-  if (appConfig.dangerously_dismiss_fetch_content_prompts) {
+  if (appConfig.dangerously_accept_fetch_content_prompts) {
     console.log(
-      '\x1b[33m║ • Fetch content prompts will be AUTO-DISMISSED                  ║\x1b[0m',
+      '\x1b[33m║ • Fetch content prompts will be AUTO-ACCEPTED                  ║\x1b[0m',
     )
   }
 
@@ -197,24 +197,24 @@ export async function handleDangerFlagsWarning(
 }
 
 export function displayDangerousWarnings(appConfig: AppConfig): void {
-  if (appConfig.dangerously_dismiss_edit_file_prompts) {
-    warn('⚠️  WARNING: --dangerously-dismiss-edit-file-prompts is enabled')
-    warn('   All file edit prompts will be automatically dismissed!')
+  if (appConfig.dangerously_accept_edit_file_prompts) {
+    warn('⚠️  WARNING: --dangerously-accept-edit-file-prompts is enabled')
+    warn('   All file edit prompts will be automatically accepted!')
   }
-  if (appConfig.dangerously_dismiss_create_file_prompts) {
-    warn('⚠️  WARNING: --dangerously-dismiss-create-file-prompts is enabled')
-    warn('   All file creation prompts will be automatically dismissed!')
+  if (appConfig.dangerously_accept_create_file_prompts) {
+    warn('⚠️  WARNING: --dangerously-accept-create-file-prompts is enabled')
+    warn('   All file creation prompts will be automatically accepted!')
   }
-  if (appConfig.dangerously_dismiss_bash_command_prompts) {
-    warn('⚠️  WARNING: --dangerously-dismiss-bash-command-prompts is enabled')
-    warn('   All bash command prompts will be automatically dismissed!')
+  if (appConfig.dangerously_accept_bash_command_prompts) {
+    warn('⚠️  WARNING: --dangerously-accept-bash-command-prompts is enabled')
+    warn('   All bash command prompts will be automatically accepted!')
   }
-  if (appConfig.dangerously_dismiss_read_files_prompts) {
-    warn('⚠️  WARNING: --dangerously-dismiss-read-files-prompts is enabled')
-    warn('   All read files prompts will be automatically dismissed!')
+  if (appConfig.dangerously_accept_read_files_prompts) {
+    warn('⚠️  WARNING: --dangerously-accept-read-files-prompts is enabled')
+    warn('   All read files prompts will be automatically accepted!')
   }
-  if (appConfig.dangerously_dismiss_fetch_content_prompts) {
-    warn('⚠️  WARNING: --dangerously-dismiss-fetch-content-prompts is enabled')
-    warn('   All fetch content prompts will be automatically dismissed!')
+  if (appConfig.dangerously_accept_fetch_content_prompts) {
+    warn('⚠️  WARNING: --dangerously-accept-fetch-content-prompts is enabled')
+    warn('   All fetch content prompts will be automatically accepted!')
   }
 }

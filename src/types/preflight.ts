@@ -34,7 +34,7 @@ export interface ParsedOptions {
 
   // New confirmation notification settings
   showConfirmNotify?: boolean
-  showDismissedConfirmNotify?: boolean
+  showAcceptedConfirmNotify?: boolean
   showPromptedConfirmNotify?: boolean
 
   // New work notification settings
@@ -54,15 +54,15 @@ export interface ParsedOptions {
   stickyWorkCompleteNotifications?: boolean
   stickyWorkCompleteRecordNotifications?: boolean
   stickyPromptedConfirmNotify?: boolean
-  stickyDismissedConfirmNotify?: boolean
+  stickyAcceptedConfirmNotify?: boolean
   stickyTerminalSnapshotNotifications?: boolean
 
-  // Dangerous dismissal settings
-  dangerouslyDismissEditFilePrompts?: boolean
-  dangerouslyDismissCreateFilePrompts?: boolean
-  dangerouslyDismissBashCommandPrompts?: boolean
-  dangerouslyDismissReadFilesPrompts?: boolean
-  dangerouslyDismissFetchContentPrompts?: boolean
+  // Dangerous acceptance settings
+  dangerouslyAcceptEditFilePrompts?: boolean
+  dangerouslyAcceptCreateFilePrompts?: boolean
+  dangerouslyAcceptBashCommandPrompts?: boolean
+  dangerouslyAcceptReadFilesPrompts?: boolean
+  dangerouslyAcceptFetchContentPrompts?: boolean
   dangerouslyAllowInDirtyDirectory?: boolean
   dangerouslyAllowWithoutVersionControl?: boolean
 

@@ -307,19 +307,19 @@ export class ConfigurationManager {
     return this.getAllPatterns().filter(pattern => {
       if (
         pattern.id === 'edit-file-prompt' &&
-        !config.dangerously_dismiss_edit_file_prompts
+        !config.dangerously_accept_edit_file_prompts
       ) {
         return false
       }
       if (
         pattern.id === 'create-file-prompt' &&
-        !config.dangerously_dismiss_create_file_prompts
+        !config.dangerously_accept_create_file_prompts
       ) {
         return false
       }
       if (
         pattern.id === 'bash-command-prompt' &&
-        !config.dangerously_dismiss_bash_command_prompts
+        !config.dangerously_accept_bash_command_prompts
       ) {
         return false
       }
@@ -415,7 +415,7 @@ export class ConfigurationManager {
 
       // Confirmation notification settings
       show_confirm_notify: true,
-      show_dismissed_confirm_notify: false,
+      show_accepted_confirm_notify: false,
       show_prompted_confirm_notify: true,
       confirm_notify: {
         edit_file: true,
@@ -437,7 +437,7 @@ export class ConfigurationManager {
         work_complete: true,
         work_complete_record: true,
         prompted_confirmations: true,
-        dismissed_confirmations: false,
+        accepted_confirmations: false,
         terminal_snapshot: false,
       },
 
@@ -447,9 +447,9 @@ export class ConfigurationManager {
 
       // Other defaults
       log_all_pattern_matches: false,
-      dangerously_dismiss_edit_file_prompts: false,
-      dangerously_dismiss_create_file_prompts: false,
-      dangerously_dismiss_bash_command_prompts: false,
+      dangerously_accept_edit_file_prompts: false,
+      dangerously_accept_create_file_prompts: false,
+      dangerously_accept_bash_command_prompts: false,
       dangerously_allow_in_dirty_directory: false,
       dangerously_allow_without_version_control: false,
       allow_adding_project_tree: false,

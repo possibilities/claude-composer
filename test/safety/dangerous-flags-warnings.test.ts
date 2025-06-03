@@ -20,10 +20,10 @@ describe('Dangerous flags warnings', () => {
     fs.mkdirSync(gitDir, { recursive: true })
   })
 
-  test('shows warning for --dangerously-dismiss-edit-file-prompts', async () => {
+  test('shows warning for --dangerously-accept-edit-file-prompts', async () => {
     const result = await runCliInteractive({
       args: [
-        '--dangerously-dismiss-edit-file-prompts',
+        '--dangerously-accept-edit-file-prompts',
         '--dangerously-allow-in-dirty-directory',
       ],
       env: {
@@ -44,17 +44,17 @@ describe('Dangerous flags warnings', () => {
       '(Skipping interactive prompt in test mode)',
     )
     expect(result.output).toContain(
-      '⚠️  WARNING: --dangerously-dismiss-edit-file-prompts is enabled',
+      '⚠️  WARNING: --dangerously-accept-edit-file-prompts is enabled',
     )
     expect(result.output).toContain(
-      'All file edit prompts will be automatically dismissed!',
+      'All file edit prompts will be automatically accepted!',
     )
   })
 
-  test('shows warning for --dangerously-dismiss-create-file-prompts', async () => {
+  test('shows warning for --dangerously-accept-create-file-prompts', async () => {
     const result = await runCliInteractive({
       args: [
-        '--dangerously-dismiss-create-file-prompts',
+        '--dangerously-accept-create-file-prompts',
         '--dangerously-allow-in-dirty-directory',
       ],
       env: {
@@ -75,17 +75,17 @@ describe('Dangerous flags warnings', () => {
       '(Skipping interactive prompt in test mode)',
     )
     expect(result.output).toContain(
-      '⚠️  WARNING: --dangerously-dismiss-create-file-prompts is enabled',
+      '⚠️  WARNING: --dangerously-accept-create-file-prompts is enabled',
     )
     expect(result.output).toContain(
-      'All file creation prompts will be automatically dismissed!',
+      'All file creation prompts will be automatically accepted!',
     )
   })
 
-  test('shows warning for --dangerously-dismiss-bash-command-prompts', async () => {
+  test('shows warning for --dangerously-accept-bash-command-prompts', async () => {
     const result = await runCliInteractive({
       args: [
-        '--dangerously-dismiss-bash-command-prompts',
+        '--dangerously-accept-bash-command-prompts',
         '--dangerously-allow-in-dirty-directory',
       ],
       env: {
@@ -106,19 +106,19 @@ describe('Dangerous flags warnings', () => {
       '(Skipping interactive prompt in test mode)',
     )
     expect(result.output).toContain(
-      '⚠️  WARNING: --dangerously-dismiss-bash-command-prompts is enabled',
+      '⚠️  WARNING: --dangerously-accept-bash-command-prompts is enabled',
     )
     expect(result.output).toContain(
-      'All bash command prompts will be automatically dismissed!',
+      'All bash command prompts will be automatically accepted!',
     )
   })
 
   test('shows all warnings when multiple dangerous flags are set', async () => {
     const result = await runCliInteractive({
       args: [
-        '--dangerously-dismiss-edit-file-prompts',
-        '--dangerously-dismiss-create-file-prompts',
-        '--dangerously-dismiss-bash-command-prompts',
+        '--dangerously-accept-edit-file-prompts',
+        '--dangerously-accept-create-file-prompts',
+        '--dangerously-accept-bash-command-prompts',
         '--dangerously-allow-in-dirty-directory',
       ],
       env: {
@@ -139,30 +139,30 @@ describe('Dangerous flags warnings', () => {
       '(Skipping interactive prompt in test mode)',
     )
     expect(result.output).toContain(
-      '⚠️  WARNING: --dangerously-dismiss-edit-file-prompts is enabled',
+      '⚠️  WARNING: --dangerously-accept-edit-file-prompts is enabled',
     )
     expect(result.output).toContain(
-      'All file edit prompts will be automatically dismissed!',
+      'All file edit prompts will be automatically accepted!',
     )
     expect(result.output).toContain(
-      '⚠️  WARNING: --dangerously-dismiss-create-file-prompts is enabled',
+      '⚠️  WARNING: --dangerously-accept-create-file-prompts is enabled',
     )
     expect(result.output).toContain(
-      'All file creation prompts will be automatically dismissed!',
+      'All file creation prompts will be automatically accepted!',
     )
     expect(result.output).toContain(
-      '⚠️  WARNING: --dangerously-dismiss-bash-command-prompts is enabled',
+      '⚠️  WARNING: --dangerously-accept-bash-command-prompts is enabled',
     )
     expect(result.output).toContain(
-      'All bash command prompts will be automatically dismissed!',
+      'All bash command prompts will be automatically accepted!',
     )
   })
 
   test('shows warnings when dangerous flags are set via config file', async () => {
     // Write config file with dangerous flags
-    const config = `dangerously_dismiss_edit_file_prompts: true
-dangerously_dismiss_create_file_prompts: true
-dangerously_dismiss_bash_command_prompts: true
+    const config = `dangerously_accept_edit_file_prompts: true
+dangerously_accept_create_file_prompts: true
+dangerously_accept_bash_command_prompts: true
 `
     fs.writeFileSync(configFile, config)
 
@@ -186,29 +186,29 @@ dangerously_dismiss_bash_command_prompts: true
       '(Skipping interactive prompt in test mode)',
     )
     expect(result.output).toContain(
-      '⚠️  WARNING: --dangerously-dismiss-edit-file-prompts is enabled',
+      '⚠️  WARNING: --dangerously-accept-edit-file-prompts is enabled',
     )
     expect(result.output).toContain(
-      'All file edit prompts will be automatically dismissed!',
+      'All file edit prompts will be automatically accepted!',
     )
     expect(result.output).toContain(
-      '⚠️  WARNING: --dangerously-dismiss-create-file-prompts is enabled',
+      '⚠️  WARNING: --dangerously-accept-create-file-prompts is enabled',
     )
     expect(result.output).toContain(
-      'All file creation prompts will be automatically dismissed!',
+      'All file creation prompts will be automatically accepted!',
     )
     expect(result.output).toContain(
-      '⚠️  WARNING: --dangerously-dismiss-bash-command-prompts is enabled',
+      '⚠️  WARNING: --dangerously-accept-bash-command-prompts is enabled',
     )
     expect(result.output).toContain(
-      'All bash command prompts will be automatically dismissed!',
+      'All bash command prompts will be automatically accepted!',
     )
   })
 
   test('skips interactive prompt in test mode and continues', async () => {
     const result = await runCliInteractive({
       args: [
-        '--dangerously-dismiss-edit-file-prompts',
+        '--dangerously-accept-edit-file-prompts',
         '--dangerously-allow-in-dirty-directory',
       ],
       env: {
@@ -224,7 +224,7 @@ dangerously_dismiss_bash_command_prompts: true
       '(Skipping interactive prompt in test mode)',
     )
     expect(result.output).toContain(
-      '⚠️  WARNING: --dangerously-dismiss-edit-file-prompts is enabled',
+      '⚠️  WARNING: --dangerously-accept-edit-file-prompts is enabled',
     )
     expect(result.exitCode).toBe(0)
   })

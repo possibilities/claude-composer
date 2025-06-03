@@ -3,17 +3,24 @@ import { spawn, ChildProcess } from 'child_process'
 import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
+import { setupTestConfig } from '../utils/test-setup'
 
 const cliPath = path.join(__dirname, '..', '..', 'dist', 'cli.js')
 const mockAppPath = path.join(__dirname, '..', 'utils', 'mock-child-app.ts')
 
 describe('CLI Wrapper', () => {
+  let testConfig: ReturnType<typeof setupTestConfig>
+
   beforeEach(() => {
+    testConfig = setupTestConfig()
     process.env.CLAUDE_APP_PATH = mockAppPath
+    process.env.CLAUDE_COMPOSER_CONFIG_DIR = testConfig.configDir
   })
 
   afterEach(() => {
+    testConfig.cleanup()
     delete process.env.CLAUDE_APP_PATH
+    delete process.env.CLAUDE_COMPOSER_CONFIG_DIR
     delete process.env.CLAUDE_PATTERNS_PATH
     try {
       fs.unlinkSync('/tmp/test-pattern-match.log')
@@ -84,6 +91,7 @@ describe('CLI Wrapper', () => {
       const result = await runCli([
         '--dangerously-allow-without-version-control',
         '--dangerously-allow-in-dirty-directory',
+        '--ignore-global-config',
         '--echo-args',
         'arg1',
         'arg2',
@@ -95,6 +103,7 @@ describe('CLI Wrapper', () => {
       const result = await runCli([
         '--dangerously-allow-without-version-control',
         '--dangerously-allow-in-dirty-directory',
+        '--ignore-global-config',
         '--exit',
         '42',
       ])
@@ -112,6 +121,7 @@ describe('CLI Wrapper', () => {
           cliPath,
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
+          '--ignore-global-config',
           '--interactive',
         ],
         {
@@ -190,6 +200,7 @@ describe('CLI Wrapper', () => {
           cliPath,
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
+          '--ignore-global-config',
           '--color',
         ],
         {
@@ -225,6 +236,7 @@ describe('CLI Wrapper', () => {
           cliPath,
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
+          '--ignore-global-config',
           '--size',
           '--watch',
         ],
@@ -310,6 +322,7 @@ describe('CLI Wrapper', () => {
         [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
+          '--ignore-global-config',
           '--interactive',
         ],
         {
@@ -328,6 +341,7 @@ describe('CLI Wrapper', () => {
         [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
+          '--ignore-global-config',
           '--stdin',
         ],
         {
@@ -345,6 +359,7 @@ describe('CLI Wrapper', () => {
       const result = await runCli([
         '--dangerously-allow-without-version-control',
         '--dangerously-allow-in-dirty-directory',
+        '--ignore-global-config',
         '--color',
       ])
 
@@ -360,6 +375,7 @@ describe('CLI Wrapper', () => {
       const result = await runCli([
         '--dangerously-allow-without-version-control',
         '--dangerously-allow-in-dirty-directory',
+        '--ignore-global-config',
       ])
       expect(result.exitCode).toBe(0)
     })
@@ -370,6 +386,7 @@ describe('CLI Wrapper', () => {
       const result = await runCli([
         '--dangerously-allow-without-version-control',
         '--dangerously-allow-in-dirty-directory',
+        '--ignore-global-config',
         '--show-notifications',
       ])
       expect(result.stdout).toContain('Notifications are enabled')
@@ -381,6 +398,7 @@ describe('CLI Wrapper', () => {
       const result = await runCli([
         '--dangerously-allow-without-version-control',
         '--dangerously-allow-in-dirty-directory',
+        '--ignore-global-config',
         '--show-notifications',
         '--echo-args',
         'test1',
@@ -396,6 +414,7 @@ describe('CLI Wrapper', () => {
       const result = await runCli([
         '--dangerously-allow-without-version-control',
         '--dangerously-allow-in-dirty-directory',
+        '--ignore-global-config',
         '--echo-args',
         '--show-notifications',
         'arg1',
@@ -664,9 +683,9 @@ foo: true`
         [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
-          '--no-dangerously-dismiss-edit-file-prompts',
-          '--no-dangerously-dismiss-create-file-prompts',
-          '--no-dangerously-dismiss-bash-command-prompts',
+          '--no-dangerously-accept-edit-file-prompts',
+          '--no-dangerously-accept-create-file-prompts',
+          '--no-dangerously-accept-bash-command-prompts',
         ],
         {
           env: { ...process.env, CLAUDE_COMPOSER_CONFIG_DIR: testConfigDir },
@@ -677,12 +696,12 @@ foo: true`
       expect(result.stdout).toContain('Mock child app running')
     })
 
-    it('should handle --dangerously-dismiss-bash-command-prompts flag', async () => {
+    it('should handle --dangerously-accept-bash-command-prompts flag', async () => {
       const result = await runCli(
         [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
-          '--dangerously-dismiss-bash-command-prompts',
+          '--dangerously-accept-bash-command-prompts',
           '--echo-args',
         ],
         {
@@ -696,12 +715,12 @@ foo: true`
         .split('\n')
         .find(line => line.includes('ARGS:'))
       expect(argsLine).not.toContain(
-        '--dangerously-dismiss-bash-command-prompts',
+        '--dangerously-accept-bash-command-prompts',
       )
     })
 
-    it('should load dangerously_dismiss_bash_command_prompts from config', async () => {
-      const configContent = 'dangerously_dismiss_bash_command_prompts: true'
+    it('should load dangerously_accept_bash_command_prompts from config', async () => {
+      const configContent = 'dangerously_accept_bash_command_prompts: true'
       fs.writeFileSync(testConfigPath, configContent)
 
       const result = await runCli(
@@ -719,12 +738,12 @@ foo: true`
     })
 
     it('should prioritize CLI flag over config for bash command prompts', async () => {
-      const configContent = 'dangerously_dismiss_bash_command_prompts: true'
+      const configContent = 'dangerously_accept_bash_command_prompts: true'
       fs.writeFileSync(testConfigPath, configContent)
 
       const result = await runCli(
         [
-          '--no-dangerously-dismiss-bash-command-prompts',
+          '--no-dangerously-accept-bash-command-prompts',
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
         ],
@@ -737,14 +756,14 @@ foo: true`
       expect(result.stdout).toContain('Mock child app running')
     })
 
-    it('should handle all dismiss prompts flags together', async () => {
+    it('should handle all accept prompts flags together', async () => {
       const result = await runCli(
         [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
-          '--dangerously-dismiss-edit-file-prompts',
-          '--dangerously-dismiss-create-file-prompts',
-          '--dangerously-dismiss-bash-command-prompts',
+          '--dangerously-accept-edit-file-prompts',
+          '--dangerously-accept-create-file-prompts',
+          '--dangerously-accept-bash-command-prompts',
           '--echo-args',
         ],
         {
@@ -758,23 +777,21 @@ foo: true`
       const argsLine = result.stdout
         .split('\n')
         .find(line => line.includes('ARGS:'))
-      expect(argsLine).not.toContain('--dangerously-dismiss-edit-file-prompts')
+      expect(argsLine).not.toContain('--dangerously-accept-edit-file-prompts')
+      expect(argsLine).not.toContain('--dangerously-accept-create-file-prompts')
       expect(argsLine).not.toContain(
-        '--dangerously-dismiss-create-file-prompts',
-      )
-      expect(argsLine).not.toContain(
-        '--dangerously-dismiss-bash-command-prompts',
+        '--dangerously-accept-bash-command-prompts',
       )
     })
 
-    it('should handle mixed positive and negative dismiss flags', async () => {
+    it('should handle mixed positive and negative accept flags', async () => {
       const result = await runCli(
         [
           '--dangerously-allow-without-version-control',
           '--dangerously-allow-in-dirty-directory',
-          '--dangerously-dismiss-edit-file-prompts',
-          '--no-dangerously-dismiss-create-file-prompts',
-          '--dangerously-dismiss-bash-command-prompts',
+          '--dangerously-accept-edit-file-prompts',
+          '--no-dangerously-accept-create-file-prompts',
+          '--dangerously-accept-bash-command-prompts',
           '--echo-args',
         ],
         {

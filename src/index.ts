@@ -78,7 +78,7 @@ async function initializePatterns(): Promise<boolean> {
       promptTriggers.add(pattern.triggerText)
     }
 
-    // Always add prompt patterns so notifications work, dismissal is handled later
+    // Always add prompt patterns so notifications work, acceptance is handled later
     if (
       pattern.id === 'add-tree-trigger' &&
       !appConfig.allow_adding_project_tree
@@ -160,7 +160,7 @@ function matchDomain(domain: string, patterns: string[]): boolean {
   return false
 }
 
-function checkDismissConfig(
+function checkAcceptConfig(
   config: boolean | { paths: string[] } | undefined,
   filePath: string,
   isProjectContext: boolean,
@@ -181,7 +181,7 @@ function checkDismissConfig(
   return false
 }
 
-function shouldDismissPrompt(match: MatchResult): boolean {
+function shouldAcceptPrompt(match: MatchResult): boolean {
   const fileName = match.extractedData?.fileName
   const directory = match.extractedData?.directory
 
@@ -192,43 +192,43 @@ function shouldDismissPrompt(match: MatchResult): boolean {
 
   switch (match.patternId) {
     case 'edit-file-prompt':
-      if (!appConfig.dangerously_dismiss_edit_file_prompts) return false
+      if (!appConfig.dangerously_accept_edit_file_prompts) return false
       if (!mergedRuleset) return false
       return isInProjectRoot
-        ? checkDismissConfig(
-            mergedRuleset.dismiss_project_edit_file_prompts,
+        ? checkAcceptConfig(
+            mergedRuleset.accept_project_edit_file_prompts,
             checkPath,
             true,
           )
-        : checkDismissConfig(
-            mergedRuleset.dismiss_global_edit_file_prompts,
+        : checkAcceptConfig(
+            mergedRuleset.accept_global_edit_file_prompts,
             checkPath,
             false,
           )
     case 'create-file-prompt':
-      if (!appConfig.dangerously_dismiss_create_file_prompts) return false
+      if (!appConfig.dangerously_accept_create_file_prompts) return false
       if (!mergedRuleset) return false
       return isInProjectRoot
-        ? checkDismissConfig(
-            mergedRuleset.dismiss_project_create_file_prompts,
+        ? checkAcceptConfig(
+            mergedRuleset.accept_project_create_file_prompts,
             checkPath,
             true,
           )
-        : checkDismissConfig(
-            mergedRuleset.dismiss_global_create_file_prompts,
+        : checkAcceptConfig(
+            mergedRuleset.accept_global_create_file_prompts,
             checkPath,
             false,
           )
     case 'bash-command-prompt-format-1':
     case 'bash-command-prompt-format-2':
-      if (!appConfig.dangerously_dismiss_bash_command_prompts) return false
+      if (!appConfig.dangerously_accept_bash_command_prompts) return false
       if (!mergedRuleset) return false
 
       const bashConfig = isInProjectRoot
-        ? mergedRuleset.dismiss_project_bash_command_prompts
-        : mergedRuleset.dismiss_global_bash_command_prompts
+        ? mergedRuleset.accept_project_bash_command_prompts
+        : mergedRuleset.accept_global_bash_command_prompts
 
-      // If config is path-based but no directory is available, don't dismiss
+      // If config is path-based but no directory is available, don't accept
       if (
         bashConfig &&
         typeof bashConfig === 'object' &&
@@ -242,34 +242,34 @@ function shouldDismissPrompt(match: MatchResult): boolean {
       }
 
       return isInProjectRoot
-        ? checkDismissConfig(
-            mergedRuleset.dismiss_project_bash_command_prompts,
+        ? checkAcceptConfig(
+            mergedRuleset.accept_project_bash_command_prompts,
             checkPath,
             true,
           )
-        : checkDismissConfig(
-            mergedRuleset.dismiss_global_bash_command_prompts,
+        : checkAcceptConfig(
+            mergedRuleset.accept_global_bash_command_prompts,
             checkPath,
             false,
           )
     case 'read-files-prompt':
-      if (!appConfig.dangerously_dismiss_read_files_prompts) return false
+      if (!appConfig.dangerously_accept_read_files_prompts) return false
       if (!mergedRuleset) return false
       return isInProjectRoot
-        ? checkDismissConfig(
-            mergedRuleset.dismiss_project_read_files_prompts,
+        ? checkAcceptConfig(
+            mergedRuleset.accept_project_read_files_prompts,
             checkPath,
             true,
           )
-        : checkDismissConfig(
-            mergedRuleset.dismiss_global_read_files_prompts,
+        : checkAcceptConfig(
+            mergedRuleset.accept_global_read_files_prompts,
             checkPath,
             false,
           )
     case 'fetch-content-prompt':
-      if (!appConfig.dangerously_dismiss_fetch_content_prompts) return false
+      if (!appConfig.dangerously_accept_fetch_content_prompts) return false
       if (!mergedRuleset) return false
-      const fetchConfig = mergedRuleset.dismiss_fetch_content_prompts
+      const fetchConfig = mergedRuleset.accept_fetch_content_prompts
       if (fetchConfig === true) return true
       if (fetchConfig === false || !fetchConfig) return false
       if (typeof fetchConfig === 'object' && 'domains' in fetchConfig) {
@@ -297,14 +297,14 @@ function handlePatternMatches(
       match.patternId === 'add-changes-trigger' ||
       match.type === 'completion'
 
-    let actionResponse: 'Dismissed' | 'Prompted' | undefined
+    let actionResponse: 'Accepted' | 'Prompted' | undefined
     let actionResponseIcon: string | undefined
 
     if (isCompletionPattern) {
       responseQueue.enqueue(match.response)
-    } else if (shouldDismissPrompt(match)) {
+    } else if (shouldAcceptPrompt(match)) {
       responseQueue.enqueue(match.response)
-      actionResponse = 'Dismissed'
+      actionResponse = 'Accepted'
       actionResponseIcon = '👍'
     } else if (match.type === 'prompt') {
       actionResponse = 'Prompted'
@@ -320,19 +320,19 @@ function handlePatternMatches(
       ) {
         const isInProjectRoot = isFileInProjectRoot(process.cwd())
         const bashConfig = isInProjectRoot
-          ? mergedRuleset?.dismiss_project_bash_command_prompts
-          : mergedRuleset?.dismiss_global_bash_command_prompts
+          ? mergedRuleset?.accept_project_bash_command_prompts
+          : mergedRuleset?.accept_global_bash_command_prompts
 
         if (
           bashConfig &&
           typeof bashConfig === 'object' &&
           'paths' in bashConfig
         ) {
-          // Show special undismissable notification
+          // Show special unacceptable notification
           showNotification(
             {
               title: '🚨 Claude Composer',
-              message: 'UNDISMISSABLE DIALOG BECAUSE NO DIRECTORY IS SPECIFIED',
+              message: 'UNACCEPTABLE DIALOG BECAUSE NO DIRECTORY IS SPECIFIED',
               timeout: false, // Always sticky
               sound: true,
             },

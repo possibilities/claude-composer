@@ -61,23 +61,23 @@ describe('Configuration Loading', () => {
     expect(config.show_notifications).toBe(false)
   })
 
-  it('should load dangerously_dismiss_bash_command_prompts setting', async () => {
-    const configContent = 'dangerously_dismiss_bash_command_prompts: true'
+  it('should load dangerously_accept_bash_command_prompts setting', async () => {
+    const configContent = 'dangerously_accept_bash_command_prompts: true'
     fs.writeFileSync(testConfigPath, configContent)
 
     const config = await loadConfigFile(testConfigPath)
 
-    expect(config.dangerously_dismiss_bash_command_prompts).toBe(true)
+    expect(config.dangerously_accept_bash_command_prompts).toBe(true)
   })
 
-  it('should load all dangerous dismiss options from config', async () => {
+  it('should load all dangerous accept options from config', async () => {
     const configContent = `
 show_notifications: false
-dangerously_dismiss_edit_file_prompts: true
-dangerously_dismiss_create_file_prompts: true
-dangerously_dismiss_bash_command_prompts: true
-dangerously_dismiss_read_files_prompts: true
-dangerously_dismiss_fetch_content_prompts: true
+dangerously_accept_edit_file_prompts: true
+dangerously_accept_create_file_prompts: true
+dangerously_accept_bash_command_prompts: true
+dangerously_accept_read_files_prompts: true
+dangerously_accept_fetch_content_prompts: true
 dangerously_allow_in_dirty_directory: true
 dangerously_allow_without_version_control: true`
     fs.writeFileSync(testConfigPath, configContent)
@@ -85,11 +85,11 @@ dangerously_allow_without_version_control: true`
     const config = await loadConfigFile(testConfigPath)
 
     expect(config.show_notifications).toBe(false)
-    expect(config.dangerously_dismiss_edit_file_prompts).toBe(true)
-    expect(config.dangerously_dismiss_create_file_prompts).toBe(true)
-    expect(config.dangerously_dismiss_bash_command_prompts).toBe(true)
-    expect(config.dangerously_dismiss_read_files_prompts).toBe(true)
-    expect(config.dangerously_dismiss_fetch_content_prompts).toBe(true)
+    expect(config.dangerously_accept_edit_file_prompts).toBe(true)
+    expect(config.dangerously_accept_create_file_prompts).toBe(true)
+    expect(config.dangerously_accept_bash_command_prompts).toBe(true)
+    expect(config.dangerously_accept_read_files_prompts).toBe(true)
+    expect(config.dangerously_accept_fetch_content_prompts).toBe(true)
     expect(config.dangerously_allow_in_dirty_directory).toBe(true)
     expect(config.dangerously_allow_without_version_control).toBe(true)
   })

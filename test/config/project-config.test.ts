@@ -82,7 +82,7 @@ describe('Project Configuration', () => {
       if (path === '/test/project/.claude-composer/config.yaml') {
         return `
 show_notifications: false
-dangerously_dismiss_edit_file_prompts: true
+dangerously_accept_edit_file_prompts: true
 `
       }
       throw new Error('File not found')
@@ -92,7 +92,7 @@ dangerously_dismiss_edit_file_prompts: true
     const config = configManager.getAppConfig()
 
     expect(config.show_notifications).toBe(false)
-    expect(config.dangerously_dismiss_edit_file_prompts).toBe(true)
+    expect(config.dangerously_accept_edit_file_prompts).toBe(true)
   })
 
   it('should prioritize project config over global config', async () => {
@@ -107,14 +107,14 @@ dangerously_dismiss_edit_file_prompts: true
       if (path === '/home/test/.claude-composer/config.yaml') {
         return `
 show_notifications: true
-dangerously_dismiss_edit_file_prompts: false
-dangerously_dismiss_create_file_prompts: true
+dangerously_accept_edit_file_prompts: false
+dangerously_accept_create_file_prompts: true
 `
       }
       if (path === '/test/project/.claude-composer/config.yaml') {
         return `
 show_notifications: false
-dangerously_dismiss_edit_file_prompts: true
+dangerously_accept_edit_file_prompts: true
 `
       }
       throw new Error('File not found')
@@ -125,10 +125,10 @@ dangerously_dismiss_edit_file_prompts: true
 
     // Project values override global
     expect(config.show_notifications).toBe(false)
-    expect(config.dangerously_dismiss_edit_file_prompts).toBe(true)
+    expect(config.dangerously_accept_edit_file_prompts).toBe(true)
 
     // Global value used when not in project
-    expect(config.dangerously_dismiss_create_file_prompts).toBe(true)
+    expect(config.dangerously_accept_create_file_prompts).toBe(true)
   })
 
   it('should prioritize CLI overrides over project config', async () => {
@@ -140,7 +140,7 @@ dangerously_dismiss_edit_file_prompts: true
       if (path === '/test/project/.claude-composer/config.yaml') {
         return `
 show_notifications: false
-dangerously_dismiss_edit_file_prompts: true
+dangerously_accept_edit_file_prompts: true
 `
       }
       throw new Error('File not found')
@@ -157,7 +157,7 @@ dangerously_dismiss_edit_file_prompts: true
     expect(config.show_notifications).toBe(true)
 
     // Project value used when no CLI override
-    expect(config.dangerously_dismiss_edit_file_prompts).toBe(true)
+    expect(config.dangerously_accept_edit_file_prompts).toBe(true)
   })
 
   it('should handle toolsets with complete replacement at each level', async () => {
@@ -218,7 +218,7 @@ toolsets:
 
     // Should have defaults
     expect(config.show_notifications).toBe(true)
-    expect(config.dangerously_dismiss_edit_file_prompts).toBe(false)
+    expect(config.dangerously_accept_edit_file_prompts).toBe(false)
     expect(config.toolsets).toBeUndefined()
   })
 })

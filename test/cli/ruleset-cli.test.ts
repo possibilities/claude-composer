@@ -41,8 +41,8 @@ dangerously_allow_without_version_control: true
     it('should load a single ruleset from CLI', async () => {
       // Create a test ruleset file
       const rulesetContent = `
-dismiss_project_edit_file_prompts: true
-dismiss_project_create_file_prompts: false
+accept_project_edit_file_prompts: true
+accept_project_create_file_prompts: false
 `
       fs.writeFileSync(
         path.join(rulesetsDir, 'test-ruleset.yaml'),
@@ -57,8 +57,8 @@ dismiss_project_create_file_prompts: false
       ])
 
       expect(result.mergedRuleset).toBeDefined()
-      expect(result.mergedRuleset?.dismiss_project_edit_file_prompts).toBe(true)
-      expect(result.mergedRuleset?.dismiss_project_create_file_prompts).toBe(
+      expect(result.mergedRuleset?.accept_project_edit_file_prompts).toBe(true)
+      expect(result.mergedRuleset?.accept_project_create_file_prompts).toBe(
         false,
       )
     })
@@ -66,12 +66,12 @@ dismiss_project_create_file_prompts: false
     it('should load multiple rulesets from CLI', async () => {
       // Create test ruleset files
       const ruleset1 = `
-dismiss_project_edit_file_prompts: true
-dismiss_project_create_file_prompts: false
+accept_project_edit_file_prompts: true
+accept_project_create_file_prompts: false
 `
       const ruleset2 = `
-dismiss_project_create_file_prompts: true
-dismiss_project_bash_command_prompts: true
+accept_project_create_file_prompts: true
+accept_project_bash_command_prompts: true
 `
       fs.writeFileSync(path.join(rulesetsDir, 'ruleset1.yaml'), ruleset1)
       fs.writeFileSync(path.join(rulesetsDir, 'ruleset2.yaml'), ruleset2)
@@ -85,11 +85,11 @@ dismiss_project_bash_command_prompts: true
       ])
 
       expect(result.mergedRuleset).toBeDefined()
-      expect(result.mergedRuleset?.dismiss_project_edit_file_prompts).toBe(true)
-      expect(result.mergedRuleset?.dismiss_project_create_file_prompts).toBe(
+      expect(result.mergedRuleset?.accept_project_edit_file_prompts).toBe(true)
+      expect(result.mergedRuleset?.accept_project_create_file_prompts).toBe(
         true,
       )
-      expect(result.mergedRuleset?.dismiss_project_bash_command_prompts).toBe(
+      expect(result.mergedRuleset?.accept_project_bash_command_prompts).toBe(
         true,
       )
     })
@@ -120,7 +120,7 @@ rulesets:
 
       // Create the default ruleset
       const rulesetContent = `
-dismiss_project_edit_file_prompts: true
+accept_project_edit_file_prompts: true
 `
       fs.writeFileSync(
         path.join(rulesetsDir, 'default-ruleset.yaml'),
@@ -130,7 +130,7 @@ dismiss_project_edit_file_prompts: true
       const result = await runPreflight(['node', 'cli'])
 
       expect(result.mergedRuleset).toBeDefined()
-      expect(result.mergedRuleset?.dismiss_project_edit_file_prompts).toBe(true)
+      expect(result.mergedRuleset?.accept_project_edit_file_prompts).toBe(true)
     })
 
     it('should respect --no-default-rulesets flag', async () => {
@@ -145,7 +145,7 @@ rulesets:
 
       // Create the default ruleset
       const rulesetContent = `
-dismiss_project_edit_file_prompts: true
+accept_project_edit_file_prompts: true
 `
       fs.writeFileSync(
         path.join(rulesetsDir, 'default-ruleset.yaml'),
@@ -173,10 +173,10 @@ rulesets:
 
       // Create the rulesets
       const defaultContent = `
-dismiss_project_edit_file_prompts: false
+accept_project_edit_file_prompts: false
 `
       const cliContent = `
-dismiss_project_edit_file_prompts: true
+accept_project_edit_file_prompts: true
 `
       fs.writeFileSync(
         path.join(rulesetsDir, 'default-ruleset.yaml'),
@@ -192,15 +192,15 @@ dismiss_project_edit_file_prompts: true
       ])
 
       expect(result.mergedRuleset).toBeDefined()
-      expect(result.mergedRuleset?.dismiss_project_edit_file_prompts).toBe(true)
+      expect(result.mergedRuleset?.accept_project_edit_file_prompts).toBe(true)
     })
   })
 
   describe('Ruleset argument building', () => {
     it('should return empty rulesetArgs since rulesets are handled in parent', async () => {
       const rulesetContent = `
-dismiss_project_edit_file_prompts: true
-dismiss_global_create_file_prompts: true
+accept_project_edit_file_prompts: true
+accept_global_create_file_prompts: true
 `
       fs.writeFileSync(
         path.join(rulesetsDir, 'test-ruleset.yaml'),
@@ -219,8 +219,8 @@ dismiss_global_create_file_prompts: true
 
     it('should always return empty rulesetArgs', async () => {
       const rulesetContent = `
-dismiss_project_edit_file_prompts: true
-dismiss_global_edit_file_prompts: true
+accept_project_edit_file_prompts: true
+accept_global_edit_file_prompts: true
 `
       fs.writeFileSync(
         path.join(rulesetsDir, 'test-ruleset.yaml'),
@@ -241,19 +241,19 @@ dismiss_global_edit_file_prompts: true
   describe('Ruleset merging behavior', () => {
     it('should use least restrictive setting when merging', () => {
       const ruleset1 = {
-        dismiss_project_edit_file_prompts: false,
-        dismiss_project_create_file_prompts: true,
+        accept_project_edit_file_prompts: false,
+        accept_project_create_file_prompts: true,
       }
       const ruleset2 = {
-        dismiss_project_edit_file_prompts: true,
-        dismiss_project_create_file_prompts: false,
+        accept_project_edit_file_prompts: true,
+        accept_project_create_file_prompts: false,
       }
 
       const merged = mergeRulesets([ruleset1, ruleset2])
 
       // Both should be true (least restrictive)
-      expect(merged.dismiss_project_edit_file_prompts).toBe(true)
-      expect(merged.dismiss_project_create_file_prompts).toBe(true)
+      expect(merged.accept_project_edit_file_prompts).toBe(true)
+      expect(merged.accept_project_create_file_prompts).toBe(true)
     })
   })
 })

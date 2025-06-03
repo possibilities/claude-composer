@@ -7,11 +7,11 @@ import { mergeRulesets } from '../../src/config/rulesets'
 import type { RulesetConfig } from '../../src/config/schemas'
 import picomatch from 'picomatch'
 
-describe('Dismiss Bash Command Path Patterns', () => {
+describe('Accept Bash Command Path Patterns', () => {
   const originalEnv = process.env
   const testConfigDir = path.join(
     os.tmpdir(),
-    'test-dismiss-bash-paths-' + Date.now(),
+    'test-accept-bash-paths-' + Date.now(),
   )
   const rulesetsDir = path.join(testConfigDir, 'rulesets')
 
@@ -31,11 +31,11 @@ describe('Dismiss Bash Command Path Patterns', () => {
   describe('Bash command path pattern configuration', () => {
     it('should load ruleset with bash command path patterns', async () => {
       const rulesetContent = `
-dismiss_project_bash_command_prompts:
+accept_project_bash_command_prompts:
   paths:
     - "~/code/**"
     - "/tmp/**"
-dismiss_global_bash_command_prompts:
+accept_global_bash_command_prompts:
   paths:
     - "/usr/local/**"
     - "/opt/**"
@@ -48,46 +48,46 @@ dismiss_global_bash_command_prompts:
       const result = await loadRulesetFile('bash-paths')
 
       expect(result).toEqual({
-        dismiss_project_bash_command_prompts: {
+        accept_project_bash_command_prompts: {
           paths: ['~/code/**', '/tmp/**'],
         },
-        dismiss_global_bash_command_prompts: {
+        accept_global_bash_command_prompts: {
           paths: ['/usr/local/**', '/opt/**'],
         },
       })
     })
 
-    it('should support boolean values for bash command dismissal', async () => {
+    it('should support boolean values for bash command acceptance', async () => {
       const rulesetContent = `
-dismiss_project_bash_command_prompts: true
-dismiss_global_bash_command_prompts: false
+accept_project_bash_command_prompts: true
+accept_global_bash_command_prompts: false
 `
       fs.writeFileSync(path.join(rulesetsDir, 'bash-bool.yaml'), rulesetContent)
 
       const result = await loadRulesetFile('bash-bool')
 
       expect(result).toEqual({
-        dismiss_project_bash_command_prompts: true,
-        dismiss_global_bash_command_prompts: false,
+        accept_project_bash_command_prompts: true,
+        accept_global_bash_command_prompts: false,
       })
     })
 
     it('should merge bash command path arrays from multiple rulesets', () => {
       const ruleset1: RulesetConfig = {
-        dismiss_project_bash_command_prompts: {
+        accept_project_bash_command_prompts: {
           paths: ['~/code/**'],
         },
       }
 
       const ruleset2: RulesetConfig = {
-        dismiss_project_bash_command_prompts: {
+        accept_project_bash_command_prompts: {
           paths: ['~/projects/**', '~/code/**'],
         },
       }
 
       const merged = mergeRulesets([ruleset1, ruleset2])
 
-      expect(merged.dismiss_project_bash_command_prompts).toEqual({
+      expect(merged.accept_project_bash_command_prompts).toEqual({
         paths: ['~/code/**', '~/projects/**'],
       })
     })
@@ -110,8 +110,8 @@ dismiss_global_bash_command_prompts: false
 
     it('should handle mixed boolean and path configurations for bash commands', async () => {
       const rulesetContent = `
-dismiss_project_bash_command_prompts: true
-dismiss_global_bash_command_prompts:
+accept_project_bash_command_prompts: true
+accept_global_bash_command_prompts:
   paths:
     - "/usr/**"
     - "/etc/**"
@@ -124,8 +124,8 @@ dismiss_global_bash_command_prompts:
       const result = await loadRulesetFile('bash-mixed')
 
       expect(result).toEqual({
-        dismiss_project_bash_command_prompts: true,
-        dismiss_global_bash_command_prompts: {
+        accept_project_bash_command_prompts: true,
+        accept_global_bash_command_prompts: {
           paths: ['/usr/**', '/etc/**'],
         },
       })
@@ -167,7 +167,7 @@ dismiss_global_bash_command_prompts:
     })
   })
 
-  describe('Integration with bash command prompt dismissal', () => {
+  describe('Integration with bash command prompt acceptance', () => {
     it('should handle project context with relative paths', () => {
       const cwd = process.cwd()
       const patterns = ['src/**', 'test/**', 'scripts/**']

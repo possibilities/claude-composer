@@ -33,11 +33,11 @@ export async function runPreflight(
     show_notifications: true,
     notify_work_started: false,
     notify_work_complete: true,
-    dangerously_dismiss_edit_file_prompts: false,
-    dangerously_dismiss_create_file_prompts: false,
-    dangerously_dismiss_bash_command_prompts: false,
-    dangerously_dismiss_read_files_prompts: false,
-    dangerously_dismiss_fetch_content_prompts: false,
+    dangerously_accept_edit_file_prompts: false,
+    dangerously_accept_create_file_prompts: false,
+    dangerously_accept_bash_command_prompts: false,
+    dangerously_accept_read_files_prompts: false,
+    dangerously_accept_fetch_content_prompts: false,
     dangerously_allow_in_dirty_directory: false,
     dangerously_allow_without_version_control: false,
   }
@@ -143,25 +143,25 @@ export async function runPreflight(
   if (parsedOptions.showNotifications !== undefined) {
     appConfig.show_notifications = parsedOptions.showNotifications
   }
-  if (parsedOptions.dangerouslyDismissEditFilePrompts !== undefined) {
-    appConfig.dangerously_dismiss_edit_file_prompts =
-      parsedOptions.dangerouslyDismissEditFilePrompts
+  if (parsedOptions.dangerouslyAcceptEditFilePrompts !== undefined) {
+    appConfig.dangerously_accept_edit_file_prompts =
+      parsedOptions.dangerouslyAcceptEditFilePrompts
   }
-  if (parsedOptions.dangerouslyDismissCreateFilePrompts !== undefined) {
-    appConfig.dangerously_dismiss_create_file_prompts =
-      parsedOptions.dangerouslyDismissCreateFilePrompts
+  if (parsedOptions.dangerouslyAcceptCreateFilePrompts !== undefined) {
+    appConfig.dangerously_accept_create_file_prompts =
+      parsedOptions.dangerouslyAcceptCreateFilePrompts
   }
-  if (parsedOptions.dangerouslyDismissBashCommandPrompts !== undefined) {
-    appConfig.dangerously_dismiss_bash_command_prompts =
-      parsedOptions.dangerouslyDismissBashCommandPrompts
+  if (parsedOptions.dangerouslyAcceptBashCommandPrompts !== undefined) {
+    appConfig.dangerously_accept_bash_command_prompts =
+      parsedOptions.dangerouslyAcceptBashCommandPrompts
   }
-  if (parsedOptions.dangerouslyDismissReadFilesPrompts !== undefined) {
-    appConfig.dangerously_dismiss_read_files_prompts =
-      parsedOptions.dangerouslyDismissReadFilesPrompts
+  if (parsedOptions.dangerouslyAcceptReadFilesPrompts !== undefined) {
+    appConfig.dangerously_accept_read_files_prompts =
+      parsedOptions.dangerouslyAcceptReadFilesPrompts
   }
-  if (parsedOptions.dangerouslyDismissFetchContentPrompts !== undefined) {
-    appConfig.dangerously_dismiss_fetch_content_prompts =
-      parsedOptions.dangerouslyDismissFetchContentPrompts
+  if (parsedOptions.dangerouslyAcceptFetchContentPrompts !== undefined) {
+    appConfig.dangerously_accept_fetch_content_prompts =
+      parsedOptions.dangerouslyAcceptFetchContentPrompts
   }
   if (parsedOptions.dangerouslyAllowInDirtyDirectory !== undefined) {
     appConfig.dangerously_allow_in_dirty_directory =
@@ -195,9 +195,9 @@ export async function runPreflight(
   if (parsedOptions.showConfirmNotify !== undefined) {
     appConfig.show_confirm_notify = parsedOptions.showConfirmNotify
   }
-  if (parsedOptions.showDismissedConfirmNotify !== undefined) {
-    appConfig.show_dismissed_confirm_notify =
-      parsedOptions.showDismissedConfirmNotify
+  if (parsedOptions.showAcceptedConfirmNotify !== undefined) {
+    appConfig.show_accepted_confirm_notify =
+      parsedOptions.showAcceptedConfirmNotify
   }
   if (parsedOptions.showPromptedConfirmNotify !== undefined) {
     appConfig.show_prompted_confirm_notify =
@@ -257,7 +257,7 @@ export async function runPreflight(
     parsedOptions.stickyWorkCompleteNotifications !== undefined ||
     parsedOptions.stickyWorkCompleteRecordNotifications !== undefined ||
     parsedOptions.stickyPromptedConfirmNotify !== undefined ||
-    parsedOptions.stickyDismissedConfirmNotify !== undefined ||
+    parsedOptions.stickyAcceptedConfirmNotify !== undefined ||
     parsedOptions.stickyTerminalSnapshotNotifications !== undefined
   ) {
     // Initialize sticky_notifications as object if it's boolean or undefined
@@ -283,9 +283,9 @@ export async function runPreflight(
       appConfig.sticky_notifications.prompted_confirmations =
         parsedOptions.stickyPromptedConfirmNotify
     }
-    if (parsedOptions.stickyDismissedConfirmNotify !== undefined) {
-      appConfig.sticky_notifications.dismissed_confirmations =
-        parsedOptions.stickyDismissedConfirmNotify
+    if (parsedOptions.stickyAcceptedConfirmNotify !== undefined) {
+      appConfig.sticky_notifications.accepted_confirmations =
+        parsedOptions.stickyAcceptedConfirmNotify
     }
     if (parsedOptions.stickyTerminalSnapshotNotifications !== undefined) {
       appConfig.sticky_notifications.terminal_snapshot =
@@ -448,7 +448,7 @@ export async function runPreflight(
   }
 
   if (isSubcommand) {
-    log(`※ Bypassing Claude Composer`)
+    log(`※ Accepting Claude Composer`)
     log(`※ Running Claude Code subcommand: ${args[0]}`)
     return {
       appConfig,
