@@ -15,6 +15,7 @@ export interface RunCliOptions {
   env?: Record<string, string>
   timeout?: number // Default: 3000ms
   mockAppPath?: string
+  allowFailure?: boolean // Allow the CLI to fail without throwing
 }
 
 export interface InteractiveRunOptions extends RunCliOptions {
@@ -25,12 +26,6 @@ export interface InteractiveRunOptions extends RunCliOptions {
 }
 
 const CLI_PATH = path.join(process.cwd(), 'src/index.ts')
-const DEFAULT_MOCK_APP_PATH = path.join(
-  process.cwd(),
-  'test',
-  'utils',
-  'mock-child-app.ts',
-)
 
 /**
  * Run the CLI with given arguments and wait for it to exit naturally.
@@ -42,7 +37,7 @@ export function runCli(options: RunCliOptions = {}): Promise<CliResult> {
     cwd = process.cwd(),
     env = {},
     timeout = 8000,
-    mockAppPath = DEFAULT_MOCK_APP_PATH,
+    mockAppPath = 'true', // Use 'true' command as default - exits with code 0
   } = options
 
   return new Promise((resolve, reject) => {
@@ -103,7 +98,7 @@ export function runCliInteractive(
     cwd = process.cwd(),
     env = {},
     timeout = 8000,
-    mockAppPath = DEFAULT_MOCK_APP_PATH,
+    mockAppPath = 'true',
     interactions = [],
   } = options
 
