@@ -111,11 +111,11 @@ function buildTriggerPattern(
       }).trim()}\n<\/${tag}>\n`,
     ],
     pattern: [followedByCursor(trigger.slice(0, -1))],
-    type: 'completion' as const,
+    type: 'expansion' as const,
   }
 }
 
-const completionPatterns: PatternConfig[] = [
+const expansionPatterns: PatternConfig[] = [
   {
     id: 'add-tree-trigger',
     title: 'Add tree',
@@ -128,11 +128,11 @@ const completionPatterns: PatternConfig[] = [
   },
 ]
 
-const promptPatterns: PatternConfig[] = [
+const confirmationPatterns: PatternConfig[] = [
   {
     id: 'edit-file-prompt',
     title: 'Edit file',
-    type: 'prompt' as const,
+    type: 'confirmation' as const,
     response: '1',
     pattern: [
       'Edit file',
@@ -151,7 +151,7 @@ const promptPatterns: PatternConfig[] = [
   {
     id: 'create-file-prompt',
     title: 'Create file',
-    type: 'prompt' as const,
+    type: 'confirmation' as const,
     response: '1',
     pattern: ['Create file', 'Do you want to create {{ fileName }}?'],
     triggerText: 'Create file',
@@ -166,7 +166,7 @@ const promptPatterns: PatternConfig[] = [
   {
     id: 'bash-command-prompt-format-1',
     title: 'Bash command',
-    type: 'prompt' as const,
+    type: 'confirmation' as const,
     response: '1',
     pattern: [
       'Bash command',
@@ -191,7 +191,7 @@ const promptPatterns: PatternConfig[] = [
   {
     id: 'bash-command-prompt-format-2',
     title: 'Bash command',
-    type: 'prompt' as const,
+    type: 'confirmation' as const,
     response: '1',
     pattern: [
       'Bash command',
@@ -215,7 +215,7 @@ const promptPatterns: PatternConfig[] = [
   {
     id: 'read-files-prompt',
     title: 'Read file',
-    type: 'prompt' as const,
+    type: 'confirmation' as const,
     response: '1',
     pattern: ['Read files', 'Read({{ fileName }})', '1. Yes'],
     triggerText: 'Read files',
@@ -230,7 +230,7 @@ const promptPatterns: PatternConfig[] = [
   {
     id: 'fetch-content-prompt',
     title: 'Fetch content',
-    type: 'prompt' as const,
+    type: 'confirmation' as const,
     response: '1',
     pattern: [
       'Fetch',
@@ -251,7 +251,10 @@ const promptPatterns: PatternConfig[] = [
   },
 ]
 
-const allPatterns: PatternConfig[] = [...completionPatterns, ...promptPatterns]
+const allPatterns: PatternConfig[] = [
+  ...expansionPatterns,
+  ...confirmationPatterns,
+]
 
 const validationResult = validatePatternConfigs(allPatterns)
 if (!validationResult.success) {
@@ -262,4 +265,4 @@ if (!validationResult.success) {
 
 export const patterns: PatternConfig[] = validationResult.data
 
-export { completionPatterns, promptPatterns }
+export { expansionPatterns, confirmationPatterns }

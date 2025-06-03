@@ -32,7 +32,7 @@ let terminalManager: TerminalManager
 let tempMcpConfigPath: string | undefined
 let appConfig: AppConfig | undefined
 let mergedRuleset: RulesetConfig | undefined
-let promptPatternTriggers: string[] = []
+let confirmationPatternTriggers: string[] = []
 let activityMonitor: ActivityMonitor | undefined
 
 const debugLog = util.debuglog('claude-composer')
@@ -72,14 +72,14 @@ async function initializePatterns(): Promise<boolean> {
 
   let hasActivePatterns = false
 
-  const promptTriggers = new Set<string>()
+  const confirmationTriggers = new Set<string>()
 
   patternsToUse.forEach(pattern => {
-    if (pattern.type === 'prompt' && pattern.triggerText) {
-      promptTriggers.add(pattern.triggerText)
+    if (pattern.type === 'confirmation' && pattern.triggerText) {
+      confirmationTriggers.add(pattern.triggerText)
     }
 
-    // Always add prompt patterns so notifications work, acceptance is handled later
+    // Always add confirmation patterns so notifications work, acceptance is handled later
     if (
       pattern.id === 'add-tree-trigger' &&
       !appConfig.allow_adding_project_tree
@@ -102,7 +102,7 @@ async function initializePatterns(): Promise<boolean> {
     }
   })
 
-  promptPatternTriggers = Array.from(promptTriggers)
+  confirmationPatternTriggers = Array.from(confirmationTriggers)
 
   return hasActivePatterns
 }
@@ -284,28 +284,28 @@ function shouldAcceptPrompt(match: MatchResult): boolean {
 
 function handlePatternMatches(
   data: string,
-  filterType?: 'completion' | 'prompt',
+  filterType?: 'expansion' | 'confirmation',
 ): void {
   const matches = filterType
     ? patternMatcher.processDataByType(data, filterType)
     : patternMatcher.processData(data)
 
   for (const match of matches) {
-    const isCompletionPattern =
+    const isExpansionPattern =
       match.patternId === 'add-tree-trigger' ||
       match.patternId === 'add-changes-trigger' ||
-      match.type === 'completion'
+      match.type === 'expansion'
 
     let actionResponse: 'Accepted' | 'Prompted' | undefined
     let actionResponseIcon: string | undefined
 
-    if (isCompletionPattern) {
+    if (isExpansionPattern) {
       responseQueue.enqueue(match.response)
     } else if (shouldAcceptPrompt(match)) {
       responseQueue.enqueue(match.response)
       actionResponse = 'Accepted'
       actionResponseIcon = '👍'
-    } else if (match.type === 'prompt') {
+    } else if (match.type === 'confirmation') {
       actionResponse = 'Prompted'
       actionResponseIcon = '✋'
     }
@@ -356,7 +356,7 @@ function handleTerminalData(data: string): void {
     process.stdout.write(data)
 
     terminalManager.updateTerminalBuffer(data)
-    const matchedTrigger = promptPatternTriggers.find(trigger =>
+    const matchedTrigger = confirmationPatternTriggers.find(trigger =>
       data.includes(trigger),
     )
     if (matchedTrigger) {
@@ -369,7 +369,7 @@ function handleTerminalData(data: string): void {
         try {
           const currentScreenContent = await terminalManager.captureSnapshot()
           if (currentScreenContent) {
-            handlePatternMatches(currentScreenContent, 'prompt')
+            handlePatternMatches(currentScreenContent, 'confirmation')
           }
         } catch (error) {}
         terminalManager.setPendingPromptCheck(null)
@@ -385,7 +385,7 @@ function handleStdinData(data: Buffer): void {
     if (data.length === 1 && data[0] === 32) {
       terminalManager.captureSnapshot().then(snapshot => {
         if (snapshot) {
-          handlePatternMatches(snapshot, 'completion')
+          handlePatternMatches(snapshot, 'expansion')
         }
       })
     }
@@ -515,7 +515,10 @@ export async function main() {
       })
 
       printProcess.on('exit', code => {
-        process.exit(code || 0)
+        // Ensure logs are flushed before exiting
+        setImmediate(() => {
+          process.exit(code || 0)
+        })
       })
 
       return
@@ -537,7 +540,10 @@ export async function main() {
       })
 
       subcommandProcess.on('exit', code => {
-        process.exit(code || 0)
+        // Ensure logs are flushed before exiting
+        setImmediate(() => {
+          process.exit(code || 0)
+        })
       })
 
       return

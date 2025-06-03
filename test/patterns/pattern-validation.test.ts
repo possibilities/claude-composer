@@ -9,13 +9,13 @@ import {
 
 describe('PatternConfig validation', () => {
   describe('validatePatternConfig', () => {
-    it('should validate a valid completion pattern', () => {
+    it('should validate a valid expansion pattern', () => {
       const pattern: PatternConfig = {
-        id: 'test-completion',
-        title: 'Test Completion',
+        id: 'test-expansion',
+        title: 'Test Expansion',
         pattern: ['test pattern'],
         response: 'test response',
-        type: 'completion',
+        type: 'expansion',
       }
 
       const result = validatePatternConfig(pattern)
@@ -25,13 +25,13 @@ describe('PatternConfig validation', () => {
       }
     })
 
-    it('should validate a valid prompt pattern', () => {
+    it('should validate a valid confirmation pattern', () => {
       const pattern: PatternConfig = {
-        id: 'test-prompt',
-        title: 'Test Prompt',
+        id: 'test-confirmation',
+        title: 'Test Confirmation',
         pattern: ['prompt pattern', 'line 2'],
         response: '1',
-        type: 'prompt',
+        type: 'confirmation',
         notification: 'Test notification',
         triggerText: 'Test Trigger',
       }
@@ -153,13 +153,13 @@ describe('PatternConfig validation', () => {
       expect(result.success).toBe(true)
     })
 
-    it('should accept triggerText on prompt type patterns', () => {
+    it('should accept triggerText on confirmation type patterns', () => {
       const pattern = {
         id: 'test',
         title: 'Test',
         pattern: ['test'],
         response: 'test',
-        type: 'prompt' as const,
+        type: 'confirmation' as const,
         triggerText: 'Trigger text',
       }
 
@@ -167,13 +167,13 @@ describe('PatternConfig validation', () => {
       expect(result.success).toBe(true)
     })
 
-    it('should reject triggerText on completion type patterns', () => {
+    it('should reject triggerText on expansion type patterns', () => {
       const pattern = {
         id: 'test',
         title: 'Test',
         pattern: ['test'],
         response: 'test',
-        type: 'completion' as const,
+        type: 'expansion' as const,
         triggerText: 'Should not be allowed',
       }
 
@@ -181,7 +181,7 @@ describe('PatternConfig validation', () => {
       expect(result.success).toBe(false)
       if (!result.success) {
         expect(result.error.errors[0].message).toContain(
-          'triggerText is only allowed on patterns with type "prompt"',
+          'triggerText is only allowed on patterns with type "confirmation"',
         )
       }
     })
@@ -199,26 +199,26 @@ describe('PatternConfig validation', () => {
       expect(result.success).toBe(false)
       if (!result.success) {
         expect(result.error.errors[0].message).toContain(
-          'triggerText is only allowed on patterns with type "prompt"',
+          'triggerText is only allowed on patterns with type "confirmation"',
         )
       }
     })
 
     it('should accept patterns without triggerText regardless of type', () => {
-      const completionPattern = {
+      const expansionPattern = {
         id: 'test1',
-        title: 'Test Completion',
+        title: 'Test Expansion',
         pattern: ['test'],
         response: 'test',
-        type: 'completion' as const,
+        type: 'expansion' as const,
       }
 
-      const promptPattern = {
+      const confirmationPattern = {
         id: 'test2',
-        title: 'Test Prompt',
+        title: 'Test Confirmation',
         pattern: ['test'],
         response: 'test',
-        type: 'prompt' as const,
+        type: 'confirmation' as const,
       }
 
       const noTypePattern = {
@@ -228,8 +228,8 @@ describe('PatternConfig validation', () => {
         response: 'test',
       }
 
-      expect(validatePatternConfig(completionPattern).success).toBe(true)
-      expect(validatePatternConfig(promptPattern).success).toBe(true)
+      expect(validatePatternConfig(expansionPattern).success).toBe(true)
+      expect(validatePatternConfig(confirmationPattern).success).toBe(true)
       expect(validatePatternConfig(noTypePattern).success).toBe(true)
     })
   })
@@ -248,7 +248,7 @@ describe('PatternConfig validation', () => {
           title: 'Pattern 2',
           pattern: ['test2', 'line2'],
           response: ['resp1', 'resp2'],
-          type: 'prompt',
+          type: 'confirmation',
         },
       ]
 

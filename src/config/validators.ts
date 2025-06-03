@@ -39,15 +39,18 @@ export function validatePattern(pattern: unknown): PatternValidationResult {
       }
     }
 
-    if (validatedPattern.type === 'prompt' && !validatedPattern.triggerText) {
-      errors.push('triggerText is required for prompt-type patterns')
+    if (
+      validatedPattern.type === 'confirmation' &&
+      !validatedPattern.triggerText
+    ) {
+      errors.push('triggerText is required for confirmation-type patterns')
     }
     if (
-      validatedPattern.type === 'completion' &&
+      validatedPattern.type === 'expansion' &&
       !validatedPattern.responseOptions?.length
     ) {
       errors.push(
-        'responseOptions must not be empty for completion-type patterns',
+        'responseOptions must not be empty for expansion-type patterns',
       )
     }
 

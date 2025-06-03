@@ -62,11 +62,15 @@ LOG_FILES.forEach(logFile => {
               // Recreate extractedData using PatternMatcher
               const matcher = new PatternMatcher()
 
-              // Always try all prompt patterns
-              const promptPatterns = patterns.filter(p => p.type === 'prompt')
+              // Always try all confirmation patterns
+              const confirmationPatterns = patterns.filter(
+                p => p.type === 'confirmation',
+              )
 
-              // Add all prompt patterns
-              promptPatterns.forEach(pattern => matcher.addPattern(pattern))
+              // Add all confirmation patterns
+              confirmationPatterns.forEach(pattern =>
+                matcher.addPattern(pattern),
+              )
 
               const matches = matcher.processData(jsonData.fullMatchedContent)
 
