@@ -117,6 +117,15 @@ export function createClaudeComposerCommand(): Command {
       '--no-show-fetch-content-confirm-notify',
       'Hide notifications for content fetches',
     )
+    // Remote notification settings
+    .option(
+      '--send-remote-notifications',
+      'Send notifications to Discord/WhatsApp (requires ~/.claude-composer/remote-notifications.yaml)',
+    )
+    .option(
+      '--no-send-remote-notifications',
+      'Disable remote notifications (default)',
+    )
     // Per-type stickiness flags
     .option(
       '--sticky-work-started-notifications',
@@ -364,6 +373,9 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--no-show-read-file-confirm-notify')
   knownOptions.add('--show-fetch-content-confirm-notify')
   knownOptions.add('--no-show-fetch-content-confirm-notify')
+  // Remote notification settings
+  knownOptions.add('--send-remote-notifications')
+  knownOptions.add('--no-send-remote-notifications')
   // Per-type stickiness flags
   knownOptions.add('--sticky-work-started-notifications')
   knownOptions.add('--no-sticky-work-started-notifications')

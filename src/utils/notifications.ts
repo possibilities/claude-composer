@@ -2,6 +2,7 @@ import notifier from 'node-notifier'
 import { MatchResult } from '../patterns/matcher'
 import { replacePlaceholders } from './template-utils'
 import { AppConfig, StickyNotificationsConfig } from '../config/schemas'
+import { RemoteNotificationService } from '../services/remote-notifications'
 
 export interface NotificationOptions {
   title?: string
@@ -58,11 +59,11 @@ export function getNotificationStickiness(
   }
 }
 
-export function showNotification(
+export async function showNotification(
   options: NotificationOptions,
   appConfig?: AppConfig,
   notificationType?: NotificationType,
-): void {
+): Promise<void> {
   // Determine if notification should be sticky
   let isSticky = false
   if (options.timeout === false) {
@@ -85,10 +86,17 @@ export function showNotification(
     sound: false,
   }
 
+  // Show local notification
   notifier.notify({
     ...defaults,
     ...options,
   })
+
+  // Send remote notification if enabled
+  if (appConfig?.send_remote_notifications) {
+    const remoteService = RemoteNotificationService.getInstance()
+    await remoteService.sendNotification(options, notificationType, isSticky)
+  }
 }
 
 export function getPatternType(
@@ -117,12 +125,12 @@ export function getPatternType(
   }
 }
 
-export function showPatternNotification(
+export async function showPatternNotification(
   match: MatchResult,
   appConfig?: AppConfig,
   actionResponse?: 'Dismissed' | 'Prompted',
   actionResponseIcon?: string,
-): void {
+): Promise<void> {
   if (!match.notification || !appConfig) {
     return
   }
@@ -158,7 +166,7 @@ export function showPatternNotification(
     actionResponseIcon,
   )
 
-  showNotification(
+  await showNotification(
     {
       message,
     },
@@ -167,11 +175,11 @@ export function showPatternNotification(
   )
 }
 
-export function showSnapshotNotification(
+export async function showSnapshotNotification(
   projectName: string,
   appConfig?: AppConfig,
-): void {
-  showNotification(
+): Promise<void> {
+  await showNotification(
     {
       title: '📸 Claude Composer',
       message: `Terminal snapshot saved\nProject: ${projectName}\nPath to snapshot copied to clipboard`,

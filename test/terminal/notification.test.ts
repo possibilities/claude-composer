@@ -34,7 +34,7 @@ describe('Notification functionality', () => {
     },
   }
 
-  it('should call notifier.notify with correct parameters', () => {
+  it('should call notifier.notify with correct parameters', async () => {
     const match: MatchResult = {
       patternId: 'test-pattern',
       patternTitle: 'Test Notification',
@@ -46,7 +46,7 @@ describe('Notification functionality', () => {
       notification: 'Pattern triggered: {{title}}\nMatched: {{matchedText}}',
     }
 
-    showPatternNotification(match, defaultAppConfig, 'Prompted', '❤')
+    await showPatternNotification(match, defaultAppConfig, 'Prompted', '❤')
 
     expect(mockNotify).toHaveBeenCalledOnce()
     expect(mockNotify).toHaveBeenCalledWith({
@@ -59,7 +59,7 @@ describe('Notification functionality', () => {
     })
   })
 
-  it('should truncate long matched text to 100 characters', () => {
+  it('should truncate long matched text to 100 characters', async () => {
     const longText = 'A'.repeat(150)
     const match = createMatchWithNotification(
       {
@@ -73,7 +73,7 @@ describe('Notification functionality', () => {
       'Pattern triggered: {{title}}\nMatched: {{matchedText}}',
     )
 
-    showPatternNotification(match, defaultAppConfig, 'Prompted', '❤')
+    await showPatternNotification(match, defaultAppConfig, 'Prompted', '❤')
 
     expect(mockNotify).toHaveBeenCalledWith({
       title: '🤖 Claude Composer',
@@ -84,7 +84,7 @@ describe('Notification functionality', () => {
     })
   })
 
-  it('should handle different pattern action types', () => {
+  it('should handle different pattern action types', async () => {
     const inputMatch = createMatchWithNotification(
       {
         patternId: 'test-input',
@@ -109,8 +109,13 @@ describe('Notification functionality', () => {
       'Pattern triggered: {{title}}\nAction: Log',
     )
 
-    showPatternNotification(inputMatch, defaultAppConfig, 'Prompted', '❤')
-    showPatternNotification(logMatch, defaultAppConfig, 'Prompted', '❤')
+    await showPatternNotification(
+      inputMatch,
+      defaultAppConfig,
+      'Prompted',
+      '❤',
+    )
+    await showPatternNotification(logMatch, defaultAppConfig, 'Prompted', '❤')
 
     expect(mockNotify).toHaveBeenCalledTimes(2)
     expect(mockNotify).toHaveBeenNthCalledWith(1, {
@@ -129,7 +134,7 @@ describe('Notification functionality', () => {
     })
   })
 
-  it('should strip ANSI color codes from matched text', () => {
+  it('should strip ANSI color codes from matched text', async () => {
     const ansiText = '\x1b[31mRed Text\x1b[0m'
     const match = createMatchWithNotification(
       {
@@ -143,7 +148,7 @@ describe('Notification functionality', () => {
       'Pattern triggered: {{title}}\nMatched: {{matchedText}}',
     )
 
-    showPatternNotification(match, defaultAppConfig, 'Prompted', '❤')
+    await showPatternNotification(match, defaultAppConfig, 'Prompted', '❤')
 
     // The template utils should handle stripping ANSI codes
     expect(mockNotify).toHaveBeenCalledWith({
@@ -155,7 +160,7 @@ describe('Notification functionality', () => {
     })
   })
 
-  it('should not show notification when notification property is not set', () => {
+  it('should not show notification when notification property is not set', async () => {
     const match: MatchResult = {
       patternId: 'no-notify',
       patternTitle: 'No Notification',
@@ -166,7 +171,7 @@ describe('Notification functionality', () => {
       // No notification property
     }
 
-    showPatternNotification(match, defaultAppConfig, undefined, undefined)
+    await showPatternNotification(match, defaultAppConfig, undefined, undefined)
 
     expect(mockNotify).not.toHaveBeenCalled()
   })

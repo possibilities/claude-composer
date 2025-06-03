@@ -87,6 +87,11 @@ notify_work_complete: boolean (optional)
   Deprecated: Use show_work_complete_notifications instead
   Default: true
 
+send_remote_notifications: boolean (optional)
+  Send notifications to Discord/WhatsApp when enabled
+  Requires ~/.claude-composer/remote-notifications.yaml configuration file
+  Default: false
+
 dangerously_dismiss_edit_file_prompts: boolean (optional)
   Automatically dismiss edit file prompts without user confirmation
   Default: false

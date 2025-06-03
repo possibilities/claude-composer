@@ -1,0 +1,29 @@
+# Example Remote Notifications Configuration
+# Copy this file to ~/.claude-composer/remote-notifications.yaml and fill in your credentials
+
+# Discord webhook configuration (optional)
+discord:
+  webhook_url: 'https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN'
+
+# WhatsApp configuration (optional - requires Business API access)
+# whatsapp:
+#   access_token: "YOUR_WHATSAPP_ACCESS_TOKEN"
+#   sender_number: "+14151234567"  # Your WhatsApp Business number
+#   recipient_number: "+15558675309"  # Where to send notifications
+
+# Subscriber ID for notification tracking
+subscriber_id: 'your-name-here'
+# Instructions:
+# 1. For Discord:
+#    - Go to your Discord channel settings
+#    - Click "Edit Channel" → "Integrations" → "Webhooks"
+#    - Create a new webhook and copy the URL
+#
+# 2. For WhatsApp (requires WhatsApp Business API):
+#    - Set up WhatsApp Business API account
+#    - Get your access token from the Facebook Business Manager
+#    - Configure your sender number
+#
+# 3. Enable remote notifications:
+#    - Command line: claude-composer --send-remote-notifications
+#    - Config file: send_remote_notifications: true
