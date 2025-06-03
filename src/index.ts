@@ -553,7 +553,9 @@ export async function main() {
   if (appConfig.notify_work_started === true) {
     const projectName = process.cwd().split('/').pop() || 'Unknown'
     showNotification(
-      { message: `Claude Composer started working\nProject: ${projectName}` },
+      {
+        message: `Claude Composer started working 🚀\nProject: ${projectName}`,
+      },
       appConfig,
     )
   }
