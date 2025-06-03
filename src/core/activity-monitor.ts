@@ -107,7 +107,7 @@ export class ActivityMonitor {
         const formattedDuration = this.formatDuration(duration)
         showNotification(
           {
-            message: `Claude Composer is done working\nProject: ${projectName}\nDuration: ${formattedDuration}`,
+            message: `Claude Composer is done working 🏁\nProject: ${projectName}\nDuration: ${formattedDuration}`,
           },
           this.appConfig,
         )
@@ -117,7 +117,9 @@ export class ActivityMonitor {
       this.activityStartTime = null
     } else if (this.appConfig.notify_work_complete !== false) {
       showNotification(
-        { message: `Claude Composer is done working\nProject: ${projectName}` },
+        {
+          message: `Claude Composer is done working 🏁\nProject: ${projectName}`,
+        },
         this.appConfig,
       )
     }
