@@ -234,7 +234,7 @@ export class ActivityMonitor {
 
     showNotification(
       {
-        message: `${message}\nProject: ${projectName}`,
+        message: `${message}\n${emoji} Project: ${projectName} ${emoji} `,
         sound: true,
       },
       this.appConfig,
