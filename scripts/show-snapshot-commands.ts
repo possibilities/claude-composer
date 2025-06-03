@@ -8,7 +8,8 @@ import { patterns } from '../src/patterns/registry'
 import { stripBoxChars } from '../src/utils/strip-box-chars'
 
 // Configuration variables
-const SHOW_SUBSTRING = 'SetRecordDirectory'
+const SHOW_ONLY_COMMAND_AND_REASON = true
+const SHOW_SUBSTRING = ''
 const DELETE_SUBSTRING = ''
 
 interface LogEntry {
@@ -18,9 +19,9 @@ interface LogEntry {
 }
 
 const LOG_FILES = [
-  '~/.claude-composer/logs/pattern-matches-bash-command-prompt.jsonl',
+  // '~/.claude-composer/logs/pattern-matches-bash-command-prompt.jsonl',
+  // '~/.claude-composer/logs/pattern-matches-bash-command-prompt-format-2.jsonl',
   '~/.claude-composer/logs/pattern-matches-bash-command-prompt-format-1.jsonl',
-  '~/.claude-composer/logs/pattern-matches-bash-command-prompt-format-2.jsonl',
 ]
 
 // Track totals across all files
@@ -131,22 +132,36 @@ LOG_FILES.forEach(logFile => {
                   console.log('---\n')
                 } else if (!SHOW_SUBSTRING) {
                   // Only print commands normally if SHOW_SUBSTRING is not set
-                  console.log(body)
-                  console.log('Matched:', stripped)
+                  if (SHOW_ONLY_COMMAND_AND_REASON) {
+                    console.log(body)
+                    if (
+                      matches[0].extractedData &&
+                      matches[0].extractedData.reason
+                    ) {
+                      const reason = stripBoxChars(
+                        matches[0].extractedData.reason,
+                      ).trim()
+                      console.log(reason)
+                    }
+                    console.log('--')
+                  } else {
+                    console.log('Body:\n', body)
+                    console.log('Matched:', stripped)
 
-                  // Show all extracted data
-                  if (matches[0].extractedData) {
-                    console.log('Extracted Data:')
-                    Object.entries(matches[0].extractedData).forEach(
-                      ([key, value]) => {
-                        const cleanedValue = stripBoxChars(
-                          value as string,
-                        ).trim()
-                        console.log(`  ${key}: ${cleanedValue}`)
-                      },
-                    )
+                    // Show all extracted data
+                    if (matches[0].extractedData) {
+                      console.log('Extracted Data:')
+                      Object.entries(matches[0].extractedData).forEach(
+                        ([key, value]) => {
+                          const cleanedValue = stripBoxChars(
+                            value as string,
+                          ).trim()
+                          console.log(`  ${key}: ${cleanedValue}`)
+                        },
+                      )
+                    }
+                    console.log() // Empty line for readability
                   }
-                  console.log() // Empty line for readability
                 }
                 // If SHOW_SUBSTRING is set but this entry doesn't match, don't print anything
               }

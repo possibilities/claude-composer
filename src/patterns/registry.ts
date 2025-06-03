@@ -1,5 +1,6 @@
 import { type PatternConfig, validatePatternConfigs } from '../config/schemas'
 import { execSync } from 'child_process'
+import { stripBoxChars } from '../utils/strip-box-chars'
 import dedent from 'dedent'
 
 function followedByCursor(str: string): string {
@@ -94,23 +95,26 @@ const patternsArray: PatternConfig[] = [
     triggerText: 'Bash command',
     notification: dedent(
       `
-      TEMP
       Action: {{ title }} (a)
       Response: {{ actionResponse }} {{ actionResponseIcon }}
       Project: {{ project }}
-      Test: {{ test }}
+      Command: {{ command }}
+      Reason: {{ reason }}
       `,
-      // `
-      // Action: {{ title }} (a)
-      // Response: {{ actionResponse }} {{ actionResponseIcon }}
-      // Project: {{ project }}
-      // Command: {{ command }}
-      // Reason: {{ reason }}
-      // Directory: {{ directory }}
-      // `,
     ),
-    transformExtractedData: data => ({ ...data, test: 'TEST' }),
-    // transformExtractedData: data => data,
+    transformExtractedData: data => {
+      if (data.body) {
+        const lines = stripBoxChars(data.body)
+          .split('\r\n')
+          .map(line => line.trim())
+          .filter(line => line.length > 0)
+        const command = lines.slice(0, -1).join(' ')
+        const reason = lines[lines.length - 1]
+        console.log({ command, reason })
+        return { ...data, command, reason }
+      }
+      return data
+    },
   },
   {
     id: 'bash-command-prompt-format-2',
@@ -126,21 +130,26 @@ const patternsArray: PatternConfig[] = [
     triggerText: 'Bash command',
     notification: dedent(
       `
-      TEMP
       Action: {{ title }} (b)
       Response: {{ actionResponse }} {{ actionResponseIcon }}
       Project: {{ project }}
-      Test: {{ test }}
+      Command: {{ command }}
+      Reason: {{ reason }}
       `,
-      // `
-      // Action: {{ title }} (b)
-      // Response: {{ actionResponse }} {{ actionResponseIcon }}
-      // Project: {{ project }}
-      // Command: {{ command }}
-      // `,
     ),
-    transformExtractedData: data => ({ ...data, test: 'TEST' }),
-    // transformExtractedData: data => data,
+    transformExtractedData: data => {
+      if (data.body) {
+        const lines = stripBoxChars(data.body)
+          .split('\r\n')
+          .map(line => line.trim())
+          .filter(line => line.length > 0)
+        const command = lines.slice(0, -1).join(' ')
+        const reason = lines[lines.length - 1]
+        console.log({ command, reason })
+        return { ...data, command, reason }
+      }
+      return data
+    },
   },
   {
     id: 'read-files-prompt',
