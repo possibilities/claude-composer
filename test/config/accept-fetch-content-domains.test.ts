@@ -129,7 +129,7 @@ accept_fetch_content_prompts:
       fs.writeFileSync(path.join(rulesetsDir, 'empty.yaml'), rulesetContent)
 
       await expect(loadRulesetFile('empty')).rejects.toThrow(
-        'Ruleset validation failed',
+        'ruleset configuration validation failed',
       )
     })
   })

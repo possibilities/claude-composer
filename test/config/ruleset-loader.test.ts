@@ -96,7 +96,7 @@ invalid_field: "should not be here"
       )
 
       await expect(loadRulesetFile('invalid-schema')).rejects.toThrow(
-        'Ruleset validation failed',
+        'ruleset configuration validation failed',
       )
     })
 
@@ -110,7 +110,7 @@ accept_project_edit_file_prompts: "yes"
       )
 
       await expect(loadRulesetFile('invalid-type')).rejects.toThrow(
-        'Ruleset validation failed',
+        'ruleset configuration validation failed',
       )
     })
 

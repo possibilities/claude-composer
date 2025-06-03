@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
 import * as yaml from 'js-yaml'
+import { z } from 'zod'
 import {
   validateAppConfig,
   validateToolsetConfig,
@@ -11,6 +12,26 @@ import {
   type RulesetConfig,
 } from './schemas.js'
 import { CONFIG_PATHS } from './paths'
+
+/**
+ * Helper function to handle validation errors consistently
+ */
+function handleValidationError(
+  result: z.SafeParseReturnType<any, any>,
+  filePath: string,
+  errorType: string,
+): void {
+  if (!result.success) {
+    console.error(`\nError: Invalid ${errorType} in ${filePath}`)
+    console.error('\nValidation errors:')
+    result.error.issues.forEach(issue => {
+      const fieldPath = issue.path.length > 0 ? issue.path.join('.') : 'root'
+      console.error(`  • ${fieldPath}: ${issue.message}`)
+    })
+    console.error('')
+    throw new Error(`${errorType} validation failed`)
+  }
+}
 
 export function getConfigDirectory(): string {
   return CONFIG_PATHS.getConfigDirectory()
@@ -40,23 +61,13 @@ export async function loadConfigFile(
     parsed = migrateConfig(parsed)
 
     const result = validateAppConfig(parsed)
-
-    if (!result.success) {
-      console.error(`\nError: Invalid configuration in ${finalConfigPath}`)
-      console.error('\nValidation errors:')
-      result.error.issues.forEach(issue => {
-        const fieldPath = issue.path.length > 0 ? issue.path.join('.') : 'root'
-        console.error(`  • ${fieldPath}: ${issue.message}`)
-      })
-      console.error('')
-      throw new Error('Configuration validation failed')
-    }
+    handleValidationError(result, finalConfigPath, 'configuration')
 
     return result.data
   } catch (error) {
     if (
       error instanceof Error &&
-      error.message === 'Configuration validation failed'
+      error.message === 'configuration validation failed'
     ) {
       throw error
     }
@@ -110,23 +121,13 @@ export async function loadToolsetFile(
     const toolsetData = fs.readFileSync(toolsetPath, 'utf8')
     const parsed = yaml.load(toolsetData)
     const result = validateToolsetConfig(parsed)
-
-    if (!result.success) {
-      console.error(`\nError: Invalid toolset configuration in ${toolsetPath}`)
-      console.error('\nValidation errors:')
-      result.error.issues.forEach(issue => {
-        const fieldPath = issue.path.length > 0 ? issue.path.join('.') : 'root'
-        console.error(`  • ${fieldPath}: ${issue.message}`)
-      })
-      console.error('')
-      throw new Error('Toolset validation failed')
-    }
+    handleValidationError(result, toolsetPath, 'toolset configuration')
 
     return result.data
   } catch (error) {
     if (
       error instanceof Error &&
-      error.message === 'Toolset validation failed'
+      error.message === 'toolset configuration validation failed'
     ) {
       throw error
     }
@@ -150,23 +151,13 @@ export async function loadRulesetFile(
     const rulesetData = fs.readFileSync(rulesetPath, 'utf8')
     const parsed = yaml.load(rulesetData)
     const result = validateRulesetConfig(parsed)
-
-    if (!result.success) {
-      console.error(`\nError: Invalid ruleset configuration in ${rulesetPath}`)
-      console.error('\nValidation errors:')
-      result.error.issues.forEach(issue => {
-        const fieldPath = issue.path.length > 0 ? issue.path.join('.') : 'root'
-        console.error(`  • ${fieldPath}: ${issue.message}`)
-      })
-      console.error('')
-      throw new Error('Ruleset validation failed')
-    }
+    handleValidationError(result, rulesetPath, 'ruleset configuration')
 
     return result.data
   } catch (error) {
     if (
       error instanceof Error &&
-      error.message === 'Ruleset validation failed'
+      error.message === 'ruleset configuration validation failed'
     ) {
       throw error
     }
