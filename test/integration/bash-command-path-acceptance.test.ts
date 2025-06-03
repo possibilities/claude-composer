@@ -1,9 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import * as path from 'path'
-import picomatch from 'picomatch'
 import type { MatchResult } from '../../src/patterns/matcher'
 import type { AppConfig, RulesetConfig } from '../../src/config/schemas'
 import { showNotification } from '../../src/utils/notifications'
+import {
+  checkAcceptConfig,
+  shouldAcceptPrompt,
+} from '../../src/utils/prompt-acceptance'
 
 // Mock the file-utils module
 vi.mock('../../src/utils/file-utils', () => ({
@@ -29,28 +32,6 @@ describe('Bash Command Path-based Acceptance Integration', () => {
     vi.clearAllMocks()
   })
 
-  // Replicate the checkAcceptConfig logic from index.ts
-  function checkAcceptConfig(
-    config: boolean | { paths: string[] } | undefined,
-    filePath: string,
-    isProjectContext: boolean,
-  ): boolean {
-    if (config === true) return true
-    if (config === false || config === undefined) return false
-
-    if (typeof config === 'object' && 'paths' in config) {
-      const normalizedPath = path.normalize(filePath)
-      const pathToCheck = isProjectContext
-        ? path.relative(process.cwd(), normalizedPath) || '.'
-        : normalizedPath
-
-      const isMatch = picomatch(config.paths)
-      return isMatch(pathToCheck)
-    }
-
-    return false
-  }
-
   // Validate that pattern types are correct for known patterns
   function validatePatternType(match: MatchResult): void {
     const confirmationPatterns = [
@@ -71,8 +52,8 @@ describe('Bash Command Path-based Acceptance Integration', () => {
     }
   }
 
-  // Replicate the shouldAcceptPrompt logic from index.ts with path support
-  function shouldAcceptPrompt(
+  // Wrapper that adds validation and uses the imported function
+  function shouldAcceptPromptWithValidation(
     match: MatchResult,
     appConfig: AppConfig,
     mergedRuleset: RulesetConfig | undefined,
@@ -80,49 +61,8 @@ describe('Bash Command Path-based Acceptance Integration', () => {
     // Add validation
     validatePatternType(match)
 
-    const fileName = match.extractedData?.fileName
-    const directory = match.extractedData?.directory
-
-    let checkPath = fileName || directory || process.cwd()
-    if (!checkPath) return false
-
-    const isInProjectRoot = mockIsFileInProjectRoot(checkPath)
-
-    switch (match.patternId) {
-      case 'bash-command-prompt-format-1':
-      case 'bash-command-prompt-format-2':
-        if (appConfig.safe) return false
-        if (!mergedRuleset) return false
-
-        const bashConfig = isInProjectRoot
-          ? mergedRuleset.accept_project_bash_command_prompts
-          : mergedRuleset.accept_global_bash_command_prompts
-
-        // If config is path-based but no directory is available, don't accept
-        if (
-          bashConfig &&
-          typeof bashConfig === 'object' &&
-          'paths' in bashConfig
-        ) {
-          if (!directory) {
-            return false
-          }
-        }
-
-        return isInProjectRoot
-          ? checkAcceptConfig(
-              mergedRuleset.accept_project_bash_command_prompts,
-              checkPath,
-              true,
-            )
-          : checkAcceptConfig(
-              mergedRuleset.accept_global_bash_command_prompts,
-              checkPath,
-              false,
-            )
-      default:
-        return false
-    }
+    // Use the imported function
+    return shouldAcceptPrompt(match, appConfig, mergedRuleset)
   }
 
   describe('Path-based bash command acceptance', () => {
@@ -153,7 +93,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
       // Mock that we're in project root
       mockIsFileInProjectRoot.mockReturnValue(true)
 
-      const result = shouldAcceptPrompt(match, appConfig, ruleset)
+      const result = shouldAcceptPromptWithValidation(match, appConfig, ruleset)
       expect(result).toBe(true)
     })
 
@@ -184,7 +124,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
       // Mock that we're in project root
       mockIsFileInProjectRoot.mockReturnValue(true)
 
-      const result = shouldAcceptPrompt(match, appConfig, ruleset)
+      const result = shouldAcceptPromptWithValidation(match, appConfig, ruleset)
       expect(result).toBe(false)
     })
 
@@ -215,7 +155,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
       // Mock that we're in project root
       mockIsFileInProjectRoot.mockReturnValue(true)
 
-      const result = shouldAcceptPrompt(match, appConfig, ruleset)
+      const result = shouldAcceptPromptWithValidation(match, appConfig, ruleset)
       expect(result).toBe(false)
     })
 
@@ -244,7 +184,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
       // Mock that we're in project root
       mockIsFileInProjectRoot.mockReturnValue(true)
 
-      const result = shouldAcceptPrompt(match, appConfig, ruleset)
+      const result = shouldAcceptPromptWithValidation(match, appConfig, ruleset)
       expect(result).toBe(true)
     })
 
@@ -278,7 +218,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
       // Mock that we're NOT in project root
       mockIsFileInProjectRoot.mockReturnValue(false)
 
-      const result = shouldAcceptPrompt(match, appConfig, ruleset)
+      const result = shouldAcceptPromptWithValidation(match, appConfig, ruleset)
       expect(result).toBe(true)
     })
 
@@ -308,7 +248,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
       // Mock that we're in project root
       mockIsFileInProjectRoot.mockReturnValue(true)
 
-      const result = shouldAcceptPrompt(match, appConfig, ruleset)
+      const result = shouldAcceptPromptWithValidation(match, appConfig, ruleset)
       expect(result).toBe(true)
     })
   })
