@@ -92,6 +92,7 @@ const promptPatterns: PatternConfig[] = [
       '{{ body | multiline }}',
       'Do you want to proceed',
       '1. Yes',
+      '{{ footer | multiline }}',
       '3. No',
     ],
     triggerText: 'Bash command',
@@ -102,6 +103,7 @@ const promptPatterns: PatternConfig[] = [
       Project: {{ project }}
       Command: {{ command }}
       Reason: {{ reason }}
+      Directory: {{ directory }}
       `,
     ),
     transformExtractedData: data => {
@@ -112,7 +114,8 @@ const promptPatterns: PatternConfig[] = [
           .filter(line => line.length > 0)
         const command = lines.slice(0, -1).join(' ')
         const reason = lines[lines.length - 1]
-        return { ...data, command, reason }
+        const directory = 'DIRECTORY'
+        return { ...data, command, reason, directory }
       }
       return data
     },
