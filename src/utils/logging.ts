@@ -17,9 +17,5 @@ export function warn(message: string) {
 }
 
 export function clearScreen() {
-  if (process.platform === 'win32') {
-    process.stdout.write('\x1b[2J\x1b[3J\x1b[H')
-  } else {
-    process.stdout.write('\x1b[2J\x1b[3J\x1b[H')
-  }
+  process.stdout.write('\x1b[2J\x1b[3J\x1b[H')
 }
