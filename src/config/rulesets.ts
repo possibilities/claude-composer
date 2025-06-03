@@ -1,4 +1,8 @@
-import type { RulesetConfig, DismissPromptConfig } from './schemas'
+import type {
+  RulesetConfig,
+  DismissPromptConfig,
+  DismissFetchContentConfig,
+} from './schemas'
 
 export function mergeRulesets(rulesets: RulesetConfig[]): RulesetConfig {
   const merged: RulesetConfig = {}
@@ -10,8 +14,29 @@ export function mergeRulesets(rulesets: RulesetConfig[]): RulesetConfig {
       if (key === 'dismiss_fetch_content_prompts') {
         if (value === true) {
           merged[key] = true
-        } else if (currentValue === undefined && value === false) {
-          merged[key] = false
+        } else if (
+          typeof value === 'object' &&
+          value !== null &&
+          'domains' in value
+        ) {
+          if (currentValue === true) {
+            continue
+          } else if (
+            typeof currentValue === 'object' &&
+            currentValue !== null &&
+            'domains' in currentValue
+          ) {
+            const mergedDomains = [
+              ...new Set([...currentValue.domains, ...value.domains]),
+            ]
+            merged[key] = { domains: mergedDomains }
+          } else {
+            merged[key] = value
+          }
+        } else if (value === false) {
+          if (currentValue === undefined) {
+            merged[key] = false
+          }
         }
         continue
       }
