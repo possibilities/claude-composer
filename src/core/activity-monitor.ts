@@ -225,10 +225,10 @@ export class ActivityMonitor {
     const emojis = ['🎉', '🚀', '⚡', '🌟', '🏆', '🎊', '💫', '✨']
     const emoji = emojis[Math.floor(Math.random() * emojis.length)]
     const messages = [
-      `${emoji} New record! Longest work session: ${duration}`,
-      `${emoji} Achievement unlocked! ${duration} of focused work!`,
-      `${emoji} Personal best! ${duration} session completed!`,
-      `${emoji} Record smashed! ${duration} of productivity!`,
+      `${emoji} New record! ${emoji}\n${emoji} Longest work session: ${duration} ${emoji}`,
+      `${emoji} Achievement unlocked!\n${emoji} ${duration} of focused work! ${emoji}`,
+      `${emoji} Personal best!\n${emoji} ${duration} session completed! ${emoji}`,
+      `${emoji} Record smashed!\n${emoji} ${duration} of productivity! ${emoji}`,
     ]
     const message = messages[Math.floor(Math.random() * messages.length)]
 
