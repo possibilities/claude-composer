@@ -19,8 +19,7 @@ import {
   checkChildAppPath,
   checkVersionControl,
   checkDirtyDirectory,
-  handleDangerFlagsWarning,
-  displayDangerousWarnings,
+  handleAutomaticAcceptanceWarning,
 } from '../safety/checker.js'
 import { parseCommandLineArgs, buildKnownOptionsSet } from '../cli/parser.js'
 import { log, warn, setQuietMode, clearScreen } from '../utils/logging.js'
@@ -33,11 +32,6 @@ export async function runPreflight(
     show_notifications: true,
     notify_work_started: false,
     notify_work_complete: true,
-    dangerously_accept_edit_file_prompts: false,
-    dangerously_accept_create_file_prompts: false,
-    dangerously_accept_bash_command_prompts: false,
-    dangerously_accept_read_files_prompts: false,
-    dangerously_accept_fetch_content_prompts: false,
     dangerously_allow_in_dirty_directory: false,
     dangerously_allow_without_version_control: false,
   }
@@ -143,25 +137,8 @@ export async function runPreflight(
   if (parsedOptions.showNotifications !== undefined) {
     appConfig.show_notifications = parsedOptions.showNotifications
   }
-  if (parsedOptions.dangerouslyAcceptEditFilePrompts !== undefined) {
-    appConfig.dangerously_accept_edit_file_prompts =
-      parsedOptions.dangerouslyAcceptEditFilePrompts
-  }
-  if (parsedOptions.dangerouslyAcceptCreateFilePrompts !== undefined) {
-    appConfig.dangerously_accept_create_file_prompts =
-      parsedOptions.dangerouslyAcceptCreateFilePrompts
-  }
-  if (parsedOptions.dangerouslyAcceptBashCommandPrompts !== undefined) {
-    appConfig.dangerously_accept_bash_command_prompts =
-      parsedOptions.dangerouslyAcceptBashCommandPrompts
-  }
-  if (parsedOptions.dangerouslyAcceptReadFilesPrompts !== undefined) {
-    appConfig.dangerously_accept_read_files_prompts =
-      parsedOptions.dangerouslyAcceptReadFilesPrompts
-  }
-  if (parsedOptions.dangerouslyAcceptFetchContentPrompts !== undefined) {
-    appConfig.dangerously_accept_fetch_content_prompts =
-      parsedOptions.dangerouslyAcceptFetchContentPrompts
+  if (parsedOptions.safe !== undefined) {
+    appConfig.safe = parsedOptions.safe
   }
   if (parsedOptions.dangerouslyAllowInDirtyDirectory !== undefined) {
     appConfig.dangerously_allow_in_dirty_directory =
@@ -538,8 +515,12 @@ export async function runPreflight(
     log('※ Notifications are enabled')
   }
 
-  const dangerFlagsAccepted = await handleDangerFlagsWarning(appConfig, options)
-  if (!dangerFlagsAccepted) {
+  const automaticAcceptanceConfirmed = await handleAutomaticAcceptanceWarning(
+    appConfig,
+    mergedRuleset,
+    options,
+  )
+  if (!automaticAcceptanceConfirmed) {
     return {
       appConfig,
       toolsetArgs,
@@ -550,8 +531,6 @@ export async function runPreflight(
       knownOptions,
     }
   }
-
-  displayDangerousWarnings(appConfig)
 
   log('※ Getting ready to launch Claude CLI')
 

@@ -78,3 +78,39 @@ export function buildRulesetArgs(ruleset: RulesetConfig): string[] {
   // No flags need to be passed to the child process
   return []
 }
+
+export function hasActiveAcceptanceRules(
+  ruleset: RulesetConfig | undefined,
+): boolean {
+  if (!ruleset) return false
+
+  return (
+    ruleset.accept_project_edit_file_prompts === true ||
+    ruleset.accept_global_edit_file_prompts === true ||
+    ruleset.accept_project_create_file_prompts === true ||
+    ruleset.accept_global_create_file_prompts === true ||
+    ruleset.accept_project_bash_command_prompts === true ||
+    ruleset.accept_global_bash_command_prompts === true ||
+    ruleset.accept_project_read_files_prompts === true ||
+    ruleset.accept_global_read_files_prompts === true ||
+    ruleset.accept_fetch_content_prompts === true ||
+    (typeof ruleset.accept_project_edit_file_prompts === 'object' &&
+      ruleset.accept_project_edit_file_prompts.paths.length > 0) ||
+    (typeof ruleset.accept_global_edit_file_prompts === 'object' &&
+      ruleset.accept_global_edit_file_prompts.paths.length > 0) ||
+    (typeof ruleset.accept_project_create_file_prompts === 'object' &&
+      ruleset.accept_project_create_file_prompts.paths.length > 0) ||
+    (typeof ruleset.accept_global_create_file_prompts === 'object' &&
+      ruleset.accept_global_create_file_prompts.paths.length > 0) ||
+    (typeof ruleset.accept_project_bash_command_prompts === 'object' &&
+      ruleset.accept_project_bash_command_prompts.paths.length > 0) ||
+    (typeof ruleset.accept_global_bash_command_prompts === 'object' &&
+      ruleset.accept_global_bash_command_prompts.paths.length > 0) ||
+    (typeof ruleset.accept_project_read_files_prompts === 'object' &&
+      ruleset.accept_project_read_files_prompts.paths.length > 0) ||
+    (typeof ruleset.accept_global_read_files_prompts === 'object' &&
+      ruleset.accept_global_read_files_prompts.paths.length > 0) ||
+    (typeof ruleset.accept_fetch_content_prompts === 'object' &&
+      ruleset.accept_fetch_content_prompts.domains.length > 0)
+  )
+}

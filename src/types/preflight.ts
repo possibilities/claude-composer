@@ -57,12 +57,7 @@ export interface ParsedOptions {
   stickyAcceptedConfirmNotify?: boolean
   stickyTerminalSnapshotNotifications?: boolean
 
-  // Dangerous acceptance settings
-  dangerouslyAcceptEditFilePrompts?: boolean
-  dangerouslyAcceptCreateFilePrompts?: boolean
-  dangerouslyAcceptBashCommandPrompts?: boolean
-  dangerouslyAcceptReadFilesPrompts?: boolean
-  dangerouslyAcceptFetchContentPrompts?: boolean
+  // Safety settings
   dangerouslyAllowInDirtyDirectory?: boolean
   dangerouslyAllowWithoutVersionControl?: boolean
 

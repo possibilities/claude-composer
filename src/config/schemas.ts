@@ -53,12 +53,8 @@ export const appConfigSchema = z
     // Remote notification settings
     send_remote_notifications: z.boolean().optional(),
 
-    // Dangerous acceptance settings
-    dangerously_accept_edit_file_prompts: z.boolean().optional(),
-    dangerously_accept_create_file_prompts: z.boolean().optional(),
-    dangerously_accept_bash_command_prompts: z.boolean().optional(),
-    dangerously_accept_read_files_prompts: z.boolean().optional(),
-    dangerously_accept_fetch_content_prompts: z.boolean().optional(),
+    // Safety settings
+    safe: z.boolean().optional(),
     dangerously_allow_in_dirty_directory: z.boolean().optional(),
     dangerously_allow_without_version_control: z.boolean().optional(),
 
