@@ -1,12 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { ActivityMonitor } from '../../src/core/activity-monitor'
 import * as notifications from '../../src/utils/notifications'
+import { setupTestConfig } from '../utils/test-setup'
+import * as fs from 'fs'
+import * as path from 'node:path'
 
 vi.mock('../../src/utils/notifications')
 
 describe('ActivityMonitor', () => {
   let monitor: ActivityMonitor
   let mockShowNotification: ReturnType<typeof vi.fn>
+  let testSetup: { configDir: string; cleanup: () => void }
 
   beforeEach(() => {
     vi.useFakeTimers()
@@ -14,6 +18,9 @@ describe('ActivityMonitor', () => {
     vi.mocked(notifications.showNotification).mockImplementation(
       mockShowNotification,
     )
+
+    testSetup = setupTestConfig()
+    process.env.CLAUDE_COMPOSER_CONFIG_DIR = testSetup.configDir
 
     const mockConfig = {
       show_notifications: true,
@@ -24,6 +31,8 @@ describe('ActivityMonitor', () => {
   afterEach(() => {
     vi.useRealTimers()
     vi.clearAllMocks()
+    testSetup.cleanup()
+    delete process.env.CLAUDE_COMPOSER_CONFIG_DIR
   })
 
   describe('Text presence detection', () => {
@@ -107,8 +116,13 @@ describe('ActivityMonitor', () => {
       vi.advanceTimersByTime(1100)
       monitor.checkSnapshot(snapshotWithoutText)
       expect(mockShowNotification).toHaveBeenCalledOnce()
+      // Check that notification was shown (could be either regular or record-breaking)
       expect(mockShowNotification).toHaveBeenCalledWith(
-        { message: expect.stringContaining('Claude Composer is done working') },
+        expect.objectContaining({
+          message: expect.stringMatching(
+            /Claude Composer is done working|record|best|achievement|smashed/i,
+          ),
+        }),
         expect.any(Object),
       )
     })
@@ -400,6 +414,162 @@ Line 15
         },
         mockConfig,
       )
+    })
+  })
+
+  describe('Activity duration tracking', () => {
+    it('should track activity duration and save to file', () => {
+      const snapshotWithText =
+        'Press ENTER to continue or Ctrl+C to interrupt) waiting...'
+      const snapshotWithoutText = 'Working... processing data...'
+
+      // Start activity
+      monitor.checkSnapshot(snapshotWithText)
+      vi.advanceTimersByTime(1100)
+      monitor.checkSnapshot(snapshotWithText)
+
+      // Activity continues for 5 seconds total
+      vi.advanceTimersByTime(3900)
+      monitor.checkSnapshot(snapshotWithText)
+
+      // Activity ends
+      monitor.checkSnapshot(snapshotWithoutText)
+      vi.advanceTimersByTime(2100)
+      monitor.checkSnapshot(snapshotWithoutText)
+
+      // Check that the record was saved
+      const recordPath = path.join(testSetup.configDir, 'activity-records.json')
+      expect(fs.existsSync(recordPath)).toBe(true)
+
+      const record = JSON.parse(fs.readFileSync(recordPath, 'utf-8'))
+      // Total duration is 1100 + 3900 + 2100 = 7100ms
+      expect(record.longestDurationMs).toBeGreaterThanOrEqual(7000)
+      expect(record.longestDurationMs).toBeLessThan(7200)
+    })
+
+    it('should show special notification when breaking duration record', () => {
+      const snapshotWithText =
+        'Press ENTER to continue or Ctrl+C to interrupt) waiting...'
+      const snapshotWithoutText = 'Working... processing data...'
+
+      // First activity - 3 seconds
+      monitor.checkSnapshot(snapshotWithText)
+      vi.advanceTimersByTime(1100)
+      monitor.checkSnapshot(snapshotWithText)
+      vi.advanceTimersByTime(1900)
+      monitor.checkSnapshot(snapshotWithText)
+      monitor.checkSnapshot(snapshotWithoutText)
+      vi.advanceTimersByTime(2100)
+      monitor.checkSnapshot(snapshotWithoutText)
+
+      expect(mockShowNotification).toHaveBeenCalledOnce()
+      mockShowNotification.mockClear()
+
+      // Reset for second activity
+      monitor.reset()
+
+      // Second activity - 15 seconds (new record, > 10s threshold)
+      monitor.checkSnapshot(snapshotWithText)
+      vi.advanceTimersByTime(1100)
+      monitor.checkSnapshot(snapshotWithText)
+      vi.advanceTimersByTime(13900)
+      monitor.checkSnapshot(snapshotWithText)
+      monitor.checkSnapshot(snapshotWithoutText)
+      vi.advanceTimersByTime(2100)
+      monitor.checkSnapshot(snapshotWithoutText)
+
+      // Should show record-breaking notification with emoji and duration
+      expect(mockShowNotification).toHaveBeenCalledOnce()
+      const call = mockShowNotification.mock.calls[0]
+      expect(call[0].message).toMatch(/[🎉🚀⚡🌟🏆🎊💫✨]/)
+      expect(call[0].message).toMatch(/record|best|achievement|smashed/i)
+      // The total duration includes persistence check time
+      expect(call[0].message).toMatch(/1[5-7]s/)
+      expect(call[0].sound).toBe(true)
+    })
+
+    it('should not show record notification when notify_work_complete is false', () => {
+      const snapshotWithText =
+        'Press ENTER to continue or Ctrl+C to interrupt) waiting...'
+      const snapshotWithoutText = 'Working... processing data...'
+      const mockConfig = {
+        show_notifications: true,
+        notify_work_complete: false,
+      }
+
+      const customMonitor = new ActivityMonitor(mockConfig as any)
+
+      // Activity that would break record
+      customMonitor.checkSnapshot(snapshotWithText)
+      vi.advanceTimersByTime(1100)
+      customMonitor.checkSnapshot(snapshotWithText)
+      vi.advanceTimersByTime(8900)
+      customMonitor.checkSnapshot(snapshotWithText)
+      customMonitor.checkSnapshot(snapshotWithoutText)
+      vi.advanceTimersByTime(2100)
+      customMonitor.checkSnapshot(snapshotWithoutText)
+
+      // Should not show any notification
+      expect(mockShowNotification).not.toHaveBeenCalled()
+    })
+
+    it('should handle missing activity start time gracefully', () => {
+      const snapshotWithText =
+        'Press ENTER to continue or Ctrl+C to interrupt) waiting...'
+      const snapshotWithoutText = 'Working... processing data...'
+
+      // Manually create persistent state without proper start time
+      monitor.checkSnapshot(snapshotWithText)
+      vi.advanceTimersByTime(1100)
+      monitor.checkSnapshot(snapshotWithText)
+
+      // Reset activity start time to simulate edge case
+      ;(monitor as any).activityStartTime = null
+
+      // End activity
+      monitor.checkSnapshot(snapshotWithoutText)
+      vi.advanceTimersByTime(2100)
+      monitor.checkSnapshot(snapshotWithoutText)
+
+      // Should still show regular notification
+      expect(mockShowNotification).toHaveBeenCalledOnce()
+      expect(mockShowNotification).toHaveBeenCalledWith(
+        { message: expect.stringContaining('Claude Composer is done working') },
+        expect.any(Object),
+      )
+    })
+
+    it('should format duration correctly for different time spans', () => {
+      const snapshotWithText =
+        'Press ENTER to continue or Ctrl+C to interrupt) waiting...'
+      const snapshotWithoutText = 'Working... processing data...'
+
+      // First set a small record
+      monitor.checkSnapshot(snapshotWithText)
+      vi.advanceTimersByTime(1100)
+      monitor.checkSnapshot(snapshotWithText)
+      vi.advanceTimersByTime(14000) // 15 seconds total
+      monitor.checkSnapshot(snapshotWithText)
+      monitor.checkSnapshot(snapshotWithoutText)
+      vi.advanceTimersByTime(2100)
+      monitor.checkSnapshot(snapshotWithoutText)
+
+      mockShowNotification.mockClear()
+      monitor.reset()
+
+      // Test 1h 30m duration (new record)
+      monitor.checkSnapshot(snapshotWithText)
+      vi.advanceTimersByTime(1100)
+      monitor.checkSnapshot(snapshotWithText)
+      vi.advanceTimersByTime(5400000 - 1100) // 90 minutes total
+      monitor.checkSnapshot(snapshotWithText)
+      monitor.checkSnapshot(snapshotWithoutText)
+      vi.advanceTimersByTime(2100)
+      monitor.checkSnapshot(snapshotWithoutText)
+
+      expect(mockShowNotification).toHaveBeenCalledOnce()
+      const call = mockShowNotification.mock.calls[0]
+      expect(call[0].message).toMatch(/1h 30m/)
     })
   })
 })
