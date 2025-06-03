@@ -41,6 +41,9 @@ importers:
       node-notifier:
         specifier: ^10.0.1
         version: 10.0.1
+      picomatch:
+        specifier: ^4.0.2
+        version: 4.0.2
       strip-ansi:
         specifier: ^7.1.0
         version: 7.1.0
