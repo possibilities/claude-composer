@@ -291,10 +291,7 @@ function handlePatternMatches(
     : patternMatcher.processData(data)
 
   for (const match of matches) {
-    const isExpansionPattern =
-      match.patternId === 'add-tree-trigger' ||
-      match.patternId === 'add-changes-trigger' ||
-      match.type === 'expansion'
+    const isExpansionPattern = match.type === 'expansion'
 
     let actionResponse: 'Accepted' | 'Prompted' | undefined
     let actionResponseIcon: string | undefined

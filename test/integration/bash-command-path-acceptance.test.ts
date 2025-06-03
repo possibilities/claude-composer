@@ -51,12 +51,35 @@ describe('Bash Command Path-based Acceptance Integration', () => {
     return false
   }
 
+  // Validate that pattern types are correct for known patterns
+  function validatePatternType(match: MatchResult): void {
+    const confirmationPatterns = [
+      'bash-command-prompt-format-1',
+      'bash-command-prompt-format-2',
+      'edit-file-prompt',
+      'create-file-prompt',
+      'read-files-prompt',
+      'fetch-content-prompt',
+    ]
+
+    if (confirmationPatterns.includes(match.patternId)) {
+      if (match.type && match.type !== 'confirmation') {
+        throw new Error(
+          `Pattern ${match.patternId} should have type 'confirmation' but has '${match.type}'`,
+        )
+      }
+    }
+  }
+
   // Replicate the shouldAcceptPrompt logic from index.ts with path support
   function shouldAcceptPrompt(
     match: MatchResult,
     appConfig: AppConfig,
     mergedRuleset: RulesetConfig | undefined,
   ): boolean {
+    // Add validation
+    validatePatternType(match)
+
     const fileName = match.extractedData?.fileName
     const directory = match.extractedData?.directory
 
@@ -138,7 +161,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
       // Setup: command running in node_modules directory
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-1',
-        type: 'prompt',
+        type: 'confirmation',
         response: '1',
         extractedData: {
           directory: 'node_modules/package',
@@ -169,7 +192,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
       // Setup: format-2 prompt without directory
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-2',
-        type: 'prompt',
+        type: 'confirmation',
         response: '1',
         extractedData: {
           command: 'npm test',
@@ -200,7 +223,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
       // Setup: any command with boolean config
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-2',
-        type: 'prompt',
+        type: 'confirmation',
         response: '1',
         extractedData: {
           command: 'rm -rf /',
@@ -229,7 +252,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
       // Setup: command running in /tmp directory
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-1',
-        type: 'prompt',
+        type: 'confirmation',
         response: '1',
         extractedData: {
           directory: '/tmp/cache',
@@ -262,7 +285,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
     it('should handle relative paths for project context', () => {
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-1',
-        type: 'prompt',
+        type: 'confirmation',
         response: '1',
         extractedData: {
           directory: path.join(process.cwd(), 'src/components'),
@@ -320,7 +343,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
     it('should show unacceptable notification for missing directory with path config', () => {
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-2',
-        type: 'prompt',
+        type: 'confirmation',
         response: '1',
         extractedData: {
           command: 'npm test',
@@ -345,7 +368,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
     it('should not show unacceptable notification with boolean config', () => {
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-2',
-        type: 'prompt',
+        type: 'confirmation',
         response: '1',
         extractedData: {
           command: 'npm test',
@@ -368,7 +391,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
     it('should not show unacceptable notification when directory is present', () => {
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-1',
-        type: 'prompt',
+        type: 'confirmation',
         response: '1',
         extractedData: {
           directory: 'src/utils',
