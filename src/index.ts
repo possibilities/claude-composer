@@ -397,12 +397,6 @@ function handleStdinData(data: Buffer): void {
 }
 
 export async function main() {
-  if (process.argv.includes('--config-help')) {
-    const { getConfigHelp } = await import('./cli/config-help.js')
-    console.log(getConfigHelp())
-    process.exit(0)
-  }
-
   if (process.argv.includes('--safe')) {
     const { createClaudeComposerCommand } = await import('./cli/parser.js')
     const { buildKnownOptionsSet } = await import('./cli/parser.js')
