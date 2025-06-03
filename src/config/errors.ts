@@ -73,15 +73,6 @@ export class ToolsetConfigError extends ConfigurationError {
 }
 
 /**
- * Error thrown when configuration conflicts occur
- */
-export class ConfigConflictError extends ConfigurationError {
-  constructor(message: string) {
-    super(message, 'CONFIG_CONFLICT')
-  }
-}
-
-/**
  * Format Zod errors for display
  */
 export function formatZodError(error: z.ZodError): string {

@@ -7,7 +7,7 @@ import { showSnapshotNotification } from '../utils/notifications'
 import type { AppConfig } from '../config/schemas'
 import type { TerminalSnapshot } from './types'
 
-export function ensureLogsDirectory(): void {
+function ensureLogsDirectory(): void {
   const logsDir = CONFIG_PATHS.getLogsDirectory()
   if (!fs.existsSync(logsDir)) {
     fs.mkdirSync(logsDir, { recursive: true })
@@ -72,7 +72,7 @@ export function calculateMd5(filePath: string): string {
   return crypto.createHash('md5').update(content).digest('hex')
 }
 
-export function copyDirectory(src: string, dest: string): void {
+function copyDirectory(src: string, dest: string): void {
   if (!fs.existsSync(dest)) {
     fs.mkdirSync(dest, { recursive: true })
   }

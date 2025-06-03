@@ -69,7 +69,6 @@ export const appConfigSchema = z
   .strict()
 
 export type AppConfig = z.infer<typeof appConfigSchema>
-export type ConfirmNotifyConfig = z.infer<typeof confirmNotifySchema>
 export type StickyNotificationsConfig = z.infer<
   typeof stickyNotificationsSchema
 >
