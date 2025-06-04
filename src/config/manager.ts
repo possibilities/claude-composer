@@ -341,18 +341,6 @@ export class ConfigManager {
       ) {
         return false
       }
-      if (
-        pattern.id === 'add-tree-trigger' &&
-        !config.allow_adding_project_tree
-      ) {
-        return false
-      }
-      if (
-        pattern.id === 'add-changes-trigger' &&
-        !config.allow_adding_project_changes
-      ) {
-        return false
-      }
       return true
     })
   }
@@ -473,8 +461,6 @@ export class ConfigManager {
       dangerously_accept_bash_command_prompts: false,
       dangerously_allow_in_dirty_directory: false,
       dangerously_allow_without_version_control: false,
-      allow_adding_project_tree: false,
-      allow_adding_project_changes: false,
       allow_buffer_snapshots: false,
     }
   }

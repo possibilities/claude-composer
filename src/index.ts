@@ -84,18 +84,6 @@ async function initializePatterns(): Promise<boolean> {
     }
 
     // Always add confirmation patterns so notifications work, acceptance is handled later
-    if (
-      pattern.id === 'add-tree-trigger' &&
-      !appConfig.allow_adding_project_tree
-    ) {
-      return
-    }
-    if (
-      pattern.id === 'add-changes-trigger' &&
-      !appConfig.allow_adding_project_changes
-    ) {
-      return
-    }
 
     try {
       patternMatcher.addPattern(pattern)

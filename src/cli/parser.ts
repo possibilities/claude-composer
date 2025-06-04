@@ -36,14 +36,6 @@ export function createClaudeComposerCommand(): Command {
       'Enable Ctrl+Shift+S to save terminal buffer snapshots to ~/.claude-composer/logs/',
     )
     .option(
-      '-T, --allow-adding-project-tree',
-      'Enable the add-tree-trigger pattern for project tree display',
-    )
-    .option(
-      '-C, --allow-adding-project-changes',
-      'Enable the add-changes-trigger pattern for git diff display',
-    )
-    .option(
       '-l, --log-all-pattern-matches',
       'Log all pattern matches to ~/.claude-composer/logs/pattern-matches-<pattern.id>.jsonl',
     )
@@ -352,8 +344,6 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--no-default-rulesets')
   knownOptions.add('--log-all-pattern-matches')
   knownOptions.add('--allow-buffer-snapshots')
-  knownOptions.add('--allow-adding-project-tree')
-  knownOptions.add('--allow-adding-project-changes')
   knownOptions.add('--quiet')
   knownOptions.add('--safe')
 

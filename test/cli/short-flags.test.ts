@@ -23,14 +23,6 @@ describe('Short flag support', () => {
         expected: { allowBufferSnapshots: true },
       },
       {
-        args: ['node', 'cli.js', '-T'],
-        expected: { allowAddingProjectTree: true },
-      },
-      {
-        args: ['node', 'cli.js', '-C'],
-        expected: { allowAddingProjectChanges: true },
-      },
-      {
         args: ['node', 'cli.js', '-l'],
         expected: { logAllPatternMatches: true },
       },

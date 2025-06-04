@@ -63,8 +63,6 @@ export const appConfigSchema = z
     rulesets: z.array(z.string()).optional(),
     log_all_pattern_matches: z.boolean().optional(),
     allow_buffer_snapshots: z.boolean().optional(),
-    allow_adding_project_tree: z.boolean().optional(),
-    allow_adding_project_changes: z.boolean().optional(),
   })
   .strict()
 
