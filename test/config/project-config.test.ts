@@ -2,7 +2,7 @@ import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
-import { ConfigurationManager } from '../../src/config/manager'
+import { ConfigManager } from '../../src/config/manager'
 import { CONFIG_PATHS } from '../../src/config/paths'
 
 vi.mock('fs')
@@ -51,11 +51,11 @@ vi.mock('yaml', () => ({
 }))
 
 describe('Project Configuration', () => {
-  let configManager: ConfigurationManager
+  let configManager: ConfigManager
 
   beforeEach(() => {
     vi.clearAllMocks()
-    ConfigurationManager.resetInstance()
+    ConfigManager.resetInstance()
 
     // Mock process.cwd()
     vi.spyOn(process, 'cwd').mockReturnValue('/test/project')
@@ -63,7 +63,7 @@ describe('Project Configuration', () => {
     // Mock environment variable instead of os.homedir
     vi.stubEnv('CLAUDE_COMPOSER_CONFIG_DIR', '/home/test/.claude-composer')
 
-    configManager = ConfigurationManager.getInstance()
+    configManager = ConfigManager.getInstance()
 
     // Mock fs.existsSync to return false by default
     vi.mocked(fs.existsSync).mockReturnValue(false)
@@ -88,7 +88,7 @@ safe: true
       throw new Error('File not found')
     })
 
-    await configManager.loadConfiguration()
+    await configManager.loadConfig()
     const config = configManager.getAppConfig()
 
     expect(config.show_notifications).toBe(false)
@@ -121,7 +121,7 @@ safe: true
       throw new Error('File not found')
     })
 
-    await configManager.loadConfiguration({ toolsetNames: [] })
+    await configManager.loadConfig({ toolsetNames: [] })
     const config = configManager.getAppConfig()
 
     // Project values override global
@@ -147,7 +147,7 @@ safe: true
       throw new Error('File not found')
     })
 
-    await configManager.loadConfiguration({
+    await configManager.loadConfig({
       cliOverrides: {
         show_notifications: true,
       },
@@ -193,15 +193,15 @@ toolsets:
     })
 
     // Test 1: Project replaces global (don't load toolsets to avoid complexity)
-    await configManager.loadConfiguration({ toolsetNames: [] })
+    await configManager.loadConfig({ toolsetNames: [] })
     let config = configManager.getAppConfig()
     expect(config.toolsets).toEqual(['project-tool'])
 
     // Test 2: CLI replaces everything
-    ConfigurationManager.resetInstance()
+    ConfigManager.resetInstance()
     vi.stubEnv('CLAUDE_COMPOSER_CONFIG_DIR', '/home/test/.claude-composer')
-    configManager = ConfigurationManager.getInstance()
-    await configManager.loadConfiguration({
+    configManager = ConfigManager.getInstance()
+    await configManager.loadConfig({
       toolsetNames: [],
       cliOverrides: {
         toolsets: ['cli-tool'],
@@ -214,7 +214,7 @@ toolsets:
   it('should work without any config files', async () => {
     vi.mocked(fs.existsSync).mockReturnValue(false)
 
-    await configManager.loadConfiguration()
+    await configManager.loadConfig()
     const config = configManager.getAppConfig()
 
     // Should have defaults

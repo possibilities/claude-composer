@@ -14,7 +14,7 @@ import {
 } from './schemas'
 import { CONFIG_PATHS, CLAUDE_PATHS } from './paths'
 import {
-  ConfigurationError,
+  ConfigError,
   ConfigFileNotFoundError,
   ConfigValidationError,
   ToolsetConfigError,
@@ -32,7 +32,7 @@ import { parseEnvironment, type EnvironmentConfig } from './environment'
 /**
  * Configuration state managed by the ConfigurationManager
  */
-interface ConfigurationState {
+interface ConfigState {
   appConfig: AppConfig | null
   patterns: Map<string, PatternConfig>
   toolsets: Map<string, ToolsetConfig>
@@ -56,8 +56,8 @@ export interface LoadConfigOptions {
  * Centralized configuration management
  * Singleton pattern ensures consistent configuration across the application
  */
-export class ConfigurationManager {
-  private static instance: ConfigurationManager | null = null
+export class ConfigManager {
+  private static instance: ConfigManager | null = null
   private state: ConfigurationState
 
   private constructor() {
@@ -74,27 +74,27 @@ export class ConfigurationManager {
   /**
    * Get the singleton instance
    */
-  static getInstance(): ConfigurationManager {
-    if (!ConfigurationManager.instance) {
-      ConfigurationManager.instance = new ConfigurationManager()
+  static getInstance(): ConfigManager {
+    if (!ConfigManager.instance) {
+      ConfigManager.instance = new ConfigManager()
     }
-    return ConfigurationManager.instance
+    return ConfigManager.instance
   }
 
   /**
    * Reset the singleton instance (mainly for testing)
    */
   static resetInstance(): void {
-    if (ConfigurationManager.instance) {
-      ConfigurationManager.instance.cleanup()
-      ConfigurationManager.instance = null
+    if (ConfigManager.instance) {
+      ConfigManager.instance.cleanup()
+      ConfigManager.instance = null
     }
   }
 
   /**
    * Load application configuration
    */
-  async loadConfiguration(options: LoadConfigOptions = {}): Promise<void> {
+  async loadConfig(options: LoadConfigOptions = {}): Promise<void> {
     const { configPath, ignoreGlobalConfig, toolsetNames, cliOverrides } =
       options
 
@@ -205,10 +205,10 @@ export class ConfigurationManager {
 
       return result.data
     } catch (error) {
-      if (error instanceof ConfigurationError) {
+      if (error instanceof ConfigError) {
         throw error
       }
-      throw new ConfigurationError(
+      throw new ConfigError(
         `Failed to load configuration from ${filePath}: ${error}`,
         'CONFIG_LOAD_ERROR',
       )
@@ -252,7 +252,7 @@ export class ConfigurationManager {
 
       this.state.toolsets.set(name, result.data)
     } catch (error) {
-      if (error instanceof ConfigurationError) {
+      if (error instanceof ConfigError) {
         throw error
       }
       throw new ToolsetConfigError(name, `Failed to load toolset: ${error}`)
@@ -383,14 +383,14 @@ export class ConfigurationManager {
   }
 
   /**
-   * Register a temporary file for cleanup
+   * Register a temp file for cleanup
    */
   registerTempFile(path: string): void {
     this.state.tempFiles.add(path)
   }
 
   /**
-   * Clean up temporary files
+   * Clean up temp files
    */
   cleanup(): void {
     for (const tempFile of this.state.tempFiles) {

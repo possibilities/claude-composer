@@ -6,6 +6,7 @@ import {
 } from '../../src/utils/notifications'
 import { createMatchWithNotification } from '../utils/test-notification-utils'
 import { AppConfig } from '../../src/config/schemas'
+import { TIMEOUT_VALUES } from '../utils/test-mocks'
 
 vi.mock('node-notifier', () => ({
   default: {
@@ -53,7 +54,7 @@ describe('Notification functionality', () => {
       title: '🤖 Claude Composer',
       message:
         'Pattern triggered: Test Notification\nMatched: Welcome to Claude Code!',
-      timeout: 86400, // prompted confirmations are sticky by default
+      timeout: TIMEOUT_VALUES.STICKY_NOTIFICATION, // prompted confirmations are sticky by default
       wait: false,
       sound: false,
     })
@@ -78,7 +79,7 @@ describe('Notification functionality', () => {
     expect(mockNotify).toHaveBeenCalledWith({
       title: '🤖 Claude Composer',
       message: `Pattern triggered: Long Text Pattern\nMatched: ${'A'.repeat(150)}`,
-      timeout: 86400, // prompted confirmations are sticky by default
+      timeout: TIMEOUT_VALUES.STICKY_NOTIFICATION, // prompted confirmations are sticky by default
       wait: false,
       sound: false,
     })

@@ -5,7 +5,7 @@ import { ENV_VARS } from './paths'
  * Environment configuration schema
  */
 const envSchema = z.object({
-  configDir: z.string().optional(),
+  configDirectory: z.string().optional(),
   appPath: z.string().optional(),
   patternsPath: z.string().optional(),
   home: z.string(),
@@ -32,7 +32,7 @@ export class EnvironmentValidationError extends Error {
  */
 export function parseEnvironment(): EnvironmentConfig {
   const rawEnv = {
-    configDir: process.env[ENV_VARS.CONFIG_DIR],
+    configDirectory: process.env[ENV_VARS.CONFIG_DIR],
     appPath: process.env[ENV_VARS.APP_PATH],
     patternsPath: process.env[ENV_VARS.PATTERNS_PATH],
     home: process.env[ENV_VARS.HOME] || process.env.HOME || os.homedir(),

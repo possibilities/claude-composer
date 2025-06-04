@@ -30,7 +30,7 @@ export async function saveTerminalSnapshot(
     const timestampForFilename = timestamp.replace(/[:.]/g, '-')
     const filename = `snapshot-${timestampForFilename}.json`
     const logpath = CONFIG_PATHS.getLogsDirectory()
-    const filepath = path.join(logpath, filename)
+    const filePath = path.join(logpath, filename)
 
     const terminalContent = serializeAddon.serialize()
 
@@ -52,10 +52,10 @@ export async function saveTerminalSnapshot(
       },
     }
 
-    fs.writeFileSync(filepath, JSON.stringify(snapshot, null, 2))
+    fs.writeFileSync(filePath, JSON.stringify(snapshot, null, 2))
 
     try {
-      await clipboardy.write(filepath)
+      await clipboardy.write(filePath)
     } catch (clipboardError) {}
 
     if (appConfig.show_notifications !== false) {
