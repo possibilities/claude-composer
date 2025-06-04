@@ -54,7 +54,6 @@ export const appConfigSchema = z
     send_remote_notifications: z.boolean().optional(),
 
     // Safety settings
-    safe: z.boolean().optional(),
     dangerously_allow_in_dirty_directory: z.boolean().optional(),
     dangerously_allow_without_version_control: z.boolean().optional(),
 

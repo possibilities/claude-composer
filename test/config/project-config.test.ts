@@ -82,17 +82,17 @@ describe('Project Configuration', () => {
       if (path === '/test/project/.claude-composer/config.yaml') {
         return `
 show_notifications: false
-safe: true
+toolsets: ["test-toolset"]
 `
       }
       throw new Error('File not found')
     })
 
-    await configManager.loadConfig()
+    await configManager.loadConfig({ toolsetNames: [] })
     const config = configManager.getAppConfig()
 
     expect(config.show_notifications).toBe(false)
-    expect(config.safe).toBe(true)
+    expect(config.toolsets).toEqual(['test-toolset'])
   })
 
   it('should prioritize project config over global config', async () => {
@@ -107,7 +107,6 @@ safe: true
       if (path === '/home/test/.claude-composer/config.yaml') {
         return `
 show_notifications: true
-safe: false
 toolsets:
   - global
 `
@@ -115,7 +114,7 @@ toolsets:
       if (path === '/test/project/.claude-composer/config.yaml') {
         return `
 show_notifications: false
-safe: true
+rulesets: ["test-ruleset"]
 `
       }
       throw new Error('File not found')
@@ -126,7 +125,7 @@ safe: true
 
     // Project values override global
     expect(config.show_notifications).toBe(false)
-    expect(config.safe).toBe(true)
+    expect(config.rulesets).toEqual(['test-ruleset'])
 
     // Global value used when not in project
     expect(config.toolsets).toEqual(['global'])
@@ -141,7 +140,7 @@ safe: true
       if (path === '/test/project/.claude-composer/config.yaml') {
         return `
 show_notifications: false
-safe: true
+rulesets: ["test-ruleset"]
 `
       }
       throw new Error('File not found')
@@ -158,7 +157,7 @@ safe: true
     expect(config.show_notifications).toBe(true)
 
     // Project value used when no CLI override
-    expect(config.safe).toBe(true)
+    expect(config.rulesets).toEqual(['test-ruleset'])
   })
 
   it('should handle toolsets with complete replacement at each level', async () => {
@@ -219,7 +218,7 @@ toolsets:
 
     // Should have defaults
     expect(config.show_notifications).toBe(true)
-    expect(config.safe).toBeUndefined()
+    expect(config.rulesets).toBeUndefined()
     expect(config.toolsets).toBeUndefined()
   })
 })

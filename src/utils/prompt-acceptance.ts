@@ -50,9 +50,6 @@ export function shouldAcceptPrompt(
   appConfig: AppConfig | undefined,
   mergedRuleset: RulesetConfig | undefined,
 ): boolean {
-  // If --safe flag is used, never auto-accept
-  if (appConfig?.safe) return false
-
   const fileName = match.extractedData?.fileName
   const directory = match.extractedData?.directory
 

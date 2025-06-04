@@ -80,9 +80,7 @@ describe('Bash Command Path-based Acceptance Integration', () => {
         notification: 'Bash command prompt',
       }
 
-      const appConfig: AppConfig = {
-        safe: false,
-      }
+      const appConfig: AppConfig = {}
 
       const ruleset: RulesetConfig = {
         accept_project_bash_command_prompts: {

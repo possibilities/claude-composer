@@ -104,11 +104,6 @@ export async function handleAutomaticAcceptanceWarning(
   mergedRuleset: RulesetConfig | undefined,
   preflightOptions?: PreflightOptions,
 ): Promise<boolean> {
-  // If --safe flag is used, skip warning
-  if (appConfig.safe) {
-    return true
-  }
-
   // Only show warning if there are active acceptance rules
   if (!hasActiveAcceptanceRules(mergedRuleset)) {
     return true
@@ -149,12 +144,6 @@ export async function handleAutomaticAcceptanceWarning(
   )
   console.log(
     '\x1b[33m║ WITHOUT asking for confirmation!                                ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[33m║                                                                 ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[33m║ Use --safe to disable all automatic acceptance                  ║\x1b[0m',
   )
   console.log(
     '\x1b[33m╚═════════════════════════════════════════════════════════════════╝\x1b[0m',

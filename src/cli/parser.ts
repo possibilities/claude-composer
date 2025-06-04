@@ -28,10 +28,6 @@ export function createClaudeComposerCommand(): Command {
     )
     .option('-q, --quiet', 'Suppress preflight messages')
     .option(
-      '-s, --safe',
-      'Bypass all claude-composer functionality and shell out directly to claude',
-    )
-    .option(
       '-b, --allow-buffer-snapshots',
       'Enable Ctrl+Shift+S to save terminal buffer snapshots to ~/.claude-composer/logs/',
     )
@@ -345,7 +341,6 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--log-all-pattern-matches')
   knownOptions.add('--allow-buffer-snapshots')
   knownOptions.add('--quiet')
-  knownOptions.add('--safe')
 
   return knownOptions
 }
