@@ -233,6 +233,13 @@ function handleStdinData(data: Buffer): void {
 }
 
 export async function main() {
+  // Check for cc-init subcommand first
+  if (process.argv[2] === 'cc-init') {
+    const { handleCcInit } = await import('./cli/cc-init.js')
+    await handleCcInit(process.argv.slice(3))
+    return
+  }
+
   if (process.argv.includes('--help') || process.argv.includes('-h')) {
     const { createClaudeComposerCommand } = await import('./cli/parser.js')
     const program = createClaudeComposerCommand()
