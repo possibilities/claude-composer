@@ -9,28 +9,28 @@ export function createClaudeComposerCommand(): Command {
       'A wrapper that enhances the Claude Code CLI\n\nSubcommands:\n  cc-init                  Initialize a new configuration file',
     )
     .option(
-      '-t, --toolset <name...>',
+      '--toolset <name...>',
       'Use predefined toolsets from ~/.claude-composer/toolsets/ directory (can be specified multiple times)',
     )
     .option(
-      '-r, --ruleset <name...>',
+      '--ruleset <name...>',
       'Use predefined rulesets from ~/.claude-composer/rulesets/ directory (can be specified multiple times)',
     )
     .option(
-      '-i, --ignore-global-config',
+      '--ignore-global-config',
       'Ignore configuration from ~/.claude-composer/config.yaml',
     )
-    .option('-q, --quiet', 'Suppress preflight messages')
+    .option('--quiet', 'Suppress preflight messages')
     .option(
-      '-b, --allow-buffer-snapshots',
+      '--allow-buffer-snapshots',
       'Enable Ctrl+Shift+S to save terminal buffer snapshots to ~/.claude-composer/logs/',
     )
     .option(
-      '-l, --log-all-pattern-matches',
+      '--log-all-pattern-matches',
       'Log all pattern matches to ~/.claude-composer/logs/pattern-matches-<pattern.id>.jsonl',
     )
     .option(
-      '-d, --dangerously-allow-in-dirty-directory',
+      '--dangerously-allow-in-dirty-directory',
       'Allow running in a directory with uncommitted git changes',
     )
     .option(
@@ -38,7 +38,7 @@ export function createClaudeComposerCommand(): Command {
       'Do not allow running in a directory with uncommitted git changes',
     )
     .option(
-      '-D, --dangerously-allow-without-version-control',
+      '--dangerously-allow-without-version-control',
       'Allow running in a directory not under version control',
     )
     .option(
@@ -47,12 +47,12 @@ export function createClaudeComposerCommand(): Command {
     )
     // Notification options (moved to end)
     .option(
-      '-n, --show-notifications',
+      '--show-notifications',
       'Show desktop notifications for file edits, creates, and prompts',
     )
     .option('--no-show-notifications', 'Disable notifications')
     .option(
-      '-N, --sticky-notifications',
+      '--sticky-notifications',
       'Enable notifications that stay on screen until manually dismissed (also enables --show-notifications)',
     )
     .option(
@@ -159,7 +159,7 @@ export function createClaudeComposerCommand(): Command {
     )
     // Remote notification settings
     .option(
-      '-R, --send-remote-notifications',
+      '--send-remote-notifications',
       'Send notifications to Discord/WhatsApp (requires ~/.claude-composer/remote-notifications.yaml)',
     )
     .option(
