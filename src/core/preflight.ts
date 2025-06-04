@@ -155,13 +155,6 @@ export async function runPreflight(
   if (parsedOptions.allowBufferSnapshots !== undefined) {
     appConfig.allow_buffer_snapshots = parsedOptions.allowBufferSnapshots
   }
-  if (parsedOptions.allowAddingProjectTree !== undefined) {
-    appConfig.allow_adding_project_tree = parsedOptions.allowAddingProjectTree
-  }
-  if (parsedOptions.allowAddingProjectChanges !== undefined) {
-    appConfig.allow_adding_project_changes =
-      parsedOptions.allowAddingProjectChanges
-  }
   if (parsedOptions.notifyWorkStarted !== undefined) {
     appConfig.notify_work_started = parsedOptions.notifyWorkStarted
   }
