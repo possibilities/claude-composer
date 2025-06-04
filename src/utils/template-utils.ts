@@ -19,7 +19,6 @@ export function replacePlaceholders(
     stripAnsi(match.matchedText),
   )
 
-  // Add actionResponse and actionResponseIcon replacements
   if (actionResponse) {
     result = result.replace(/\{\{\s*actionResponse\s*\}\}/gi, actionResponse)
   }
