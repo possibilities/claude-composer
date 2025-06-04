@@ -13,13 +13,7 @@ touch readme.md
 git init
 git add .
 git commit -m "Let's frikken go"
-${cli_path} \
-    --dangerously-accept-edit-file-prompts \
-    --dangerously-accept-create-file-prompts \
-    --dangerously-accept-bash-command-prompts \
-    --dangerously-accept-read-files-prompts \
-    --dangerously-accept-fetch-content-prompts \
-"$(cat <<'EOF'
+${cli_path} "$(cat <<'EOF'
 Perform step by step:
 - Create a file called funny-words.txt with a funny word on each line. 5 lines.
 - Add another funny word to funny-words.txt
