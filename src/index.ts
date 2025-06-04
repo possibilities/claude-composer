@@ -11,6 +11,7 @@ import {
   patterns,
   confirmationPatterns,
   appStartedPattern,
+  trustPromptPattern,
 } from './patterns/registry'
 import { type AppConfig, type RulesetConfig } from './config/schemas.js'
 import { runPreflight, log, warn } from './core/preflight.js'
@@ -439,6 +440,16 @@ export async function main() {
   }
 
   const hasActivePatterns = await initializePatterns()
+
+  // Add the trust prompt pattern after patterns are initialized
+  try {
+    patternMatcher.addPattern(trustPromptPattern)
+    if (trustPromptPattern.triggerText) {
+      confirmationPatternTriggers.push(trustPromptPattern.triggerText)
+    }
+  } catch (error) {
+    console.error(`Failed to add trust prompt pattern: ${error.message}`)
+  }
 
   log('※ Ready, Passing off control to Claude CLI')
 
