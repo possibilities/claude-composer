@@ -8,7 +8,7 @@ import { CONFIG_PATHS } from '../config/paths'
 export interface MatchResult {
   patternId: string
   patternTitle: string
-  type?: 'confirmation' | 'expansion'
+  type?: 'confirmation'
   response: string | string[]
   matchedText: string
   fullMatchedContent: string
@@ -48,16 +48,13 @@ export class PatternMatcher {
     return this.processDataInternal(data)
   }
 
-  processDataByType(
-    data: string,
-    filterType: 'expansion' | 'confirmation',
-  ): MatchResult[] {
+  processDataByType(data: string, filterType: 'confirmation'): MatchResult[] {
     return this.processDataInternal(data, filterType)
   }
 
   private processDataInternal(
     data: string,
-    filterType?: 'expansion' | 'confirmation',
+    filterType?: 'confirmation',
   ): MatchResult[] {
     const content = data
     const strippedContent = stripAnsi(content)
@@ -115,7 +112,7 @@ export class PatternMatcher {
 
     const matchedPattern = this.patterns.get(bottomMostMatch.patternId)
     const patternType = matchedPattern?.config.type
-    const isSelfClearing = patternType === 'expansion'
+    const isSelfClearing = false
 
     if (
       !isSelfClearing &&

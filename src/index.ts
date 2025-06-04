@@ -150,23 +150,16 @@ function shouldAcceptPrompt(match: MatchResult): boolean {
   return shouldAcceptPromptUtil(match, appConfig, mergedRuleset)
 }
 
-function handlePatternMatches(
-  data: string,
-  filterType?: 'expansion' | 'confirmation',
-): void {
+function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
   const matches = filterType
     ? patternMatcher.processDataByType(data, filterType)
     : patternMatcher.processData(data)
 
   for (const match of matches) {
-    const isExpansionPattern = match.type === 'expansion'
-
     let actionResponse: 'Accepted' | 'Prompted' | undefined
     let actionResponseIcon: string | undefined
 
-    if (isExpansionPattern) {
-      responseQueue.enqueue(match.response)
-    } else if (shouldAcceptPrompt(match)) {
+    if (shouldAcceptPrompt(match)) {
       responseQueue.enqueue(match.response)
       actionResponse = 'Accepted'
       actionResponseIcon = '👍'
@@ -247,14 +240,6 @@ function handleTerminalData(data: string): void {
 
 function handleStdinData(data: Buffer): void {
   try {
-    if (data.length === 1 && data[0] === 32) {
-      terminalManager.captureSnapshot().then(snapshot => {
-        if (snapshot) {
-          handlePatternMatches(snapshot, 'expansion')
-        }
-      })
-    }
-
     terminalManager.handleStdinData(data)
   } catch (error) {}
 }

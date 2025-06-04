@@ -45,14 +45,6 @@ export function validatePattern(pattern: unknown): PatternValidationResult {
     ) {
       errors.push('triggerText is required for confirmation-type patterns')
     }
-    if (
-      validatedPattern.type === 'expansion' &&
-      !validatedPattern.responseOptions?.length
-    ) {
-      errors.push(
-        'responseOptions must not be empty for expansion-type patterns',
-      )
-    }
 
     if (errors.length > 0) {
       return { valid: false, errors }

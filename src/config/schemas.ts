@@ -170,7 +170,7 @@ export const patternConfigSchema = z
       z.array(z.string()),
       z.function().returns(z.union([z.string(), z.array(z.string())])),
     ]),
-    type: z.enum(['expansion', 'confirmation']).optional(),
+    type: z.enum(['confirmation']).optional(),
     notification: z.string().optional(),
     triggerText: z.string().optional(),
     transformExtractedData: z
