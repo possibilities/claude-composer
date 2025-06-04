@@ -122,6 +122,15 @@ export async function loadToolsetFile(
       'internal-toolsets',
       `${internalName}.yaml`,
     )
+
+    // In development/test, check src directory if dist doesn't exist
+    if (!fs.existsSync(toolsetPath)) {
+      // Try replacing dist with src in the path
+      const srcPath = toolsetPath.replace('/dist/', '/src/')
+      if (fs.existsSync(srcPath)) {
+        toolsetPath = srcPath
+      }
+    }
   } else if (toolsetName.startsWith('project:')) {
     // Project-level toolset
     const projectName = toolsetName.substring('project:'.length)
@@ -179,6 +188,15 @@ export async function loadRulesetFile(
       'internal-rulesets',
       `${internalName}.yaml`,
     )
+
+    // In development/test, check src directory if dist doesn't exist
+    if (!fs.existsSync(rulesetPath)) {
+      // Try replacing dist with src in the path
+      const srcPath = rulesetPath.replace('/dist/', '/src/')
+      if (fs.existsSync(srcPath)) {
+        rulesetPath = srcPath
+      }
+    }
   } else if (rulesetName.startsWith('project:')) {
     // Project-level ruleset
     const projectName = rulesetName.substring('project:'.length)

@@ -5,6 +5,16 @@ import * as os from 'os'
 import { loadRulesetFile } from '../../src/config/loader'
 import type { RulesetConfig } from '../../src/config/schemas'
 
+// Mock fs module for internal ruleset tests
+vi.mock('fs', async () => {
+  const actual = await vi.importActual<typeof fs>('fs')
+  return {
+    ...actual,
+    existsSync: vi.fn(actual.existsSync),
+    readFileSync: vi.fn(actual.readFileSync),
+  }
+})
+
 describe('Project-level ruleset loading', () => {
   let originalCwd: string
   let testProjectDir: string
@@ -84,9 +94,45 @@ accept_fetch_content_prompts:
     )
   })
 
-  it.skip('should still support internal: prefix', async () => {
+  it('should still support internal: prefix', async () => {
+    // Mock the internal ruleset files
+    const originalExistsSync = vi.mocked(fs.existsSync).getMockImplementation()
+    const originalReadFileSync = vi
+      .mocked(fs.readFileSync)
+      .getMockImplementation()
+
+    vi.mocked(fs.existsSync).mockImplementation(filePath => {
+      if (
+        typeof filePath === 'string' &&
+        (filePath.includes('internal-rulesets/cautious.yaml') ||
+          filePath.includes('internal-rulesets/yolo.yaml'))
+      ) {
+        return true
+      }
+      return originalExistsSync ? originalExistsSync(filePath) : false
+    })
+
+    vi.mocked(fs.readFileSync).mockImplementation((filePath, encoding) => {
+      if (
+        typeof filePath === 'string' &&
+        filePath.includes('internal-rulesets/cautious.yaml')
+      ) {
+        return `accept_project_edit_file_prompts: false
+accept_project_create_file_prompts: false`
+      }
+      if (
+        typeof filePath === 'string' &&
+        filePath.includes('internal-rulesets/yolo.yaml')
+      ) {
+        return `accept_project_edit_file_prompts: true
+accept_project_create_file_prompts: true`
+      }
+      return originalReadFileSync
+        ? originalReadFileSync(filePath, encoding)
+        : ''
+    })
+
     // Test that internal rulesets still work
-    // Skipping because internal rulesets are in dist/ directory which doesn't exist during unit tests
     const cautious = await loadRulesetFile('internal:cautious')
     expect(cautious).toBeDefined()
     expect(cautious.accept_project_edit_file_prompts).toBe(false)
@@ -94,6 +140,14 @@ accept_fetch_content_prompts:
     const yolo = await loadRulesetFile('internal:yolo')
     expect(yolo).toBeDefined()
     expect(yolo.accept_project_edit_file_prompts).toBe(true)
+
+    // Restore mocks
+    vi.mocked(fs.existsSync).mockImplementation(
+      originalExistsSync || (() => false),
+    )
+    vi.mocked(fs.readFileSync).mockImplementation(
+      originalReadFileSync || (() => ''),
+    )
   })
 
   it('should validate project ruleset configuration', async () => {
