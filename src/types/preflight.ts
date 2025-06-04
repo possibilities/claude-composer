@@ -21,6 +21,7 @@ export interface PreflightResult {
   shouldExit: boolean
   exitCode?: number
   knownOptions: Set<string>
+  hasPrintOption?: boolean
 }
 
 export interface ParsedOptions {

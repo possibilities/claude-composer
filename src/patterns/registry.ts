@@ -2,6 +2,7 @@ import { type PatternConfig, validatePatternConfigs } from '../config/schemas'
 import { execSync } from 'child_process'
 import { stripBoxChars } from '../utils/strip-box-chars'
 import dedent from 'dedent'
+import * as fs from 'fs'
 
 type ExtractedData = {
   body?: string
@@ -209,6 +210,39 @@ const confirmationPatterns: PatternConfig[] = [
   },
 ]
 
+export function getPipedInputPath(): string | undefined {
+  try {
+    const { pipedInputPath } = require('../index.js')
+    return pipedInputPath
+  } catch {
+    return undefined
+  }
+}
+
+function getPipedInputResponse(): string[] {
+  const pipedInputPath = getPipedInputPath()
+
+  if (!pipedInputPath || !fs.existsSync(pipedInputPath)) {
+    return ['# No piped input available', '\r']
+  }
+
+  try {
+    const content = fs.readFileSync(pipedInputPath, 'utf8').trimEnd()
+    return [content || '# Piped input file is empty', '\r']
+  } catch (error) {
+    return [`# Error reading piped input: ${error}`, '\r']
+  }
+}
+
+const appStartedPattern: PatternConfig = {
+  id: 'app-started',
+  title: 'App started',
+  type: 'confirmation' as const,
+  response: getPipedInputResponse,
+  pattern: ['? for shortcuts'],
+  triggerText: '? for shortcuts',
+}
+
 const allPatterns: PatternConfig[] = [...confirmationPatterns]
 
 const validationResult = validatePatternConfigs(allPatterns)
@@ -220,4 +254,4 @@ if (!validationResult.success) {
 
 export const patterns: PatternConfig[] = validationResult.data
 
-export { confirmationPatterns }
+export { confirmationPatterns, appStartedPattern }

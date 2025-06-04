@@ -7,7 +7,11 @@ import { fileURLToPath } from 'node:url'
 import picomatch from 'picomatch'
 import { PatternMatcher, MatchResult } from './patterns/matcher'
 import { ResponseQueue } from './core/response-queue'
-import { patterns } from './patterns/registry'
+import {
+  patterns,
+  confirmationPatterns,
+  appStartedPattern,
+} from './patterns/registry'
 import { type AppConfig, type RulesetConfig } from './config/schemas.js'
 import { runPreflight, log, warn } from './core/preflight.js'
 import {
@@ -38,10 +42,11 @@ let appConfig: AppConfig | undefined
 let mergedRuleset: RulesetConfig | undefined
 let confirmationPatternTriggers: string[] = []
 let activityMonitor: ActivityMonitor | undefined
+let pipedInputPath: string | undefined
 
 const debugLog = util.debuglog('claude-composer')
 
-export { appConfig }
+export { appConfig, pipedInputPath }
 
 async function initializePatterns(): Promise<boolean> {
   let patternsToUse = patterns
@@ -109,6 +114,21 @@ function cleanup() {
       fs.unlinkSync(tempMcpConfigPath)
     } catch (e) {}
   }
+
+  if (pipedInputPath && fs.existsSync(pipedInputPath)) {
+    try {
+      fs.unlinkSync(pipedInputPath)
+    } catch (e) {}
+  }
+
+  // Clean up TTY stream if we opened one
+  const ttyStream = (global as any).__ttyStream
+  if (ttyStream) {
+    try {
+      ttyStream.setRawMode(false)
+      ttyStream.destroy()
+    } catch (e) {}
+  }
 }
 
 process.on('SIGINT', () => {
@@ -151,6 +171,17 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
       responseQueue.enqueue(match.response)
       actionResponse = 'Accepted'
       actionResponseIcon = '👍'
+
+      // Remove app-started pattern after first use
+      if (match.patternId === 'app-started') {
+        patternMatcher.removePattern('app-started')
+        const index = confirmationPatternTriggers.indexOf(
+          appStartedPattern.triggerText!,
+        )
+        if (index > -1) {
+          confirmationPatternTriggers.splice(index, 1)
+        }
+      }
     } else if (match.type === 'confirmation') {
       actionResponse = 'Prompted'
       actionResponseIcon = '✋'
@@ -424,7 +455,7 @@ export async function main() {
   const childArgs = preflightResult.childArgs
 
   const terminalConfig: TerminalConfig = {
-    isTTY: process.stdin.isTTY || false,
+    isTTY: !preflightResult.hasPrintOption,
     cols: process.stdout.columns || 80,
     rows: process.stdout.rows || 30,
     env: process.env,
@@ -444,6 +475,54 @@ export async function main() {
 
   if (process.stdin.isTTY) {
     process.stdin.on('data', handleStdinData)
+  } else {
+    const fs = await import('fs')
+    const os = await import('os')
+    const path = await import('path')
+
+    const tmpDir = os.tmpdir()
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+    pipedInputPath = path.join(tmpDir, `claude-composer-piped-${timestamp}.txt`)
+    const writeStream = fs.createWriteStream(pipedInputPath)
+
+    process.stdin.on('data', chunk => {
+      writeStream.write(chunk)
+    })
+
+    process.stdin.on('end', () => {
+      writeStream.end()
+
+      // Add app-started pattern now that we have piped input
+      try {
+        patternMatcher.addPattern(appStartedPattern)
+        confirmationPatternTriggers.push(appStartedPattern.triggerText!)
+      } catch (error) {
+        console.error(`Failed to add app-started pattern: ${error.message}`)
+      }
+    })
+
+    process.stdin.resume()
+
+    const tty = await import('tty')
+    if (os.platform() !== 'win32') {
+      try {
+        const ttyFd = fs.openSync('/dev/tty', 'r')
+        const ttyStream = new tty.ReadStream(ttyFd)
+
+        ttyStream.setRawMode(true)
+
+        ttyStream.on('data', handleStdinData)
+        ;(global as any).__ttyStream = ttyStream
+
+        process.stdout.on('resize', () => {
+          const newCols = process.stdout.columns || 80
+          const newRows = process.stdout.rows || 30
+          terminalManager.resize(newCols, newRows)
+        })
+      } catch (error) {
+        console.warn('※ Could not open /dev/tty for input:', error)
+      }
+    }
   }
 
   if (process.stdin.isTTY) {

@@ -139,6 +139,8 @@ export function shouldAcceptPrompt(
         return matchDomain(domain, fetchConfig.domains)
       }
       return false
+    case 'app-started':
+      return true
     default:
       // Unknown prompt types are not auto-accepted
       return false
