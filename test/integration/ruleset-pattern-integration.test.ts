@@ -36,20 +36,17 @@ describe('Ruleset Pattern Integration', () => {
 
     switch (match.patternId) {
       case 'edit-file-prompt':
-        if (appConfig.safe) return false
         if (!mergedRuleset) return false
         return isInside
           ? mergedRuleset.accept_project_edit_file_prompts === true
           : mergedRuleset.accept_global_edit_file_prompts === true
       case 'create-file-prompt':
-        if (appConfig.safe) return false
         if (!mergedRuleset) return false
         return isInside
           ? mergedRuleset.accept_project_create_file_prompts === true
           : mergedRuleset.accept_global_create_file_prompts === true
       case 'bash-command-prompt-format-1':
       case 'bash-command-prompt-format-2':
-        if (appConfig.safe) return false
         if (!mergedRuleset) return false
         return isInside
           ? mergedRuleset.accept_project_bash_command_prompts === true
@@ -98,17 +95,12 @@ describe('Ruleset Pattern Integration', () => {
       expect(shouldAcceptPrompt(match, appConfig, ruleset)).toBe(false)
     })
 
-    it('should respect safe flag to disable ruleset acceptance', () => {
+    it('should not accept when ruleset is undefined', () => {
       mockIsFileInProjectRoot.mockReturnValue(true)
       const match = createEditMatch('./src/config.txt')
-      const appConfig: AppConfig = {
-        safe: true,
-      }
-      const ruleset: RulesetConfig = {
-        accept_project_edit_file_prompts: true,
-      }
+      const appConfig: AppConfig = {}
 
-      expect(shouldAcceptPrompt(match, appConfig, ruleset)).toBe(false)
+      expect(shouldAcceptPrompt(match, appConfig, undefined)).toBe(false)
     })
   })
 

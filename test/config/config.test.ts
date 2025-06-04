@@ -61,19 +61,19 @@ describe('Configuration Loading', () => {
     expect(config.show_notifications).toBe(false)
   })
 
-  it('should load safe setting', async () => {
-    const configContent = 'safe: true'
+  it('should load toolsets setting', async () => {
+    const configContent = 'toolsets: ["test-toolset"]'
     fs.writeFileSync(testConfigPath, configContent)
 
     const config = await loadConfigFile(testConfigPath)
 
-    expect(config.safe).toBe(true)
+    expect(config.toolsets).toEqual(['test-toolset'])
   })
 
   it('should load all configuration options from config', async () => {
     const configContent = `
 show_notifications: false
-safe: true
+toolsets: ["test-toolset"]
 dangerously_allow_in_dirty_directory: true
 dangerously_allow_without_version_control: true`
     fs.writeFileSync(testConfigPath, configContent)
@@ -81,7 +81,7 @@ dangerously_allow_without_version_control: true`
     const config = await loadConfigFile(testConfigPath)
 
     expect(config.show_notifications).toBe(false)
-    expect(config.safe).toBe(true)
+    expect(config.toolsets).toEqual(['test-toolset'])
     expect(config.dangerously_allow_in_dirty_directory).toBe(true)
     expect(config.dangerously_allow_without_version_control).toBe(true)
   })

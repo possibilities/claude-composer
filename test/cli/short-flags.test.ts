@@ -17,7 +17,6 @@ describe('Short flag support', () => {
         expected: { ignoreGlobalConfig: true },
       },
       { args: ['node', 'cli.js', '-q'], expected: { quiet: true } },
-      { args: ['node', 'cli.js', '-s'], expected: { safe: true } },
       {
         args: ['node', 'cli.js', '-b'],
         expected: { allowBufferSnapshots: true },
@@ -62,13 +61,11 @@ describe('Short flag support', () => {
       '--ruleset',
       'ruleset1',
       '-q',
-      '--safe',
     ])
 
     expect(options.toolset).toEqual(['toolset1'])
     expect(options.ruleset).toEqual(['ruleset1'])
     expect(options.quiet).toBe(true)
-    expect(options.safe).toBe(true)
   })
 
   it('should handle multiple values with short flags', () => {
