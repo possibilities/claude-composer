@@ -481,8 +481,8 @@ export async function runPreflight(
     clearScreen()
   }
 
-  // Validate that at least one ruleset is configured
-  if (rulesetsToLoad.length === 0) {
+  // Validate that at least one ruleset is configured (unless using --print)
+  if (rulesetsToLoad.length === 0 && !isPrint) {
     console.error(
       '\x1b[31m※ Error: No rulesets configured. At least one ruleset is required.\x1b[0m',
     )
