@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as yaml from 'js-yaml'
 import { z } from 'zod'
+import { fileURLToPath } from 'node:url'
 import type {
   AppConfig,
   PatternConfig,
@@ -234,10 +235,11 @@ export class ConfigManager {
     // Check if this is an internal toolset
     if (name.startsWith('internal:')) {
       const internalName = name.substring('internal:'.length)
-      // Look for internal toolsets in the src/internal-toolsets directory
+      // Look for internal toolsets in the dist/internal-toolsets directory
+      const __filename = fileURLToPath(import.meta.url)
+      const __dirname = path.dirname(__filename)
       toolsetPath = path.join(
         __dirname,
-        '..',
         'internal-toolsets',
         `${internalName}.yaml`,
       )

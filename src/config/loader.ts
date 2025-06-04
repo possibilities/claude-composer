@@ -3,6 +3,7 @@ import * as path from 'path'
 import * as os from 'os'
 import * as yaml from 'js-yaml'
 import { z } from 'zod'
+import { fileURLToPath } from 'node:url'
 import {
   validateAppConfig,
   validateToolsetConfig,
@@ -113,10 +114,11 @@ export async function loadToolsetFile(
   // Check if this is an internal toolset
   if (toolsetName.startsWith('internal:')) {
     const internalName = toolsetName.substring('internal:'.length)
-    // Look for internal toolsets in the src/internal-toolsets directory
+    // Look for internal toolsets in the dist/internal-toolsets directory
+    const __filename = fileURLToPath(import.meta.url)
+    const __dirname = path.dirname(__filename)
     toolsetPath = path.join(
       __dirname,
-      '..',
       'internal-toolsets',
       `${internalName}.yaml`,
     )
@@ -153,10 +155,26 @@ export async function loadToolsetFile(
 export async function loadRulesetFile(
   rulesetName: string,
 ): Promise<RulesetConfig> {
-  const rulesetPath = path.join(
-    CONFIG_PATHS.getRulesetsDirectory(),
-    `${rulesetName}.yaml`,
-  )
+  let rulesetPath: string
+
+  // Check if this is an internal ruleset
+  if (rulesetName.startsWith('internal:')) {
+    const internalName = rulesetName.substring('internal:'.length)
+    // Look for internal rulesets in the dist/internal-rulesets directory
+    const __filename = fileURLToPath(import.meta.url)
+    const __dirname = path.dirname(__filename)
+    rulesetPath = path.join(
+      __dirname,
+      'internal-rulesets',
+      `${internalName}.yaml`,
+    )
+  } else {
+    // Regular user ruleset
+    rulesetPath = path.join(
+      CONFIG_PATHS.getRulesetsDirectory(),
+      `${rulesetName}.yaml`,
+    )
+  }
 
   if (!fs.existsSync(rulesetPath)) {
     throw new Error(`Ruleset file not found: ${rulesetPath}`)

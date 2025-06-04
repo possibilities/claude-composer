@@ -30,21 +30,14 @@ describe('Internal Toolset Loading', () => {
 
   describe('loadToolsetFile', () => {
     it('should load internal toolset when prefixed with internal:', async () => {
-      const internalToolsetPath = path.join(
-        __dirname,
-        '..',
-        '..',
-        'src',
-        'internal-toolsets',
-        'core.yaml',
-      )
-
+      // Mock the path resolution that happens in loader.ts
       vi.mocked(fs.existsSync).mockImplementation(filePath => {
-        return filePath === internalToolsetPath
+        // The loader will look for internal toolsets relative to its own location
+        return filePath.endsWith('internal-toolsets/core.yaml')
       })
 
       vi.mocked(fs.readFileSync).mockImplementation(filePath => {
-        if (filePath === internalToolsetPath) {
+        if (filePath.endsWith('internal-toolsets/core.yaml')) {
           return `
 allowed:
   - mcp__context7__resolve-library-id

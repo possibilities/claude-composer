@@ -37,3 +37,9 @@ toolsets:
 ## Implementation Details
 
 Internal toolsets are stored in the `src/internal-toolsets/` directory and are bundled with the CLI during the build process. They follow the same schema as regular toolset files but are loaded from the application directory instead of the user's configuration directory.
+
+You can also use internal toolsets via CLI flags:
+
+```bash
+claude-composer --toolset internal:core
+```

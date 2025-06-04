@@ -46,5 +46,7 @@ export default defineConfig({
   onSuccess: async () => {
     // Copy internal-toolsets directory to dist
     copyDir('src/internal-toolsets', 'dist/internal-toolsets')
+    // Copy internal-rulesets directory to dist
+    copyDir('src/internal-rulesets', 'dist/internal-rulesets')
   },
 })
