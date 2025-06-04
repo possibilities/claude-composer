@@ -164,7 +164,22 @@ accept_project_edit_file_prompts: true
         '--no-default-rulesets',
       ])
 
-      expect(result.mergedRuleset).toBeUndefined()
+      expect(result.shouldExit).toBe(true)
+      expect(result.exitCode).toBe(1)
+    })
+
+    it('should exit with error when no rulesets are configured', async () => {
+      // Create config file without any rulesets
+      const configContent = `
+dangerously_allow_in_dirty_directory: true
+dangerously_allow_without_version_control: true
+`
+      fs.writeFileSync(path.join(testConfigDir, 'config.yaml'), configContent)
+
+      const result = await runPreflight(['node', 'cli'])
+
+      expect(result.shouldExit).toBe(true)
+      expect(result.exitCode).toBe(1)
     })
 
     it('should let CLI rulesets override default rulesets', async () => {
