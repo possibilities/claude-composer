@@ -9,22 +9,6 @@ import {
 
 describe('PatternConfig validation', () => {
   describe('validatePatternConfig', () => {
-    it('should validate a valid expansion pattern', () => {
-      const pattern: PatternConfig = {
-        id: 'test-expansion',
-        title: 'Test Expansion',
-        pattern: ['test pattern'],
-        response: 'test response',
-        type: 'expansion',
-      }
-
-      const result = validatePatternConfig(pattern)
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data).toEqual(pattern)
-      }
-    })
-
     it('should validate a valid confirmation pattern', () => {
       const pattern: PatternConfig = {
         id: 'test-confirmation',
@@ -167,25 +151,6 @@ describe('PatternConfig validation', () => {
       expect(result.success).toBe(true)
     })
 
-    it('should reject triggerText on expansion type patterns', () => {
-      const pattern = {
-        id: 'test',
-        title: 'Test',
-        pattern: ['test'],
-        response: 'test',
-        type: 'expansion' as const,
-        triggerText: 'Should not be allowed',
-      }
-
-      const result = validatePatternConfig(pattern)
-      expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error.errors[0].message).toContain(
-          'triggerText is only allowed on patterns with type "confirmation"',
-        )
-      }
-    })
-
     it('should reject triggerText on patterns without type', () => {
       const pattern = {
         id: 'test',
@@ -205,14 +170,6 @@ describe('PatternConfig validation', () => {
     })
 
     it('should accept patterns without triggerText regardless of type', () => {
-      const expansionPattern = {
-        id: 'test1',
-        title: 'Test Expansion',
-        pattern: ['test'],
-        response: 'test',
-        type: 'expansion' as const,
-      }
-
       const confirmationPattern = {
         id: 'test2',
         title: 'Test Confirmation',
@@ -228,7 +185,6 @@ describe('PatternConfig validation', () => {
         response: 'test',
       }
 
-      expect(validatePatternConfig(expansionPattern).success).toBe(true)
       expect(validatePatternConfig(confirmationPattern).success).toBe(true)
       expect(validatePatternConfig(noTypePattern).success).toBe(true)
     })

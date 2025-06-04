@@ -86,48 +86,6 @@ function extractCommandAndReasonFromPromptBody(
   return data
 }
 
-function followedByCursor(str: string): string {
-  return `${str}\x1b[7m \x1b[0m`
-}
-
-const backspaceKey = '\x7f'
-const metaBackspaceKey = '\x1b\x7f'
-
-function pressKeyNTimes(key: string, n: number): string[] {
-  return Array(n).fill(key).flat()
-}
-
-function buildTriggerPattern(
-  tag: string,
-  trigger: string,
-  command: string,
-): PatternConfig {
-  return {
-    response: () => [
-      metaBackspaceKey,
-      backspaceKey,
-      `<${tag}>\n▶ ${command}${execSync(command, {
-        encoding: 'utf8',
-      }).trim()}\n<\/${tag}>\n`,
-    ],
-    pattern: [followedByCursor(trigger.slice(0, -1))],
-    type: 'expansion' as const,
-  }
-}
-
-const expansionPatterns: PatternConfig[] = [
-  {
-    id: 'add-tree-trigger',
-    title: 'Add tree',
-    ...buildTriggerPattern('ProjectTree', '~tree ', 'tree --gitignore'),
-  },
-  {
-    id: 'add-changes-trigger',
-    title: 'Add changes',
-    ...buildTriggerPattern('ProjectChanges', '~changes ', 'git diff HEAD'),
-  },
-]
-
 const confirmationPatterns: PatternConfig[] = [
   {
     id: 'edit-file-prompt',
@@ -251,10 +209,7 @@ const confirmationPatterns: PatternConfig[] = [
   },
 ]
 
-const allPatterns: PatternConfig[] = [
-  ...expansionPatterns,
-  ...confirmationPatterns,
-]
+const allPatterns: PatternConfig[] = [...confirmationPatterns]
 
 const validationResult = validatePatternConfigs(allPatterns)
 if (!validationResult.success) {
@@ -265,4 +220,4 @@ if (!validationResult.success) {
 
 export const patterns: PatternConfig[] = validationResult.data
 
-export { expansionPatterns, confirmationPatterns }
+export { confirmationPatterns }
