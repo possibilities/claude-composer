@@ -23,6 +23,7 @@ export default defineConfig({
   entry: {
     cli: 'src/index.ts',
     'test-patterns': 'test/utils/test-patterns.ts',
+    'show-snapshot-commands': 'scripts/show-snapshot-commands.ts',
   },
   format: ['esm'],
   target: 'node18',
@@ -31,7 +32,7 @@ export default defineConfig({
   sourcemap: false,
   dts: false,
   bundle: true,
-  external: ['tsx', '@xterm/xterm', '@xterm/addon-serialize'],
+  external: ['@xterm/xterm', '@xterm/addon-serialize'],
   noExternal: [],
   outExtension() {
     return {
