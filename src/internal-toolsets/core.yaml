@@ -1,0 +1,11 @@
+allowed:
+  - mcp__context7__resolve-library-id
+  - mcp__context7__get-library-docs
+
+mcp:
+  context7:
+    type: stdio
+    command: npx
+    args:
+      - -y
+      - '@upstash/context7-mcp'

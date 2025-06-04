@@ -108,10 +108,25 @@ function migrateConfig(rawConfig: any): any {
 export async function loadToolsetFile(
   toolsetName: string,
 ): Promise<ToolsetConfig> {
-  const toolsetPath = path.join(
-    CONFIG_PATHS.getToolsetsDirectory(),
-    `${toolsetName}.yaml`,
-  )
+  let toolsetPath: string
+
+  // Check if this is an internal toolset
+  if (toolsetName.startsWith('internal:')) {
+    const internalName = toolsetName.substring('internal:'.length)
+    // Look for internal toolsets in the src/internal-toolsets directory
+    toolsetPath = path.join(
+      __dirname,
+      '..',
+      'internal-toolsets',
+      `${internalName}.yaml`,
+    )
+  } else {
+    // Regular user toolset
+    toolsetPath = path.join(
+      CONFIG_PATHS.getToolsetsDirectory(),
+      `${toolsetName}.yaml`,
+    )
+  }
 
   if (!fs.existsSync(toolsetPath)) {
     throw new Error(`Toolset file not found: ${toolsetPath}`)

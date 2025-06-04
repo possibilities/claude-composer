@@ -1,5 +1,6 @@
 import * as fs from 'fs'
-import * as yaml from 'yaml'
+import * as path from 'path'
+import * as yaml from 'js-yaml'
 import { z } from 'zod'
 import type {
   AppConfig,
@@ -193,7 +194,7 @@ export class ConfigManager {
 
     try {
       const configContent = fs.readFileSync(filePath, 'utf8')
-      let rawConfig = yaml.parse(configContent)
+      let rawConfig = yaml.load(configContent)
 
       // Apply migrations for backward compatibility
       rawConfig = this.migrateConfig(rawConfig)
@@ -228,7 +229,22 @@ export class ConfigManager {
    * Load a single toolset
    */
   private async loadToolset(name: string): Promise<void> {
-    const toolsetPath = `${CONFIG_PATHS.getToolsetsDirectory()}/${name}.yaml`
+    let toolsetPath: string
+
+    // Check if this is an internal toolset
+    if (name.startsWith('internal:')) {
+      const internalName = name.substring('internal:'.length)
+      // Look for internal toolsets in the src/internal-toolsets directory
+      toolsetPath = path.join(
+        __dirname,
+        '..',
+        'internal-toolsets',
+        `${internalName}.yaml`,
+      )
+    } else {
+      // Regular user toolset
+      toolsetPath = `${CONFIG_PATHS.getToolsetsDirectory()}/${name}.yaml`
+    }
 
     if (!fs.existsSync(toolsetPath)) {
       throw new ToolsetConfigError(
@@ -239,7 +255,7 @@ export class ConfigManager {
 
     try {
       const content = fs.readFileSync(toolsetPath, 'utf8')
-      const rawConfig = yaml.parse(content)
+      const rawConfig = yaml.load(content)
 
       const result = toolsetConfigSchema.safeParse(rawConfig)
       if (!result.success) {

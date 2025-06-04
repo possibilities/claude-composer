@@ -1,4 +1,23 @@
 import { defineConfig } from 'tsup'
+import { copyFileSync, mkdirSync, readdirSync, statSync } from 'fs'
+import { join } from 'path'
+
+// Helper function to copy directory recursively
+function copyDir(src: string, dest: string) {
+  mkdirSync(dest, { recursive: true })
+  const entries = readdirSync(src, { withFileTypes: true })
+
+  for (const entry of entries) {
+    const srcPath = join(src, entry.name)
+    const destPath = join(dest, entry.name)
+
+    if (entry.isDirectory()) {
+      copyDir(srcPath, destPath)
+    } else {
+      copyFileSync(srcPath, destPath)
+    }
+  }
+}
 
 export default defineConfig({
   entry: {
@@ -23,5 +42,9 @@ export default defineConfig({
     options.banner = {
       js: '#!/usr/bin/env node',
     }
+  },
+  onSuccess: async () => {
+    // Copy internal-toolsets directory to dist
+    copyDir('src/internal-toolsets', 'dist/internal-toolsets')
   },
 })
