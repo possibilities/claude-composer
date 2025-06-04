@@ -69,6 +69,7 @@ export async function runPreflight(
       shouldExit: true,
       exitCode: 0,
       knownOptions,
+      hasPrintOption,
     }
   }
 
@@ -91,6 +92,7 @@ export async function runPreflight(
         shouldExit: true,
         exitCode: 1,
         knownOptions,
+        hasPrintOption,
       }
     }
   } else {
@@ -276,6 +278,7 @@ export async function runPreflight(
         shouldExit: true,
         exitCode: 1,
         knownOptions,
+        hasPrintOption,
       }
     }
   }
@@ -310,6 +313,7 @@ export async function runPreflight(
         shouldExit: true,
         exitCode: 1,
         knownOptions,
+        hasPrintOption,
       }
     }
   }
@@ -343,6 +347,7 @@ export async function runPreflight(
       shouldExit: true,
       exitCode: 1,
       knownOptions,
+      hasPrintOption,
     }
   }
 
@@ -371,6 +376,7 @@ export async function runPreflight(
       shouldExit: true,
       exitCode: 0,
       knownOptions,
+      hasPrintOption,
     }
   }
 
@@ -385,6 +391,7 @@ export async function runPreflight(
       shouldExit: true,
       exitCode: 0,
       knownOptions,
+      hasPrintOption,
     }
   }
 
@@ -400,6 +407,7 @@ export async function runPreflight(
       shouldExit: true,
       exitCode: 1,
       knownOptions,
+      hasPrintOption,
     }
   }
 
@@ -423,6 +431,7 @@ export async function runPreflight(
       shouldExit: true,
       exitCode: 1,
       knownOptions,
+      hasPrintOption,
     }
   }
 
@@ -458,6 +467,7 @@ export async function runPreflight(
       shouldExit: true,
       exitCode: 1,
       knownOptions,
+      hasPrintOption,
     }
   }
 
@@ -479,6 +489,7 @@ export async function runPreflight(
       shouldExit: true,
       exitCode: 0,
       knownOptions,
+      hasPrintOption,
     }
   }
 
@@ -507,6 +518,7 @@ export async function runPreflight(
       shouldExit: true,
       exitCode: 1,
       knownOptions,
+      hasPrintOption,
     }
   }
 
@@ -519,6 +531,7 @@ export async function runPreflight(
     tempMcpConfigPath,
     shouldExit: false,
     knownOptions,
+    hasPrintOption,
   }
 }
 

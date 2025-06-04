@@ -239,7 +239,9 @@ export function parseCommandLineArgs(argv: string[]): {
 } {
   const helpRequested = argv.includes('--help') || argv.includes('-h')
   const versionRequested = argv.includes('--version') || argv.includes('-v')
-  const hasPrintOption = argv.includes('--print')
+  const hasPrintOption = argv.some(
+    arg => arg === '--print' || arg.startsWith('--print='),
+  )
 
   const program = createClaudeComposerCommand()
 
