@@ -121,6 +121,13 @@ export async function runPreflight(
     appConfig.dangerously_allow_without_version_control =
       parsedOptions.dangerouslyAllowWithoutVersionControl
   }
+  if (
+    parsedOptions.dangerouslySuppressAutomaticAcceptanceConfirmation !==
+    undefined
+  ) {
+    appConfig.dangerously_suppress_automatic_acceptance_confirmation =
+      parsedOptions.dangerouslySuppressAutomaticAcceptanceConfirmation
+  }
   if (parsedOptions.logAllPatternMatches !== undefined) {
     appConfig.log_all_pattern_matches = parsedOptions.logAllPatternMatches
   }

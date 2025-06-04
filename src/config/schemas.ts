@@ -56,6 +56,9 @@ export const appConfigSchema = z
     // Safety settings
     dangerously_allow_in_dirty_directory: z.boolean().optional(),
     dangerously_allow_without_version_control: z.boolean().optional(),
+    dangerously_suppress_automatic_acceptance_confirmation: z
+      .boolean()
+      .optional(),
 
     // Other settings
     toolsets: z.array(z.string()).optional(),

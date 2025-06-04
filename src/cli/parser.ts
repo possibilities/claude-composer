@@ -45,6 +45,14 @@ export function createClaudeComposerCommand(): Command {
       '--no-dangerously-allow-without-version-control',
       'Do not allow running in a directory not under version control',
     )
+    .option(
+      '--dangerously-suppress-automatic-acceptance-confirmation',
+      'Suppress the confirmation prompt when automatic acceptance is enabled',
+    )
+    .option(
+      '--no-dangerously-suppress-automatic-acceptance-confirmation',
+      'Show the confirmation prompt when automatic acceptance is enabled',
+    )
     // Notification options (moved to end)
     .option(
       '-n, --show-notifications',
@@ -328,6 +336,10 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--no-dangerously-allow-in-dirty-directory')
   knownOptions.add('--dangerously-allow-without-version-control')
   knownOptions.add('--no-dangerously-allow-without-version-control')
+  knownOptions.add('--dangerously-suppress-automatic-acceptance-confirmation')
+  knownOptions.add(
+    '--no-dangerously-suppress-automatic-acceptance-confirmation',
+  )
   knownOptions.add('--toolset')
   knownOptions.add('--ruleset')
   knownOptions.add('--log-all-pattern-matches')
