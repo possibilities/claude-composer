@@ -122,6 +122,15 @@ export async function loadToolsetFile(
       'internal-toolsets',
       `${internalName}.yaml`,
     )
+  } else if (toolsetName.startsWith('project:')) {
+    // Project-level toolset
+    const projectName = toolsetName.substring('project:'.length)
+    toolsetPath = path.join(
+      process.cwd(),
+      '.claude-composer',
+      'toolsets',
+      `${projectName}.yaml`,
+    )
   } else {
     // Regular user toolset
     toolsetPath = path.join(
@@ -137,7 +146,9 @@ export async function loadToolsetFile(
   try {
     const toolsetData = fs.readFileSync(toolsetPath, 'utf8')
     const parsed = yaml.load(toolsetData)
-    const result = validateToolsetConfig(parsed)
+    // Handle empty YAML files which parse to undefined or null
+    const data = parsed === null || parsed === undefined ? {} : parsed
+    const result = validateToolsetConfig(data)
     handleValidationError(result, toolsetPath, 'toolset configuration')
 
     return result.data
@@ -168,6 +179,15 @@ export async function loadRulesetFile(
       'internal-rulesets',
       `${internalName}.yaml`,
     )
+  } else if (rulesetName.startsWith('project:')) {
+    // Project-level ruleset
+    const projectName = rulesetName.substring('project:'.length)
+    rulesetPath = path.join(
+      process.cwd(),
+      '.claude-composer',
+      'rulesets',
+      `${projectName}.yaml`,
+    )
   } else {
     // Regular user ruleset
     rulesetPath = path.join(
@@ -183,7 +203,9 @@ export async function loadRulesetFile(
   try {
     const rulesetData = fs.readFileSync(rulesetPath, 'utf8')
     const parsed = yaml.load(rulesetData)
-    const result = validateRulesetConfig(parsed)
+    // Handle empty YAML files which parse to undefined or null
+    const data = parsed === null || parsed === undefined ? {} : parsed
+    const result = validateRulesetConfig(data)
     handleValidationError(result, rulesetPath, 'ruleset configuration')
 
     return result.data

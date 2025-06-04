@@ -1,8 +1,0 @@
-# Project-specific configuration for claude-composer
-show_notifications: true
-dangerously_dismiss_edit_file_prompts: true
-allow_buffer_snapshots: true
-
-# Project uses specific toolsets
-toolsets:
-  - project-specific-tools
