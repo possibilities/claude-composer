@@ -5,6 +5,16 @@ import * as os from 'os'
 import { loadToolsetFile } from '../../src/config/loader'
 import type { ToolsetConfig } from '../../src/config/schemas'
 
+// Mock fs module for internal toolset tests
+vi.mock('fs', async () => {
+  const actual = await vi.importActual<typeof fs>('fs')
+  return {
+    ...actual,
+    existsSync: vi.fn(actual.existsSync),
+    readFileSync: vi.fn(actual.readFileSync),
+  }
+})
+
 describe('Project-level toolset loading', () => {
   let originalCwd: string
   let testProjectDir: string
@@ -86,12 +96,51 @@ mcp:
     )
   })
 
-  it.skip('should still support internal: prefix', async () => {
+  it('should still support internal: prefix', async () => {
+    // Mock the internal toolset files
+    const originalExistsSync = vi.mocked(fs.existsSync).getMockImplementation()
+    const originalReadFileSync = vi
+      .mocked(fs.readFileSync)
+      .getMockImplementation()
+
+    vi.mocked(fs.existsSync).mockImplementation(filePath => {
+      if (
+        typeof filePath === 'string' &&
+        filePath.includes('internal-toolsets/core.yaml')
+      ) {
+        return true
+      }
+      return originalExistsSync ? originalExistsSync(filePath) : false
+    })
+
+    vi.mocked(fs.readFileSync).mockImplementation((filePath, encoding) => {
+      if (
+        typeof filePath === 'string' &&
+        filePath.includes('internal-toolsets/core.yaml')
+      ) {
+        return `mcp:
+  filesystem:
+    type: stdio
+    command: node
+    args: [/path/to/filesystem-server.js]`
+      }
+      return originalReadFileSync
+        ? originalReadFileSync(filePath, encoding)
+        : ''
+    })
+
     // Test that internal toolsets still work
-    // Skipping because internal toolsets are in dist/ directory which doesn't exist during unit tests
     const loaded = await loadToolsetFile('internal:core')
     expect(loaded).toBeDefined()
     expect(loaded.mcp).toBeDefined()
+
+    // Restore mocks
+    vi.mocked(fs.existsSync).mockImplementation(
+      originalExistsSync || (() => false),
+    )
+    vi.mocked(fs.readFileSync).mockImplementation(
+      originalReadFileSync || (() => ''),
+    )
   })
 
   it('should validate project toolset configuration', async () => {
