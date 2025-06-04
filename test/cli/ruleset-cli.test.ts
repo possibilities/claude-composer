@@ -113,23 +113,23 @@ accept_project_bash_command_prompts: true
     })
   })
 
-  describe('Default rulesets from config', () => {
-    it('should load default rulesets from config file', async () => {
-      // Create config file with default rulesets
+  describe('Rulesets from config', () => {
+    it('should load rulesets from config file', async () => {
+      // Create config file with rulesets
       const configContent = `
 dangerously_allow_in_dirty_directory: true
 dangerously_allow_without_version_control: true
 rulesets:
-  - default-ruleset
+  - config-ruleset
 `
       fs.writeFileSync(path.join(testConfigDir, 'config.yaml'), configContent)
 
-      // Create the default ruleset
+      // Create the ruleset
       const rulesetContent = `
 accept_project_edit_file_prompts: true
 `
       fs.writeFileSync(
-        path.join(rulesetsDir, 'default-ruleset.yaml'),
+        path.join(rulesetsDir, 'config-ruleset.yaml'),
         rulesetContent,
       )
 
@@ -139,56 +139,13 @@ accept_project_edit_file_prompts: true
       expect(result.mergedRuleset?.accept_project_edit_file_prompts).toBe(true)
     })
 
-    it('should respect --no-default-rulesets flag', async () => {
-      // Create config file with default rulesets
+    it('should let CLI rulesets override config rulesets', async () => {
+      // Create config file with rulesets
       const configContent = `
 dangerously_allow_in_dirty_directory: true
 dangerously_allow_without_version_control: true
 rulesets:
-  - default-ruleset
-`
-      fs.writeFileSync(path.join(testConfigDir, 'config.yaml'), configContent)
-
-      // Create the default ruleset
-      const rulesetContent = `
-accept_project_edit_file_prompts: true
-`
-      fs.writeFileSync(
-        path.join(rulesetsDir, 'default-ruleset.yaml'),
-        rulesetContent,
-      )
-
-      const result = await runPreflight([
-        'node',
-        'cli',
-        '--no-default-rulesets',
-      ])
-
-      expect(result.shouldExit).toBe(true)
-      expect(result.exitCode).toBe(1)
-    })
-
-    it('should exit with error when no rulesets are configured', async () => {
-      // Create config file without any rulesets
-      const configContent = `
-dangerously_allow_in_dirty_directory: true
-dangerously_allow_without_version_control: true
-`
-      fs.writeFileSync(path.join(testConfigDir, 'config.yaml'), configContent)
-
-      const result = await runPreflight(['node', 'cli'])
-
-      expect(result.shouldExit).toBe(true)
-      expect(result.exitCode).toBe(1)
-    })
-
-    it('should let CLI rulesets override default rulesets', async () => {
-      // Create config file with default rulesets
-      const configContent = `
-dangerously_allow_in_dirty_directory: true
-dangerously_allow_without_version_control: true
-rulesets:
-  - default-ruleset
+  - config-ruleset
 `
       fs.writeFileSync(path.join(testConfigDir, 'config.yaml'), configContent)
 
@@ -200,7 +157,7 @@ accept_project_edit_file_prompts: false
 accept_project_edit_file_prompts: true
 `
       fs.writeFileSync(
-        path.join(rulesetsDir, 'default-ruleset.yaml'),
+        path.join(rulesetsDir, 'config-ruleset.yaml'),
         defaultContent,
       )
       fs.writeFileSync(path.join(rulesetsDir, 'cli-ruleset.yaml'), cliContent)

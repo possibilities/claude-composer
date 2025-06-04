@@ -65,8 +65,6 @@ export interface ParsedOptions {
   toolset?: string[]
   ruleset?: string[]
   ignoreGlobalConfig?: boolean
-  defaultToolsets?: boolean
-  defaultRulesets?: boolean
   logAllPatternMatches?: boolean
   allowBufferSnapshots?: boolean
   quiet?: boolean
