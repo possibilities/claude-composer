@@ -4,15 +4,30 @@ Claude Composer now supports internal rulesets that ship with the CLI. These are
 
 ## Available Internal Rulesets
 
-### `internal:cautious`
+### `internal:cautious` (Recommended)
 
-The cautious ruleset denies all automatic prompt acceptances, requiring manual confirmation for every action.
+The cautious ruleset provides a balanced approach by automatically accepting project-level prompts while requiring confirmation for global operations.
+
+**Settings:**
+
+- `accept_fetch_content_prompts`: `false`
+- `accept_global_*_prompts`: `false` (all global operations require confirmation)
+- `accept_project_*_prompts`: `true` (project-level operations are automatically accepted)
+- Covers: create file, edit file, read files, and bash commands
+
+This is the recommended ruleset for most users as it allows smooth workflow within your project while maintaining safety for operations outside the project directory.
+
+### `internal:safe`
+
+The safe ruleset denies all automatic prompt acceptances, requiring manual confirmation for every action.
 
 **Settings:**
 
 - All `accept_*_prompts` settings are set to `false`
 - Applies to both global and project-level prompts
 - Covers: fetch content, create file, edit file, read files, and bash commands
+
+Use this ruleset when you want complete control over every operation.
 
 ### `internal:yolo`
 
@@ -32,25 +47,37 @@ To use an internal ruleset, add it to your `config.yaml` file with the `internal
 
 ```yaml
 rulesets:
-  - internal:cautious
+  - internal:cautious # Recommended default
 ```
 
 You can also use internal rulesets via CLI flags:
 
 ```bash
+# Recommended: Balance between safety and productivity
 claude-composer --ruleset internal:cautious
-```
 
-For maximum safety:
+# Maximum safety: Confirm every operation
+claude-composer --ruleset internal:safe
 
-```bash
-claude-composer --ruleset internal:cautious
-```
-
-For automated workflows (use with caution):
-
-```bash
+# Automated workflows (use with extreme caution):
 claude-composer --ruleset internal:yolo
+```
+
+### Using cc-init
+
+The `cc-init` command provides an interactive way to set up your configuration:
+
+```bash
+# Create global config with interactive prompts
+claude-composer cc-init
+
+# Create project-specific config in current directory
+claude-composer cc-init --project
+
+# Skip prompts and use specific ruleset
+claude-composer cc-init --use-cautious-ruleset
+claude-composer cc-init --use-safe-ruleset
+claude-composer cc-init --use-yolo-ruleset
 ```
 
 ## Combining Rulesets
@@ -59,7 +86,7 @@ You can combine internal and custom rulesets. Later rulesets override earlier on
 
 ```yaml
 rulesets:
-  - internal:cautious # Start with cautious defaults
+  - internal:safe # Start with safe defaults
   - my-custom-overrides # Apply custom overrides
 ```
 

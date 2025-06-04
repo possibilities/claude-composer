@@ -26,6 +26,47 @@ describe('Internal Ruleset Loading', () => {
           return `accept_fetch_content_prompts: false
 
 accept_global_create_file_prompts: false
+accept_project_create_file_prompts: true
+
+accept_global_edit_file_prompts: false
+accept_project_edit_file_prompts: true
+
+accept_global_read_files_prompts: false
+accept_project_read_files_prompts: true
+
+accept_global_bash_command_prompts: false
+accept_project_bash_command_prompts: true`
+        }
+        throw new Error('File not found')
+      })
+
+      const ruleset = await loadRulesetFile('internal:cautious')
+
+      expect(ruleset).toEqual({
+        accept_fetch_content_prompts: false,
+        accept_global_create_file_prompts: false,
+        accept_project_create_file_prompts: true,
+        accept_global_edit_file_prompts: false,
+        accept_project_edit_file_prompts: true,
+        accept_global_read_files_prompts: false,
+        accept_project_read_files_prompts: true,
+        accept_global_bash_command_prompts: false,
+        accept_project_bash_command_prompts: true,
+      })
+    })
+
+    it('should load internal:safe ruleset', async () => {
+      // Mock the path resolution that happens in loader.ts
+      vi.mocked(fs.existsSync).mockImplementation(filePath => {
+        // The loader will look for internal rulesets relative to its own location
+        return filePath.endsWith('internal-rulesets/safe.yaml')
+      })
+
+      vi.mocked(fs.readFileSync).mockImplementation(filePath => {
+        if (filePath.endsWith('internal-rulesets/safe.yaml')) {
+          return `accept_fetch_content_prompts: false
+
+accept_global_create_file_prompts: false
 accept_project_create_file_prompts: false
 
 accept_global_edit_file_prompts: false
@@ -40,7 +81,7 @@ accept_project_bash_command_prompts: false`
         throw new Error('File not found')
       })
 
-      const ruleset = await loadRulesetFile('internal:cautious')
+      const ruleset = await loadRulesetFile('internal:safe')
 
       expect(ruleset).toEqual({
         accept_fetch_content_prompts: false,

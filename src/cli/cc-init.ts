@@ -1,12 +1,16 @@
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
+import prompts from 'prompts'
 import { CONFIG_PATHS } from '../config/paths.js'
 import { log, warn } from '../utils/logging.js'
 
 export interface CcInitOptions {
   useYoloRuleset?: boolean
   useCautiousRuleset?: boolean
+  useSafeRuleset?: boolean
   useCoreToolset?: boolean
+  noUseCoreToolset?: boolean
+  project?: boolean
 }
 
 export async function handleCcInit(args: string[]): Promise<void> {
@@ -21,12 +25,23 @@ export async function handleCcInit(args: string[]): Promise<void> {
       '  --use-yolo-ruleset       Use YOLO ruleset (accepts all prompts automatically)',
     )
     console.log(
-      '  --use-cautious-ruleset   Use cautious ruleset (default, requires confirmation for all prompts)',
+      '  --use-cautious-ruleset   Use cautious ruleset (recommended, accepts project-level prompts)',
+    )
+    console.log(
+      '  --use-safe-ruleset       Use safe ruleset (requires confirmation for all prompts)',
     )
     console.log('  --use-core-toolset       Enable core toolset')
-    console.log('  -h, --help               Show this help message')
+    console.log('  --no-use-core-toolset    Disable core toolset')
     console.log(
-      '\nNote: --use-yolo-ruleset and --use-cautious-ruleset are mutually exclusive',
+      '  --project                Create config in current directory (.claude-composer/config.yaml)',
+    )
+    console.log('  -h, --help               Show this help message')
+    console.log('\nNotes:')
+    console.log(
+      '  - Ruleset options (--use-yolo-ruleset, --use-cautious-ruleset, --use-safe-ruleset) are mutually exclusive',
+    )
+    console.log(
+      '  - --use-core-toolset and --no-use-core-toolset are mutually exclusive',
     )
     process.exit(0)
   }
@@ -41,8 +56,17 @@ export async function handleCcInit(args: string[]): Promise<void> {
       case '--use-cautious-ruleset':
         options.useCautiousRuleset = true
         break
+      case '--use-safe-ruleset':
+        options.useSafeRuleset = true
+        break
       case '--use-core-toolset':
         options.useCoreToolset = true
+        break
+      case '--no-use-core-toolset':
+        options.noUseCoreToolset = true
+        break
+      case '--project':
+        options.project = true
         break
       default:
         if (arg.startsWith('-')) {
@@ -53,20 +77,96 @@ export async function handleCcInit(args: string[]): Promise<void> {
   }
 
   // Validate mutually exclusive options
-  if (options.useYoloRuleset && options.useCautiousRuleset) {
+  const rulesetCount = [
+    options.useYoloRuleset,
+    options.useCautiousRuleset,
+    options.useSafeRuleset,
+  ].filter(Boolean).length
+  if (rulesetCount > 1) {
     console.error(
-      'Error: --use-yolo-ruleset and --use-cautious-ruleset are mutually exclusive',
+      'Error: Ruleset options (--use-yolo-ruleset, --use-cautious-ruleset, --use-safe-ruleset) are mutually exclusive',
     )
     process.exit(1)
   }
 
-  // Default to cautious if no ruleset specified
-  if (!options.useYoloRuleset && !options.useCautiousRuleset) {
-    options.useCautiousRuleset = true
+  if (options.useCoreToolset && options.noUseCoreToolset) {
+    console.error(
+      'Error: --use-core-toolset and --no-use-core-toolset are mutually exclusive',
+    )
+    process.exit(1)
+  }
+
+  // Prompt for ruleset if none specified
+  if (
+    !options.useYoloRuleset &&
+    !options.useCautiousRuleset &&
+    !options.useSafeRuleset
+  ) {
+    const rulesetResponse = await prompts(
+      {
+        type: 'select',
+        name: 'ruleset',
+        message: 'Which ruleset would you like to use?',
+        choices: [
+          {
+            title: 'Cautious (recommended)',
+            description: 'Accepts project-level prompts automatically',
+            value: 'cautious',
+          },
+          {
+            title: 'Safe',
+            description: 'Requires confirmation for all prompts',
+            value: 'safe',
+          },
+          {
+            title: 'YOLO',
+            description: 'Accepts all prompts automatically',
+            value: 'yolo',
+          },
+        ],
+        initial: 0,
+      },
+      {
+        onCancel: () => {
+          process.exit(130)
+        },
+      },
+    )
+
+    if (rulesetResponse.ruleset === 'yolo') {
+      options.useYoloRuleset = true
+    } else if (rulesetResponse.ruleset === 'safe') {
+      options.useSafeRuleset = true
+    } else {
+      options.useCautiousRuleset = true
+    }
+  }
+
+  // Prompt for toolset if none specified
+  if (!options.useCoreToolset && !options.noUseCoreToolset) {
+    const toolsetResponse = await prompts(
+      {
+        type: 'confirm',
+        name: 'useCoreToolset',
+        message: 'Would you like to enable the core toolset?',
+        initial: true,
+        hint: 'Includes MCP context7 tools for library documentation',
+      },
+      {
+        onCancel: () => {
+          process.exit(130)
+        },
+      },
+    )
+
+    options.useCoreToolset = toolsetResponse.useCoreToolset
   }
 
   // Check if config file already exists
-  const configPath = CONFIG_PATHS.getConfigFilePath()
+  const configPath = options.project
+    ? '.claude-composer/config.yaml'
+    : CONFIG_PATHS.getConfigFilePath()
+
   if (fs.existsSync(configPath)) {
     console.error('Error: Configuration file already exists at ' + configPath)
     process.exit(1)
@@ -81,15 +181,20 @@ export async function handleCcInit(args: string[]): Promise<void> {
     config.rulesets.push('internal:yolo')
   } else if (options.useCautiousRuleset) {
     config.rulesets.push('internal:cautious')
+  } else if (options.useSafeRuleset) {
+    config.rulesets.push('internal:safe')
   }
 
   // Add toolsets if requested
-  if (options.useCoreToolset) {
+  if (options.useCoreToolset && !options.noUseCoreToolset) {
     config.toolsets = ['internal:core']
   }
 
   // Ensure config directory exists
-  const configDir = CONFIG_PATHS.getConfigDirectory()
+  const configDir = options.project
+    ? '.claude-composer'
+    : CONFIG_PATHS.getConfigDirectory()
+
   if (!fs.existsSync(configDir)) {
     fs.mkdirSync(configDir, { recursive: true })
   }
@@ -104,8 +209,12 @@ export async function handleCcInit(args: string[]): Promise<void> {
       warn(
         '⚠️  Using YOLO ruleset - all prompts will be automatically accepted',
       )
-    } else {
-      log('✓ Using cautious ruleset - all prompts will require confirmation')
+    } else if (options.useCautiousRuleset) {
+      log(
+        '✓ Using cautious ruleset - project-level prompts will be automatically accepted',
+      )
+    } else if (options.useSafeRuleset) {
+      log('✓ Using safe ruleset - all prompts will require confirmation')
     }
 
     if (options.useCoreToolset) {
