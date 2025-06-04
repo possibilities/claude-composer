@@ -60,6 +60,7 @@ export interface ParsedOptions {
   // Safety settings
   dangerouslyAllowInDirtyDirectory?: boolean
   dangerouslyAllowWithoutVersionControl?: boolean
+  dangerouslySuppressAutomaticAcceptanceConfirmation?: boolean
 
   // Other settings
   toolset?: string[]

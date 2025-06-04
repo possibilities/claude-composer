@@ -33,6 +33,7 @@ describe('Ruleset CLI Integration', () => {
     const configContent = `
 dangerously_allow_in_dirty_directory: true
 dangerously_allow_without_version_control: true
+dangerously_suppress_automatic_acceptance_confirmation: true
 `
     fs.writeFileSync(path.join(testConfigDir, 'config.yaml'), configContent)
   })
@@ -119,6 +120,7 @@ accept_project_bash_command_prompts: true
       const configContent = `
 dangerously_allow_in_dirty_directory: true
 dangerously_allow_without_version_control: true
+dangerously_suppress_automatic_acceptance_confirmation: true
 rulesets:
   - config-ruleset
 `
@@ -144,6 +146,7 @@ accept_project_edit_file_prompts: true
       const configContent = `
 dangerously_allow_in_dirty_directory: true
 dangerously_allow_without_version_control: true
+dangerously_suppress_automatic_acceptance_confirmation: true
 rulesets:
   - config-ruleset
 `
