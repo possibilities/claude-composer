@@ -26,6 +26,7 @@ export interface InteractiveRunOptions extends RunCliOptions {
 }
 
 const CLI_PATH = path.join(process.cwd(), 'src/index.ts')
+const DEFAULT_MOCK_APP_PATH = path.join(process.cwd(), 'test/mocks/claude-app')
 
 /**
  * Run the CLI with given arguments and wait for it to exit naturally.

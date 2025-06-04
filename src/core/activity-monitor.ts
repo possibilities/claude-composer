@@ -170,9 +170,9 @@ export class ActivityMonitor {
   }
 
   private ensureRecordsFile(): void {
-    const configDir = CONFIG_PATHS.getConfigDirectory()
-    if (!fs.existsSync(configDir)) {
-      fs.mkdirSync(configDir, { recursive: true })
+    const configDirectory = CONFIG_PATHS.getConfigDirectory()
+    if (!fs.existsSync(configDirectory)) {
+      fs.mkdirSync(configDirectory, { recursive: true })
     }
 
     if (!fs.existsSync(this.recordsFilePath)) {

@@ -10,7 +10,7 @@ vi.mock('../../src/utils/notifications')
 describe('ActivityMonitor', () => {
   let monitor: ActivityMonitor
   let mockShowNotification: ReturnType<typeof vi.fn>
-  let testSetup: { configDir: string; cleanup: () => void }
+  let testSetup: { configDirectory: string; cleanup: () => void }
 
   beforeEach(() => {
     vi.useFakeTimers()
@@ -20,7 +20,7 @@ describe('ActivityMonitor', () => {
     )
 
     testSetup = setupTestConfig()
-    process.env.CLAUDE_COMPOSER_CONFIG_DIR = testSetup.configDir
+    process.env.CLAUDE_COMPOSER_CONFIG_DIR = testSetup.configDirectory
 
     const mockConfig = {
       show_notifications: true,
@@ -445,7 +445,10 @@ Line 15
       monitor.checkSnapshot(snapshotWithoutText)
 
       // Check that the record was saved
-      const recordPath = path.join(testSetup.configDir, 'activity-records.json')
+      const recordPath = path.join(
+        testSetup.configDirectory,
+        'activity-records.json',
+      )
       expect(fs.existsSync(recordPath)).toBe(true)
 
       const record = JSON.parse(fs.readFileSync(recordPath, 'utf-8'))

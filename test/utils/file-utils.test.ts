@@ -10,7 +10,7 @@ describe('File Utils', () => {
     let testDir: string
 
     beforeEach(() => {
-      // Create a temporary test directory
+      // Create a temp test directory
       testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'file-utils-test-'))
       process.chdir(testDir)
     })

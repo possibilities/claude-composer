@@ -141,7 +141,7 @@ accept_global_bash_command_prompts: false
       const contentWithComments = `
 # This ruleset is for development
 accept_project_edit_file_prompts: true # Allow edits inside
-accept_project_create_file_prompts: false # But confirm creates
+accept_project_create_file_prompts: false # But confirmation creates
 # accept_project_bash_command_prompts: true # Commented out
 `
       fs.writeFileSync(

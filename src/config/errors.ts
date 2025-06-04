@@ -3,20 +3,20 @@ import { z } from 'zod'
 /**
  * Base error for all configuration-related errors
  */
-export class ConfigurationError extends Error {
+export class ConfigError extends Error {
   constructor(
     message: string,
     public readonly code: string,
   ) {
     super(message)
-    this.name = 'ConfigurationError'
+    this.name = 'ConfigError'
   }
 }
 
 /**
  * Error thrown when configuration file is not found
  */
-export class ConfigFileNotFoundError extends ConfigurationError {
+export class ConfigFileNotFoundError extends ConfigError {
   constructor(public readonly filePath: string) {
     super(`Configuration file not found: ${filePath}`, 'CONFIG_FILE_NOT_FOUND')
   }
@@ -25,7 +25,7 @@ export class ConfigFileNotFoundError extends ConfigurationError {
 /**
  * Error thrown when configuration validation fails
  */
-export class ConfigValidationError extends ConfigurationError {
+export class ConfigValidationError extends ConfigError {
   constructor(
     public readonly errors: z.ZodError,
     public readonly configPath?: string,
@@ -45,7 +45,7 @@ export class ConfigValidationError extends ConfigurationError {
 /**
  * Error thrown when pattern configuration is invalid
  */
-export class PatternConfigError extends ConfigurationError {
+export class PatternConfigError extends ConfigError {
   constructor(
     public readonly patternId: string,
     public readonly error: string,
@@ -60,7 +60,7 @@ export class PatternConfigError extends ConfigurationError {
 /**
  * Error thrown when toolset configuration is invalid
  */
-export class ToolsetConfigError extends ConfigurationError {
+export class ToolsetConfigError extends ConfigError {
   constructor(
     public readonly toolsetName: string,
     public readonly error: string,

@@ -38,9 +38,9 @@ export function getConfigDirectory(): string {
 }
 
 export function ensureConfigDirectory(): void {
-  const configDir = getConfigDirectory()
-  if (!fs.existsSync(configDir)) {
-    fs.mkdirSync(configDir, { recursive: true })
+  const configDirectory = getConfigDirectory()
+  if (!fs.existsSync(configDirectory)) {
+    fs.mkdirSync(configDirectory, { recursive: true })
   }
 }
 
