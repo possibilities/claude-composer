@@ -97,6 +97,13 @@ export async function checkDirtyDirectory(
 
     return false
   } catch (error) {
+    // Re-throw user cancellation errors
+    if (
+      error instanceof Error &&
+      error.message === 'Clean working directory required'
+    ) {
+      throw error
+    }
     warn('※ Could not check git status')
     return false
   }
