@@ -532,6 +532,25 @@ export async function runPreflight(
     clearScreen()
   }
 
+  // Validate that at least one ruleset is configured
+  if (rulesetsToLoad.length === 0) {
+    console.error(
+      '\x1b[31m※ Error: No rulesets configured. At least one ruleset is required.\x1b[0m',
+    )
+    console.error(
+      '\x1b[31m※ Use --ruleset flag or configure rulesets in your config file.\x1b[0m',
+    )
+    return {
+      appConfig,
+      toolsetArgs: [],
+      rulesetArgs: [],
+      childArgs,
+      shouldExit: true,
+      exitCode: 1,
+      knownOptions,
+    }
+  }
+
   return {
     appConfig,
     toolsetArgs,
