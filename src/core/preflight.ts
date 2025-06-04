@@ -22,6 +22,7 @@ import {
   handleAutomaticAcceptanceWarning,
 } from '../safety/checker.js'
 import { parseCommandLineArgs, buildKnownOptionsSet } from '../cli/parser.js'
+import { detectSubcommand } from '../cli/subcommand.js'
 import { log, warn, setQuietMode, clearScreen } from '../utils/logging.js'
 
 export async function runPreflight(
@@ -81,8 +82,8 @@ export async function runPreflight(
   const isHelp = helpRequested
   const isVersion = versionRequested
   const isPrint = hasPrintOption
-  const isSubcommand =
-    args.length > 0 && !args[0].includes(' ') && !args[0].startsWith('-')
+  const subcommandResult = detectSubcommand(args)
+  const isSubcommand = subcommandResult.isSubcommand
 
   if (isHelp || isVersion) {
     return {
@@ -426,7 +427,7 @@ export async function runPreflight(
 
   if (isSubcommand) {
     log(`※ Accepting Claude Composer`)
-    log(`※ Running Claude Code subcommand: ${args[0]}`)
+    log(`※ Running Claude Code subcommand: ${subcommandResult.subcommand}`)
     return {
       appConfig,
       toolsetArgs,
