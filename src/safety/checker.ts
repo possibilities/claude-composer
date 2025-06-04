@@ -1,11 +1,7 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import { execSync } from 'child_process'
-import type {
-  AppConfig,
-  PreflightOptions,
-  ParsedOptions,
-} from '../types/preflight.js'
+import type { AppConfig, PreflightOptions } from '../types/preflight.js'
 import type { RulesetConfig } from '../config/schemas.js'
 import { hasActiveAcceptanceRules } from '../config/rulesets.js'
 import { askYesNo } from '../cli/prompts.js'
