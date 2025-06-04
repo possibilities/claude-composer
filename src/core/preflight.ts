@@ -279,18 +279,8 @@ export async function runPreflight(
   let toolsetsToLoad: string[] = []
   if (parsedOptions.toolset && parsedOptions.toolset.length > 0) {
     toolsetsToLoad = parsedOptions.toolset
-  } else if (
-    appConfig.toolsets &&
-    appConfig.toolsets.length > 0 &&
-    parsedOptions.defaultToolsets !== false
-  ) {
+  } else if (appConfig.toolsets && appConfig.toolsets.length > 0) {
     toolsetsToLoad = appConfig.toolsets
-  } else if (
-    appConfig.toolsets &&
-    appConfig.toolsets.length > 0 &&
-    parsedOptions.defaultToolsets === false
-  ) {
-    log('※ Ignoring default toolsets from configuration')
   }
 
   if (toolsetsToLoad.length > 0) {
@@ -321,18 +311,8 @@ export async function runPreflight(
   let rulesetsToLoad: string[] = []
   if (parsedOptions.ruleset && parsedOptions.ruleset.length > 0) {
     rulesetsToLoad = parsedOptions.ruleset
-  } else if (
-    appConfig.rulesets &&
-    appConfig.rulesets.length > 0 &&
-    parsedOptions.defaultRulesets !== false
-  ) {
+  } else if (appConfig.rulesets && appConfig.rulesets.length > 0) {
     rulesetsToLoad = appConfig.rulesets
-  } else if (
-    appConfig.rulesets &&
-    appConfig.rulesets.length > 0 &&
-    parsedOptions.defaultRulesets === false
-  ) {
-    log('※ Ignoring default rulesets from configuration')
   }
 
   if (rulesetsToLoad.length > 0) {
@@ -364,10 +344,7 @@ export async function runPreflight(
 
   const hasToolsetFlag =
     parsedOptions.toolset && parsedOptions.toolset.length > 0
-  const hasToolsetConfig =
-    appConfig.toolsets &&
-    appConfig.toolsets.length > 0 &&
-    parsedOptions.defaultToolsets !== false
+  const hasToolsetConfig = appConfig.toolsets && appConfig.toolsets.length > 0
   const hasToolsetConfiguration = hasToolsetFlag || hasToolsetConfig
 
   const mutuallyExclusiveFlags = [

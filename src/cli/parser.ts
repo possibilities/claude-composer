@@ -18,14 +18,6 @@ export function createClaudeComposerCommand(): Command {
       '-i, --ignore-global-config',
       'Ignore configuration from ~/.claude-composer/config.yaml',
     )
-    .option(
-      '--no-default-toolsets',
-      'Ignore default toolsets from the main config file',
-    )
-    .option(
-      '--no-default-rulesets',
-      'Ignore default rulesets from the main config file',
-    )
     .option('-q, --quiet', 'Suppress preflight messages')
     .option(
       '-s, --safe',
@@ -347,9 +339,7 @@ export function buildKnownOptionsSet(program: Command): Set<string> {
   knownOptions.add('--dangerously-allow-without-version-control')
   knownOptions.add('--no-dangerously-allow-without-version-control')
   knownOptions.add('--toolset')
-  knownOptions.add('--no-default-toolsets')
   knownOptions.add('--ruleset')
-  knownOptions.add('--no-default-rulesets')
   knownOptions.add('--log-all-pattern-matches')
   knownOptions.add('--allow-buffer-snapshots')
   knownOptions.add('--allow-adding-project-tree')
