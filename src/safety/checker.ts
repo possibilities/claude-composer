@@ -162,7 +162,7 @@ export async function handleAutomaticAcceptanceWarning(
   }
 
   const proceed = await askYesNo(
-    'Do you want to continue with automatic acceptance enabled?',
+    '※ Do you want to continue with automatic acceptance enabled?',
     true,
     preflightOptions?.stdin,
     preflightOptions?.stdout,
