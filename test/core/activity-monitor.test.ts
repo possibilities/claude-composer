@@ -209,7 +209,7 @@ describe('ActivityMonitor', () => {
   })
 
   describe('Confirmation prompt detection', () => {
-    it.skip('should detect confirmation prompt anywhere in snapshot as activity', () => {
+    it('should detect confirmation prompt anywhere in snapshot as activity', () => {
       const snapshotWithInterrupt =
         'Press ENTER to continue or Ctrl+C to interrupt) waiting...'
       monitor.checkSnapshot(snapshotWithInterrupt)
@@ -242,15 +242,19 @@ Line 15
 
       const snapshotWithoutPrompt = 'Working... processing data...'
       monitor.checkSnapshot(snapshotWithoutPrompt)
-      vi.advanceTimersByTime(5000)
+
+      // Wait for confirmation prompt timeout (10 seconds)
+      vi.advanceTimersByTime(10000)
       monitor.checkSnapshot(snapshotWithoutPrompt)
       expect(mockShowNotification).not.toHaveBeenCalled()
-      vi.advanceTimersByTime(7000)
+
+      // Wait for absence threshold (2+ seconds after timeout)
+      vi.advanceTimersByTime(2100)
       monitor.checkSnapshot(snapshotWithoutPrompt)
       expect(mockShowNotification).toHaveBeenCalledOnce()
     })
 
-    it.skip('should maintain activity when switching from interrupt text to confirmation prompt', () => {
+    it('should maintain activity when switching from interrupt text to confirmation prompt', () => {
       const snapshotWithInterrupt =
         'Press ENTER to continue or Ctrl+C to interrupt) waiting...'
       const snapshotWithPrompt = `Working...
@@ -270,10 +274,14 @@ Line 15
       monitor.checkSnapshot(snapshotWithPrompt)
 
       monitor.checkSnapshot(snapshotWithoutActivity)
-      vi.advanceTimersByTime(5000)
+
+      // Wait for confirmation prompt timeout (10 seconds)
+      vi.advanceTimersByTime(10000)
       monitor.checkSnapshot(snapshotWithoutActivity)
       expect(mockShowNotification).not.toHaveBeenCalled()
-      vi.advanceTimersByTime(7000)
+
+      // Wait for absence threshold (2+ seconds after timeout)
+      vi.advanceTimersByTime(2100)
       monitor.checkSnapshot(snapshotWithoutActivity)
       expect(mockShowNotification).toHaveBeenCalledOnce()
     })
