@@ -190,6 +190,9 @@ export async function handleCcInit(args: string[]): Promise<void> {
     config.toolsets = ['internal:core']
   }
 
+  // Add empty roots list
+  config.roots = []
+
   // Ensure config directory exists
   const configDir = options.project
     ? '.claude-composer'

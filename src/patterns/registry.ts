@@ -3,6 +3,9 @@ import { execSync } from 'child_process'
 import { stripBoxChars } from '../utils/strip-box-chars'
 import dedent from 'dedent'
 import * as fs from 'fs'
+import * as path from 'path'
+import * as os from 'os'
+import { ConfigManager } from '../config/manager'
 
 type ExtractedData = {
   body?: string
@@ -234,6 +237,57 @@ function getPipedInputResponse(): string[] {
   }
 }
 
+function expandPath(p: string): string {
+  // Replace ~ with home directory
+  if (p.startsWith('~')) {
+    p = path.join(os.homedir(), p.slice(1))
+  }
+  // Expand environment variables
+  p = p.replace(/\$([A-Z_][A-Z0-9_]*)/gi, (match, envVar) => {
+    return process.env[envVar] || match
+  })
+  return path.resolve(p)
+}
+
+function checkIfPwdParentInRoots(): string[] {
+  try {
+    const configManager = ConfigManager.getInstance()
+    const config = configManager.getAppConfig()
+    const roots = config.roots || []
+
+    if (roots.length === 0) {
+      return ['3'] // No for "Do you trust the files in this folder?"
+    }
+
+    const cwd = process.cwd()
+    const parentDir = path.dirname(cwd)
+
+    // Expand all root paths and check if parent directory matches any
+    for (const root of roots) {
+      const expandedRoot = expandPath(root)
+      if (
+        parentDir === expandedRoot ||
+        parentDir.startsWith(expandedRoot + path.sep)
+      ) {
+        return ['1'] // Yes for "Do you trust the files in this folder?"
+      }
+    }
+
+    return ['3'] // No if parent not in roots
+  } catch (error) {
+    return ['3'] // Default to No on error
+  }
+}
+
+const trustPromptPattern: PatternConfig = {
+  id: 'trust-folder-prompt',
+  title: 'Trust folder',
+  type: 'confirmation' as const,
+  response: checkIfPwdParentInRoots,
+  pattern: ['Do you trust the files in this folder?'],
+  triggerText: 'Do you trust the files in this folder?',
+}
+
 const appStartedPattern: PatternConfig = {
   id: 'app-started',
   title: 'App started',
@@ -254,4 +308,4 @@ if (!validationResult.success) {
 
 export const patterns: PatternConfig[] = validationResult.data
 
-export { confirmationPatterns, appStartedPattern }
+export { confirmationPatterns, appStartedPattern, trustPromptPattern }

@@ -128,6 +128,14 @@ describe('cc-init', () => {
       expect(writtenContent).toContain('internal:core')
     })
 
+    it('should include empty roots array in config', async () => {
+      await handleCcInit(['--use-cautious-ruleset'])
+
+      const writtenContent = vi.mocked(fs.writeFileSync).mock
+        .calls[0][1] as string
+      expect(writtenContent).toContain('roots: []')
+    })
+
     it('should create project config with --project option', async () => {
       await handleCcInit(['--project', '--use-cautious-ruleset'])
 
