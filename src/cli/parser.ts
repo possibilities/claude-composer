@@ -5,7 +5,9 @@ export function createClaudeComposerCommand(): Command {
   const program = new Command()
   program
     .name('claude-composer')
-    .description('A wrapper that enhances the Claude Code CLI')
+    .description(
+      'A wrapper that enhances the Claude Code CLI\n\nSubcommands:\n  cc-init                  Initialize a new configuration file',
+    )
     .option(
       '-t, --toolset <name...>',
       'Use predefined toolsets from ~/.claude-composer/toolsets/ directory (can be specified multiple times)',

@@ -489,6 +489,9 @@ export async function runPreflight(
     console.error(
       '\x1b[31m※ Use --ruleset flag or configure rulesets in your config file.\x1b[0m',
     )
+    console.error(
+      '\x1b[31m※ To create a config file, run: claude-composer cc-init\x1b[0m',
+    )
     return {
       appConfig,
       toolsetArgs: [],
