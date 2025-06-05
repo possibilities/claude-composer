@@ -29,6 +29,22 @@ describe('PatternMatcher', () => {
       expect(matches[0].response).toBe('matched')
     })
 
+    it('should handle patterns without pattern array', () => {
+      const config: PatternConfig = {
+        id: 'test-no-pattern',
+        title: 'No Pattern Test',
+        response: 'immediate-match',
+        triggerText: 'trigger',
+      }
+      matcher.addPattern(config)
+      const matches = matcher.processData('some content with trigger text')
+      expect(matches).toHaveLength(1)
+      expect(matches[0].response).toBe('immediate-match')
+      expect(matches[0].fullMatchedContent).toBe(
+        'some content with trigger text',
+      )
+    })
+
     it('should remove pattern', () => {
       const config: PatternConfig = {
         id: 'test1',
@@ -319,7 +335,9 @@ describe('PatternMatcher', () => {
       matcher.addPattern(config)
 
       const matches = matcher.processData('Any text')
-      expect(matches).toHaveLength(0)
+      expect(matches).toHaveLength(1)
+      expect(matches[0].response).toBe('Empty')
+      expect(matches[0].fullMatchedContent).toBe('Any text')
     })
 
     it('should match partial strings within lines', () => {

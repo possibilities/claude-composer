@@ -126,7 +126,7 @@ export class PatternMatcher {
 
   private compilePattern(config: PatternConfig): CompiledPattern {
     return {
-      sequence: config.pattern,
+      sequence: config.pattern || [],
       config,
     }
   }
@@ -146,7 +146,15 @@ export class PatternMatcher {
     extractedData?: Record<string, string>
   } | null {
     if (sequence.length === 0) {
-      return null
+      // For patterns with no sequence, match the entire content
+      const lines = content.split('\n')
+      return {
+        text: content,
+        firstLineNumber: 0,
+        lastLineNumber: lines.length - 1,
+        fullMatchedContent: content,
+        extractedData: undefined,
+      }
     }
     const lines = content.split('\n')
 

@@ -164,7 +164,7 @@ export function validateRulesetConfig(
 export const patternConfigSchema = z.object({
   id: z.string().min(1, 'Pattern ID cannot be empty'),
   title: z.string().min(1, 'Pattern title cannot be empty'),
-  pattern: z.array(z.string()).min(1, 'Pattern must have at least one string'),
+  pattern: z.array(z.string()).optional(),
   response: z.union([
     z.string(),
     z.array(z.string()),
