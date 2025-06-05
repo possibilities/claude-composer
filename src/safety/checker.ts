@@ -30,10 +30,7 @@ function isInTrustedRoot(appConfig: AppConfig): boolean {
 
   for (const root of roots) {
     const expandedRoot = expandPath(root)
-    if (
-      parentDir === expandedRoot ||
-      parentDir.startsWith(expandedRoot + path.sep)
-    ) {
+    if (parentDir === expandedRoot) {
       return true
     }
   }
