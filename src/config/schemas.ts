@@ -36,9 +36,6 @@ export const appConfigSchema = z
     sticky_accepted_confirm_notify: z.boolean().optional(),
     sticky_terminal_snapshot_notifications: z.boolean().optional(),
 
-    // Remote notification settings
-    send_remote_notifications: z.boolean().optional(),
-
     // Safety settings
     dangerously_allow_in_dirty_directory: z.boolean().optional(),
     dangerously_allow_without_version_control: z.boolean().optional(),
@@ -182,39 +179,4 @@ export function validatePatternConfigs(
   data: unknown,
 ): z.SafeParseReturnType<unknown, PatternConfig[]> {
   return z.array(patternConfigSchema).safeParse(data)
-}
-
-// Remote notification configuration schema
-export const remoteNotificationConfigSchema = z
-  .object({
-    discord: z
-      .object({
-        webhook_url: z.string().url(),
-      })
-      .optional(),
-    whatsapp: z
-      .object({
-        access_token: z.string(),
-        sender_number: z.string(),
-        recipient_number: z.string(),
-      })
-      .optional(),
-    subscriber_id: z.string(),
-  })
-  .strict()
-
-export type RemoteNotificationConfig = z.infer<
-  typeof remoteNotificationConfigSchema
->
-
-export function parseRemoteNotificationConfig(
-  data: unknown,
-): RemoteNotificationConfig {
-  return remoteNotificationConfigSchema.parse(data)
-}
-
-export function validateRemoteNotificationConfig(
-  data: unknown,
-): z.SafeParseReturnType<unknown, RemoteNotificationConfig> {
-  return remoteNotificationConfigSchema.safeParse(data)
 }
