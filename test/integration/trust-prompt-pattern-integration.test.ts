@@ -1,24 +1,23 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { PatternMatcher } from '../../src/patterns/matcher'
-import { trustPromptPattern } from '../../src/patterns/registry'
+import { createTrustPromptPattern } from '../../src/patterns/registry'
+import { type AppConfig } from '../../src/config/schemas'
 
-// Mock the notifications module
 vi.mock('../../src/utils/notifications', () => ({
   showNotification: vi.fn(),
 }))
 
-// Mock the index module
-vi.mock('../../src/index', () => ({
-  appConfig: {
-    roots: ['~/test-root'],
-  },
-}))
-
 describe('Trust Prompt Pattern Integration', () => {
   let patternMatcher: PatternMatcher
+  let mockAppConfig: AppConfig
+  let trustPromptPattern: ReturnType<typeof createTrustPromptPattern>
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockAppConfig = {
+      roots: ['~/test-root'],
+    }
+    trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
     patternMatcher = new PatternMatcher()
     patternMatcher.addPattern(trustPromptPattern)
   })
@@ -47,7 +46,6 @@ describe('Trust Prompt Pattern Integration', () => {
   it('should return response from checkIfPwdParentInRoots function', () => {
     const terminalOutput = 'Claude Code may read files in this folder'
 
-    // Mock the response function to return a specific value
     const originalResponse = trustPromptPattern.response
     trustPromptPattern.response = () => ['1']
 
@@ -56,7 +54,6 @@ describe('Trust Prompt Pattern Integration', () => {
     expect(matches).toHaveLength(1)
     expect(matches[0].response).toEqual(['1'])
 
-    // Restore original response
     trustPromptPattern.response = originalResponse
   })
 

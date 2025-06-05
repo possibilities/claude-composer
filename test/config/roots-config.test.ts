@@ -4,24 +4,11 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { ConfigManager } from '../../src/config/manager'
 import { type AppConfig } from '../../src/config/schemas'
-import { trustPromptPattern } from '../../src/patterns/registry'
+import { createTrustPromptPattern } from '../../src/patterns/registry'
 
-// Mock the notifications module
 vi.mock('../../src/utils/notifications', () => ({
   showNotification: vi.fn(),
 }))
-
-// Create a mutable mock object
-const mockAppConfig = {
-  roots: [],
-}
-
-// Mock the index module
-vi.mock('../../src/index', () => {
-  return {
-    appConfig: mockAppConfig,
-  }
-})
 
 describe('Roots Configuration', () => {
   let configManager: ConfigManager
@@ -29,39 +16,23 @@ describe('Roots Configuration', () => {
   let originalCwd: string
 
   beforeEach(() => {
-    // Save original cwd
     originalCwd = process.cwd()
 
-    // Create temp directory
     tempDir = fs.mkdtempSync(
       path.join(os.tmpdir(), 'claude-composer-roots-test-'),
     )
 
-    // Reset config manager
     ConfigManager.resetInstance()
     configManager = ConfigManager.getInstance()
 
-    // Reset the mocked appConfig
-    mockAppConfig.roots = []
-
-    // Set global for tests
-    ;(global as any).__testAppConfig = mockAppConfig
-
-    // Mock console.log to suppress output during tests
     vi.spyOn(console, 'log').mockImplementation(() => {})
   })
 
   afterEach(() => {
-    // Restore original cwd
     process.chdir(originalCwd)
 
-    // Clean up global
-    delete (global as any).__testAppConfig
-
-    // Clean up temp directory
     fs.rmSync(tempDir, { recursive: true, force: true })
 
-    // Reset config manager
     ConfigManager.resetInstance()
   })
 
@@ -111,10 +82,11 @@ describe('Roots Configuration', () => {
     })
   })
 
-  // Since expandPath is not exported, we'll test it indirectly through the pattern response
-
   describe('Trust prompt pattern', () => {
     it('should match trust prompt text', () => {
+      const mockAppConfig: AppConfig = { roots: [] }
+      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
+
       expect(trustPromptPattern.pattern).toEqual([
         'Claude Code may read files in this folder',
       ])
@@ -125,8 +97,8 @@ describe('Roots Configuration', () => {
     })
 
     it('should return "3" (No) when roots is empty', async () => {
-      // Set mock appConfig roots
-      mockAppConfig.roots = []
+      const mockAppConfig: AppConfig = { roots: [] }
+      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
 
       const response = trustPromptPattern.response
       expect(typeof response).toBe('function')
@@ -137,40 +109,34 @@ describe('Roots Configuration', () => {
     })
 
     it('should return "1" (Yes) when parent is in roots', async () => {
-      // Create test directories
       const rootDir = path.join(tempDir, 'trusted-root')
       const projectDir = path.join(rootDir, 'my-project')
       fs.mkdirSync(rootDir, { recursive: true })
       fs.mkdirSync(projectDir, { recursive: true })
 
-      // Change to project directory
       process.chdir(projectDir)
 
-      // Set mock appConfig roots
-      mockAppConfig.roots = [rootDir]
+      const mockAppConfig: AppConfig = { roots: [rootDir] }
+      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
 
       const response = trustPromptPattern.response
       if (typeof response === 'function') {
         const result = response()
-        // The parent of projectDir (/tempDir/trusted-root/my-project) is /tempDir/trusted-root
-        // which should match the root /tempDir/trusted-root
         expect(result).toEqual(['1'])
       }
     })
 
     it('should return "3" (No) when parent is not in roots', async () => {
-      // Create test directories
       const rootDir = path.join(tempDir, 'trusted-root')
       const otherDir = path.join(tempDir, 'untrusted')
       const projectDir = path.join(otherDir, 'my-project')
       fs.mkdirSync(rootDir, { recursive: true })
       fs.mkdirSync(projectDir, { recursive: true })
 
-      // Change to project directory
       process.chdir(projectDir)
 
-      // Set mock appConfig roots
-      mockAppConfig.roots = [rootDir]
+      const mockAppConfig: AppConfig = { roots: [rootDir] }
+      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
 
       const response = trustPromptPattern.response
       if (typeof response === 'function') {
@@ -180,50 +146,45 @@ describe('Roots Configuration', () => {
     })
 
     it('should handle subdirectories of roots', async () => {
-      // Create nested directories
       const rootDir = path.join(tempDir, 'trusted-root')
       const subDir = path.join(rootDir, 'level1', 'level2')
       const projectDir = path.join(subDir, 'my-project')
       fs.mkdirSync(projectDir, { recursive: true })
 
-      // Change to project directory
       process.chdir(projectDir)
 
-      // Set mock appConfig roots
-      mockAppConfig.roots = [rootDir]
+      const mockAppConfig: AppConfig = { roots: [rootDir] }
+      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
 
       const response = trustPromptPattern.response
       if (typeof response === 'function') {
         const result = response()
-        expect(result).toEqual(['3']) // No longer trusts subdirectories
+        expect(result).toEqual(['3'])
       }
     })
 
     it('should handle errors gracefully', () => {
-      // Clear the mock roots to simulate no config
-      mockAppConfig.roots = undefined
+      const mockAppConfig: AppConfig = {}
+      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
 
       const response = trustPromptPattern.response
       if (typeof response === 'function') {
         const result = response()
-        expect(result).toEqual(['3']) // Defaults to No on error
+        expect(result).toEqual(['3'])
       }
     })
 
     it('should handle environment variable expansion in paths', async () => {
-      // Create test directories
       const rootDir = path.join(tempDir, 'env-test')
       const projectDir = path.join(rootDir, 'my-project')
       fs.mkdirSync(projectDir, { recursive: true })
 
-      // Set environment variable
       process.env.TEST_ROOT = tempDir
 
-      // Change to project directory
       process.chdir(projectDir)
 
-      // Set mock appConfig roots with environment variable
-      mockAppConfig.roots = ['$TEST_ROOT/env-test']
+      const mockAppConfig: AppConfig = { roots: ['$TEST_ROOT/env-test'] }
+      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
 
       const response = trustPromptPattern.response
       if (typeof response === 'function') {
@@ -231,7 +192,6 @@ describe('Roots Configuration', () => {
         expect(result).toEqual(['1'])
       }
 
-      // Clean up
       delete process.env.TEST_ROOT
     })
   })

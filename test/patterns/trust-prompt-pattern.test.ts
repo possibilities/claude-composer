@@ -2,21 +2,11 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import * as path from 'path'
 import * as os from 'os'
 import * as fs from 'fs'
-import { trustPromptPattern } from '../../src/patterns/registry'
+import { createTrustPromptPattern } from '../../src/patterns/registry'
+import { type AppConfig } from '../../src/config/schemas'
 
-// Mock the notifications module
 vi.mock('../../src/utils/notifications', () => ({
   showNotification: vi.fn(),
-}))
-
-// Create a mutable mock object
-const mockAppConfig = {
-  roots: [],
-}
-
-// Mock the index module
-vi.mock('../../src/index', () => ({
-  appConfig: mockAppConfig,
 }))
 
 describe('trustPromptPattern', () => {
@@ -24,33 +14,23 @@ describe('trustPromptPattern', () => {
   let tempDir: string
 
   beforeEach(() => {
-    // Reset mocks
     vi.clearAllMocks()
 
-    // Reset the mocked appConfig
-    mockAppConfig.roots = []
-
-    // Set global for tests
-    ;(global as any).__testAppConfig = mockAppConfig
-
-    // Create temp directory
     tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'trust-prompt-test-'))
   })
 
   afterEach(() => {
-    // Restore original cwd
     process.chdir(originalCwd)
 
-    // Clean up temp directory
     if (tempDir && fs.existsSync(tempDir)) {
       fs.rmSync(tempDir, { recursive: true })
     }
-
-    // Clean up global
-    delete (global as any).__testAppConfig
   })
 
   it('should have correct pattern configuration', () => {
+    const mockAppConfig: AppConfig = { roots: [] }
+    const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
+
     expect(trustPromptPattern.id).toBe('trust-folder-prompt')
     expect(trustPromptPattern.title).toBe('Trust folder')
     expect(trustPromptPattern.type).toBe('confirmation')
@@ -64,10 +44,11 @@ describe('trustPromptPattern', () => {
   })
 
   describe('checkIfPwdParentInRoots', () => {
-    const checkIfPwdParentInRoots = trustPromptPattern.response as Function
-
     it('should return No (3) when no roots are configured', () => {
-      mockAppConfig.roots = []
+      const mockAppConfig: AppConfig = { roots: [] }
+      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
+      const checkIfPwdParentInRoots = trustPromptPattern.response as Function
+
       const result = checkIfPwdParentInRoots()
       expect(result).toEqual(['3'])
     })
@@ -77,7 +58,10 @@ describe('trustPromptPattern', () => {
       const testDir = path.join(testRoot, 'test-project')
       fs.mkdirSync(testDir, { recursive: true })
 
-      mockAppConfig.roots = [testRoot]
+      const mockAppConfig: AppConfig = { roots: [testRoot] }
+      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
+      const checkIfPwdParentInRoots = trustPromptPattern.response as Function
+
       process.chdir(testDir)
 
       const result = checkIfPwdParentInRoots()
@@ -89,7 +73,10 @@ describe('trustPromptPattern', () => {
       const testDir = path.join(testRoot, 'sub', 'project')
       fs.mkdirSync(testDir, { recursive: true })
 
-      mockAppConfig.roots = [testRoot]
+      const mockAppConfig: AppConfig = { roots: [testRoot] }
+      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
+      const checkIfPwdParentInRoots = trustPromptPattern.response as Function
+
       process.chdir(testDir)
 
       const result = checkIfPwdParentInRoots()
@@ -102,7 +89,10 @@ describe('trustPromptPattern', () => {
       fs.mkdirSync(testRoot, { recursive: true })
       fs.mkdirSync(testDir, { recursive: true })
 
-      mockAppConfig.roots = [testRoot]
+      const mockAppConfig: AppConfig = { roots: [testRoot] }
+      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
+      const checkIfPwdParentInRoots = trustPromptPattern.response as Function
+
       process.chdir(testDir)
 
       const result = checkIfPwdParentInRoots()
@@ -114,7 +104,10 @@ describe('trustPromptPattern', () => {
       const testDir = path.join(testRoot, 'project')
       fs.mkdirSync(testDir, { recursive: true })
 
-      mockAppConfig.roots = ['~/test-root']
+      const mockAppConfig: AppConfig = { roots: ['~/test-root'] }
+      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
+      const checkIfPwdParentInRoots = trustPromptPattern.response as Function
+
       process.chdir(testDir)
 
       const result = checkIfPwdParentInRoots()
@@ -128,7 +121,12 @@ describe('trustPromptPattern', () => {
       const testDir = path.join(secondRoot, 'project')
       fs.mkdirSync(testDir, { recursive: true })
 
-      mockAppConfig.roots = [firstRoot, secondRoot, thirdRoot]
+      const mockAppConfig: AppConfig = {
+        roots: [firstRoot, secondRoot, thirdRoot],
+      }
+      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
+      const checkIfPwdParentInRoots = trustPromptPattern.response as Function
+
       process.chdir(testDir)
 
       const result = checkIfPwdParentInRoots()
@@ -136,7 +134,10 @@ describe('trustPromptPattern', () => {
     })
 
     it('should return No (3) on error', () => {
-      // Mock process.cwd to throw an error
+      const mockAppConfig: AppConfig = { roots: ['/some/root'] }
+      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
+      const checkIfPwdParentInRoots = trustPromptPattern.response as Function
+
       const originalCwd = process.cwd
       process.cwd = () => {
         throw new Error('Test error')
@@ -145,7 +146,6 @@ describe('trustPromptPattern', () => {
       const result = checkIfPwdParentInRoots()
       expect(result).toEqual(['3'])
 
-      // Restore original cwd
       process.cwd = originalCwd
     })
 
@@ -155,15 +155,16 @@ describe('trustPromptPattern', () => {
       const testDir = path.join(testRoot, 'project')
       fs.mkdirSync(testDir, { recursive: true })
 
-      mockAppConfig.roots = [testRoot]
+      const mockAppConfig: AppConfig = { roots: [testRoot] }
+      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
+      const checkIfPwdParentInRoots = trustPromptPattern.response as Function
+
       process.chdir(testDir)
 
       const result = checkIfPwdParentInRoots()
 
-      // Should return '1' (Yes)
       expect(result).toEqual(['1'])
 
-      // Should show the trusted root warning box
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('🔓 TRUSTED ROOT DIRECTORY'),
       )

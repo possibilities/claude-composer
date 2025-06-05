@@ -55,7 +55,6 @@ async function initializePatterns(): Promise<boolean> {
   if (process.env.CLAUDE_PATTERNS_PATH) {
     try {
       const customPatterns = await import(process.env.CLAUDE_PATTERNS_PATH)
-      // Validate custom patterns
       const { validatePatternConfigs } = await import('./config/schemas.js')
       const validationResult = validatePatternConfigs(customPatterns.patterns)
       if (!validationResult.success) {
@@ -89,8 +88,6 @@ async function initializePatterns(): Promise<boolean> {
       confirmationTriggers.add(pattern.triggerText)
     }
 
-    // Always add confirmation patterns so notifications work, acceptance is handled later
-
     try {
       patternMatcher.addPattern(pattern)
       hasActivePatterns = true
@@ -122,7 +119,6 @@ function cleanup() {
     } catch (e) {}
   }
 
-  // Clean up TTY stream if we opened one
   const ttyStream = (global as any).__ttyStream
   if (ttyStream) {
     try {
@@ -154,7 +150,6 @@ process.on('uncaughtException', error => {
   process.exit(1)
 })
 
-// Wrapper function that uses the imported utility with current app state
 function shouldAcceptPrompt(match: MatchResult): boolean {
   return shouldAcceptPromptUtil(match, appConfig, mergedRuleset)
 }
@@ -181,7 +176,6 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
       actionResponse = 'Accepted'
       actionResponseIcon = '👍'
 
-      // Remove app-started pattern after first use
       if (match.patternId === 'app-started') {
         patternMatcher.removePattern('app-started')
         const triggerText = '? for shortcuts'
@@ -196,7 +190,6 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
     }
 
     if (appConfig.show_notifications !== false && match.notification) {
-      // Special handling for bash commands with path-based config but no directory
       if (
         (match.patternId === 'bash-command-prompt-format-1' ||
           match.patternId === 'bash-command-prompt-format-2') &&
@@ -212,12 +205,11 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
           typeof bashConfig === 'object' &&
           'paths' in bashConfig
         ) {
-          // Show special unacceptable notification
           showNotification(
             {
               title: '🚨 Claude Composer',
               message: 'UNACCEPTABLE DIALOG BECAUSE NO DIRECTORY IS SPECIFIED',
-              timeout: false, // Always sticky
+              timeout: false,
               sound: true,
             },
             appConfig,
@@ -273,7 +265,6 @@ function handleStdinData(data: Buffer): void {
 }
 
 export async function main() {
-  // Check for cc-init subcommand first
   if (process.argv[2] === 'cc-init') {
     const { handleCcInit } = await import('./cli/cc-init.js')
     await handleCcInit(process.argv.slice(3))
@@ -358,7 +349,6 @@ export async function main() {
       })
 
       printProcess.on('exit', code => {
-        // Ensure logs are flushed before exiting
         setImmediate(() => {
           process.exit(code || 0)
         })
@@ -383,7 +373,6 @@ export async function main() {
       })
 
       subcommandProcess.on('exit', code => {
-        // Ensure logs are flushed before exiting
         setImmediate(() => {
           process.exit(code || 0)
         })
@@ -399,7 +388,6 @@ export async function main() {
   mergedRuleset = preflightResult.mergedRuleset
   tempMcpConfigPath = preflightResult.tempMcpConfigPath
 
-  // Initialize remote notification service if enabled
   if (appConfig?.send_remote_notifications) {
     const remoteService = RemoteNotificationService.getInstance()
     const initialized = await remoteService.initialize()
@@ -449,8 +437,6 @@ export async function main() {
 
   const hasActivePatterns = await initializePatterns()
 
-  // Trust prompt pattern is added separately as it requires dynamic response generation
-  // based on the current working directory and configured roots
   const trustPromptPattern = createTrustPromptPattern(() => appConfig)
   try {
     patternMatcher.addPattern(trustPromptPattern)
@@ -513,7 +499,6 @@ export async function main() {
     process.stdin.on('end', () => {
       writeStream.end()
 
-      // Add app-started pattern now that we have piped input
       const appStartedPattern = createPipedInputPattern(() => pipedInputPath)
       try {
         patternMatcher.addPattern(appStartedPattern)
