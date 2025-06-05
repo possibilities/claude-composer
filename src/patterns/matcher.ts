@@ -19,6 +19,13 @@ export interface MatchResult {
   notification?: string
 }
 
+interface MatchedLine {
+  lineIndex: number
+  patternIndex: number
+  lineResult: LineMatchResult
+  isMultilinePlaceholder: boolean
+}
+
 export class PatternMatcher {
   private patterns: Map<string, CompiledPattern> = new Map()
   private previousMatch: MatchResult | null = null
@@ -158,12 +165,7 @@ export class PatternMatcher {
     }
     const lines = content.split('\n')
 
-    const matchedLines: Array<{
-      lineIndex: number
-      patternIndex: number
-      lineResult: any
-      isMultilinePlaceholder: boolean
-    }> = []
+    const matchedLines: MatchedLine[] = []
 
     let startSearchFrom = 0
 
@@ -412,12 +414,7 @@ export class PatternMatcher {
   }
 
   private findPreviousConcreteMatch(
-    matchedLines: Array<{
-      lineIndex: number
-      patternIndex: number
-      lineResult: any
-      isMultilinePlaceholder: boolean
-    }>,
+    matchedLines: MatchedLine[],
     currentIndex: number,
   ): { lineIndex: number; patternIndex: number } | null {
     for (let i = currentIndex - 1; i >= 0; i--) {
@@ -432,12 +429,7 @@ export class PatternMatcher {
   }
 
   private findNextConcreteMatch(
-    matchedLines: Array<{
-      lineIndex: number
-      patternIndex: number
-      lineResult: any
-      isMultilinePlaceholder: boolean
-    }>,
+    matchedLines: MatchedLine[],
     currentIndex: number,
   ): { lineIndex: number; patternIndex: number } | null {
     for (let i = currentIndex + 1; i < matchedLines.length; i++) {

@@ -17,8 +17,8 @@ import { CONFIG_PATHS } from './paths'
 /**
  * Helper function to handle validation errors consistently
  */
-function handleValidationError(
-  result: z.SafeParseReturnType<any, any>,
+function handleValidationError<Input, Output>(
+  result: z.SafeParseReturnType<Input, Output>,
   filePath: string,
   errorType: string,
 ): void {
