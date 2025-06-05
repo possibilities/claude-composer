@@ -25,7 +25,7 @@ describe('Allow Trusted Root Pattern Integration', () => {
   it('should match allow trusted root dialog', () => {
     const terminalOutput = `
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Claude Code may read files in this folder            ┃
+┃ Do you trust the files in this folder?               ┃
 ┃                                                       ┃
 ┃ Do you trust the files in this folder?               ┃
 ┃                                                       ┃
@@ -43,7 +43,7 @@ describe('Allow Trusted Root Pattern Integration', () => {
   })
 
   it('should return response from checkIfPwdParentInRoots function', () => {
-    const terminalOutput = 'Claude Code may read files in this folder'
+    const terminalOutput = 'Do you trust the files in this folder?'
 
     const originalResponse = allowTrustedRootPattern.response
     allowTrustedRootPattern.response = () => ['1']
@@ -57,7 +57,7 @@ describe('Allow Trusted Root Pattern Integration', () => {
   })
 
   it('should match only confirmation type patterns', () => {
-    const terminalOutput = 'Claude Code may read files in this folder'
+    const terminalOutput = 'Do you trust the files in this folder?'
 
     const matches = patternMatcher.processDataByType(
       terminalOutput,
@@ -69,7 +69,7 @@ describe('Allow Trusted Root Pattern Integration', () => {
   })
 
   it('should not match partial text', () => {
-    const terminalOutput = 'Claude Code may read files'
+    const terminalOutput = 'Do you trust the files'
 
     const matches = patternMatcher.processData(terminalOutput)
 
@@ -80,7 +80,7 @@ describe('Allow Trusted Root Pattern Integration', () => {
     const terminalOutput = `
 Some other output
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Claude Code may read files in this folder            ┃
+┃ Do you trust the files in this folder?               ┃
 ┃ Do you trust the files in this folder?               ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 More output

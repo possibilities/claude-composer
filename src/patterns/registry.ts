@@ -242,14 +242,14 @@ export function createPipedInputPattern(
     const pipedInputPath = getPipedInputPath()
 
     if (!pipedInputPath || !fs.existsSync(pipedInputPath)) {
-      return ['# No piped input available', '\r']
+      return []
     }
 
     try {
       const content = fs.readFileSync(pipedInputPath, 'utf8').trimEnd()
-      return [content || '# Piped input file is empty', '\r']
+      return content ? [content, '\r'] : []
     } catch (error) {
-      return [`# Error reading piped input: ${error}`, '\r']
+      return []
     }
   }
 
@@ -271,7 +271,7 @@ export function createTrustPromptPattern(
       const roots = appConfig?.roots || []
 
       if (roots.length === 0) {
-        return ['3']
+        return []
       }
 
       const cwd = process.cwd()
@@ -286,9 +286,9 @@ export function createTrustPromptPattern(
         }
       }
 
-      return ['3']
+      return []
     } catch (error) {
-      return ['3']
+      return []
     }
   }
 
@@ -296,8 +296,8 @@ export function createTrustPromptPattern(
     id: 'allow-trusted-root',
     title: 'Allow trusted root',
     response: checkIfPwdParentInRoots,
-    pattern: ['Claude Code may read files in this folder'],
-    triggerText: 'Claude Code may read files in this folder',
+    pattern: ['Do you trust the files in this folder?'],
+    triggerText: 'Do you trust the files in this folder?',
   }
 }
 

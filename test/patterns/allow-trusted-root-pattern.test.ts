@@ -36,16 +36,16 @@ describe('allowTrustedRootPattern', () => {
     expect(allowTrustedRootPattern.id).toBe('allow-trusted-root')
     expect(allowTrustedRootPattern.title).toBe('Allow trusted root')
     expect(allowTrustedRootPattern.pattern).toEqual([
-      'Claude Code may read files in this folder',
+      'Do you trust the files in this folder?',
     ])
     expect(allowTrustedRootPattern.triggerText).toBe(
-      'Claude Code may read files in this folder',
+      'Do you trust the files in this folder?',
     )
     expect(typeof allowTrustedRootPattern.response).toBe('function')
   })
 
   describe('checkIfPwdParentInRoots', () => {
-    it('should return No (3) when no roots are configured', () => {
+    it('should return empty array when no roots are configured', () => {
       const mockAppConfig: AppConfig = { roots: [] }
       const allowTrustedRootPattern = createTrustPromptPattern(
         () => mockAppConfig,
@@ -54,7 +54,7 @@ describe('allowTrustedRootPattern', () => {
         allowTrustedRootPattern.response as Function
 
       const result = checkIfPwdParentInRoots()
-      expect(result).toEqual(['3'])
+      expect(result).toEqual([])
     })
 
     it('should return Yes (1) when parent directory matches a root', () => {
@@ -75,7 +75,7 @@ describe('allowTrustedRootPattern', () => {
       expect(result).toEqual(['1'])
     })
 
-    it('should return No (3) when parent directory is under a root (not direct child)', () => {
+    it('should return empty array when parent directory is under a root (not direct child)', () => {
       const testRoot = path.join(tempDir, 'test-root')
       const testDir = path.join(testRoot, 'sub', 'project')
       fs.mkdirSync(testDir, { recursive: true })
@@ -90,10 +90,10 @@ describe('allowTrustedRootPattern', () => {
       process.chdir(testDir)
 
       const result = checkIfPwdParentInRoots()
-      expect(result).toEqual(['3'])
+      expect(result).toEqual([])
     })
 
-    it('should return No (3) when parent directory does not match any root', () => {
+    it('should return empty array when parent directory does not match any root', () => {
       const testRoot = path.join(tempDir, 'test-root')
       const testDir = path.join(tempDir, 'other-dir', 'project')
       fs.mkdirSync(testRoot, { recursive: true })
@@ -109,7 +109,7 @@ describe('allowTrustedRootPattern', () => {
       process.chdir(testDir)
 
       const result = checkIfPwdParentInRoots()
-      expect(result).toEqual(['3'])
+      expect(result).toEqual([])
     })
 
     it('should expand ~ in root paths', () => {
@@ -152,7 +152,7 @@ describe('allowTrustedRootPattern', () => {
       expect(result).toEqual(['1'])
     })
 
-    it('should return No (3) on error', () => {
+    it('should return empty array on error', () => {
       const mockAppConfig: AppConfig = { roots: ['/some/root'] }
       const allowTrustedRootPattern = createTrustPromptPattern(
         () => mockAppConfig,
@@ -166,7 +166,7 @@ describe('allowTrustedRootPattern', () => {
       }
 
       const result = checkIfPwdParentInRoots()
-      expect(result).toEqual(['3'])
+      expect(result).toEqual([])
 
       process.cwd = originalCwd
     })
