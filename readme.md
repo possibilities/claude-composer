@@ -2,6 +2,13 @@
 
 > A tool for enhancing Claude Code
 
+## Features
+
+- Automatic dialog dismissal
+- System notifications for lifecycle events and dialogs
+- Toolsets: Configure tool permissions and MCP servers
+- Rulesets: Fine grained control for automatic dialog dismissal
+
 ## Table of Contents
 
 - [Features](#features)
@@ -43,13 +50,6 @@
 - [Development](#development)
   - [Contributing](#contributing)
   - [Release Process](#release-process)
-
-## Features
-
-- Automatic dialog dismissal
-- System notifications for lifecycle events and dialogs
-- Toolsets: Configure tool permissions and MCP servers
-- Rulesets: Fine grained control for automatic dialog dismissal
 
 ## Quick Start
 
