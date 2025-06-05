@@ -12,6 +12,7 @@ The process we will take is to build one section at a time. Step by step you wil
 
 - Figure out which section that needs to be written next
 - Ask me if I'm ready for you to write the next section
+- Deeply research the topic in the codebase
 - Write the content and show me
 - Prompt me to either accept it or ask for edits
 
