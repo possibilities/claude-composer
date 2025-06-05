@@ -250,7 +250,7 @@ export function createTrustPromptPattern(
             '\x1b[33m╔═════════════════════════════════════════════════════════════════╗\x1b[0m',
           )
           console.log(
-            '\x1b[33m║                    🔓 TRUSTED ROOT DIRECTORY                    ║\x1b[0m',
+            '\x1b[33m║                      TRUSTED ROOT DIRECTORY                     ║\x1b[0m',
           )
           console.log(
             '\x1b[33m╠═════════════════════════════════════════════════════════════════╣\x1b[0m',
