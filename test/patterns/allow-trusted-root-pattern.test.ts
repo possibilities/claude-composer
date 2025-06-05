@@ -9,14 +9,14 @@ vi.mock('../../src/utils/notifications', () => ({
   showNotification: vi.fn(),
 }))
 
-describe('trustPromptPattern', () => {
+describe('allowTrustedRootPattern', () => {
   const originalCwd = process.cwd()
   let tempDir: string
 
   beforeEach(() => {
     vi.clearAllMocks()
 
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'trust-prompt-test-'))
+    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'allow-trusted-root-test-'))
   })
 
   afterEach(() => {
@@ -29,24 +29,29 @@ describe('trustPromptPattern', () => {
 
   it('should have correct pattern configuration', () => {
     const mockAppConfig: AppConfig = { roots: [] }
-    const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
+    const allowTrustedRootPattern = createTrustPromptPattern(
+      () => mockAppConfig,
+    )
 
-    expect(trustPromptPattern.id).toBe('trust-folder-prompt')
-    expect(trustPromptPattern.title).toBe('Trust folder')
-    expect(trustPromptPattern.pattern).toEqual([
+    expect(allowTrustedRootPattern.id).toBe('allow-trusted-root')
+    expect(allowTrustedRootPattern.title).toBe('Allow trusted root')
+    expect(allowTrustedRootPattern.pattern).toEqual([
       'Claude Code may read files in this folder',
     ])
-    expect(trustPromptPattern.triggerText).toBe(
+    expect(allowTrustedRootPattern.triggerText).toBe(
       'Claude Code may read files in this folder',
     )
-    expect(typeof trustPromptPattern.response).toBe('function')
+    expect(typeof allowTrustedRootPattern.response).toBe('function')
   })
 
   describe('checkIfPwdParentInRoots', () => {
     it('should return No (3) when no roots are configured', () => {
       const mockAppConfig: AppConfig = { roots: [] }
-      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
-      const checkIfPwdParentInRoots = trustPromptPattern.response as Function
+      const allowTrustedRootPattern = createTrustPromptPattern(
+        () => mockAppConfig,
+      )
+      const checkIfPwdParentInRoots =
+        allowTrustedRootPattern.response as Function
 
       const result = checkIfPwdParentInRoots()
       expect(result).toEqual(['3'])
@@ -58,8 +63,11 @@ describe('trustPromptPattern', () => {
       fs.mkdirSync(testDir, { recursive: true })
 
       const mockAppConfig: AppConfig = { roots: [testRoot] }
-      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
-      const checkIfPwdParentInRoots = trustPromptPattern.response as Function
+      const allowTrustedRootPattern = createTrustPromptPattern(
+        () => mockAppConfig,
+      )
+      const checkIfPwdParentInRoots =
+        allowTrustedRootPattern.response as Function
 
       process.chdir(testDir)
 
@@ -73,8 +81,11 @@ describe('trustPromptPattern', () => {
       fs.mkdirSync(testDir, { recursive: true })
 
       const mockAppConfig: AppConfig = { roots: [testRoot] }
-      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
-      const checkIfPwdParentInRoots = trustPromptPattern.response as Function
+      const allowTrustedRootPattern = createTrustPromptPattern(
+        () => mockAppConfig,
+      )
+      const checkIfPwdParentInRoots =
+        allowTrustedRootPattern.response as Function
 
       process.chdir(testDir)
 
@@ -89,8 +100,11 @@ describe('trustPromptPattern', () => {
       fs.mkdirSync(testDir, { recursive: true })
 
       const mockAppConfig: AppConfig = { roots: [testRoot] }
-      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
-      const checkIfPwdParentInRoots = trustPromptPattern.response as Function
+      const allowTrustedRootPattern = createTrustPromptPattern(
+        () => mockAppConfig,
+      )
+      const checkIfPwdParentInRoots =
+        allowTrustedRootPattern.response as Function
 
       process.chdir(testDir)
 
@@ -104,8 +118,11 @@ describe('trustPromptPattern', () => {
       fs.mkdirSync(testDir, { recursive: true })
 
       const mockAppConfig: AppConfig = { roots: ['~/test-root'] }
-      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
-      const checkIfPwdParentInRoots = trustPromptPattern.response as Function
+      const allowTrustedRootPattern = createTrustPromptPattern(
+        () => mockAppConfig,
+      )
+      const checkIfPwdParentInRoots =
+        allowTrustedRootPattern.response as Function
 
       process.chdir(testDir)
 
@@ -123,8 +140,11 @@ describe('trustPromptPattern', () => {
       const mockAppConfig: AppConfig = {
         roots: [firstRoot, secondRoot, thirdRoot],
       }
-      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
-      const checkIfPwdParentInRoots = trustPromptPattern.response as Function
+      const allowTrustedRootPattern = createTrustPromptPattern(
+        () => mockAppConfig,
+      )
+      const checkIfPwdParentInRoots =
+        allowTrustedRootPattern.response as Function
 
       process.chdir(testDir)
 
@@ -134,8 +154,11 @@ describe('trustPromptPattern', () => {
 
     it('should return No (3) on error', () => {
       const mockAppConfig: AppConfig = { roots: ['/some/root'] }
-      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
-      const checkIfPwdParentInRoots = trustPromptPattern.response as Function
+      const allowTrustedRootPattern = createTrustPromptPattern(
+        () => mockAppConfig,
+      )
+      const checkIfPwdParentInRoots =
+        allowTrustedRootPattern.response as Function
 
       const originalCwd = process.cwd
       process.cwd = () => {
@@ -155,8 +178,11 @@ describe('trustPromptPattern', () => {
       fs.mkdirSync(testDir, { recursive: true })
 
       const mockAppConfig: AppConfig = { roots: [testRoot] }
-      const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
-      const checkIfPwdParentInRoots = trustPromptPattern.response as Function
+      const allowTrustedRootPattern = createTrustPromptPattern(
+        () => mockAppConfig,
+      )
+      const checkIfPwdParentInRoots =
+        allowTrustedRootPattern.response as Function
 
       process.chdir(testDir)
 

@@ -1,24 +1,24 @@
 import { describe, it, expect } from 'vitest'
 import { createPipedInputPattern } from '../../src/patterns/registry'
 
-describe('App Started Pattern', () => {
+describe('Pipe on App Ready Pattern', () => {
   const mockGetPipedInputPath = () => undefined
-  const appStartedPattern = createPipedInputPattern(mockGetPipedInputPath)
+  const pipeOnAppReadyPattern = createPipedInputPattern(mockGetPipedInputPath)
 
   it('should have correct pattern configuration', () => {
-    expect(appStartedPattern.id).toBe('app-started')
-    expect(appStartedPattern.title).toBe('App started')
-    expect(appStartedPattern.pattern).toEqual(['? for shortcuts'])
-    expect(appStartedPattern.triggerText).toBe('? for shortcuts')
+    expect(pipeOnAppReadyPattern.id).toBe('pipe-on-app-ready')
+    expect(pipeOnAppReadyPattern.title).toBe('Pipe on app ready')
+    expect(pipeOnAppReadyPattern.pattern).toEqual(['? for shortcuts'])
+    expect(pipeOnAppReadyPattern.triggerText).toBe('? for shortcuts')
   })
 
   it('should have a response function', () => {
-    expect(appStartedPattern.response).toBeDefined()
-    expect(typeof appStartedPattern.response).toBe('function')
+    expect(pipeOnAppReadyPattern.response).toBeDefined()
+    expect(typeof pipeOnAppReadyPattern.response).toBe('function')
   })
 
   it('should return an array with two elements from response function', () => {
-    const response = appStartedPattern.response as () => string[]
+    const response = pipeOnAppReadyPattern.response as () => string[]
     const result = response()
     expect(Array.isArray(result)).toBe(true)
     expect(result).toHaveLength(2)
@@ -26,7 +26,7 @@ describe('App Started Pattern', () => {
   })
 
   it('should return a message starting with # as first element', () => {
-    const response = appStartedPattern.response as () => string[]
+    const response = pipeOnAppReadyPattern.response as () => string[]
     const result = response()
     expect(result[0]).toMatch(/^#/)
   })

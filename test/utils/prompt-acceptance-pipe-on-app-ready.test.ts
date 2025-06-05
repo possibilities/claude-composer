@@ -3,16 +3,16 @@ import { shouldAcceptPrompt } from '../../src/utils/prompt-acceptance'
 import type { RulesetConfig } from '../../src/config/schemas'
 import type { MatchResult } from '../../src/patterns/matcher'
 
-describe('Prompt Acceptance - App Started', () => {
+describe('Prompt Acceptance - Pipe on App Ready', () => {
   const emptyRuleset: RulesetConfig = {
     acceptances: {},
   }
 
-  const createAppStartedMatch = (
+  const createPipeOnAppReadyMatch = (
     overrides?: Partial<MatchResult>,
   ): MatchResult => ({
-    patternId: 'app-started',
-    patternTitle: 'App started',
+    patternId: 'pipe-on-app-ready',
+    patternTitle: 'Pipe on app ready',
     response: ['test response'],
     matchedText: '? for shortcuts',
     fullMatchedContent: '? for shortcuts',
@@ -23,13 +23,13 @@ describe('Prompt Acceptance - App Started', () => {
     ...overrides,
   })
 
-  it('should auto-accept app-started prompts', () => {
-    const match = createAppStartedMatch()
+  it('should auto-accept pipe-on-app-ready prompts', () => {
+    const match = createPipeOnAppReadyMatch()
     const result = shouldAcceptPrompt(match, undefined, emptyRuleset)
     expect(result).toBe(true)
   })
 
-  it('should auto-accept app-started even with restrictive ruleset', () => {
+  it('should auto-accept pipe-on-app-ready even with restrictive ruleset', () => {
     const restrictiveRuleset: RulesetConfig = {
       acceptances: {
         promptDomainDenyList: ['*'],
@@ -38,13 +38,13 @@ describe('Prompt Acceptance - App Started', () => {
       },
     }
 
-    const match = createAppStartedMatch()
+    const match = createPipeOnAppReadyMatch()
     const result = shouldAcceptPrompt(match, undefined, restrictiveRuleset)
     expect(result).toBe(true)
   })
 
-  it('should auto-accept app-started regardless of extracted data', () => {
-    const match = createAppStartedMatch({
+  it('should auto-accept pipe-on-app-ready regardless of extracted data', () => {
+    const match = createPipeOnAppReadyMatch({
       extractedData: { body: 'some data', domain: 'example.com' },
     })
     const result = shouldAcceptPrompt(match, undefined, emptyRuleset)

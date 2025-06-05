@@ -139,7 +139,7 @@ export function shouldAcceptPrompt(
         return matchDomain(domain, fetchConfig.domains)
       }
       return false
-    case 'app-started':
+    case 'pipe-on-app-ready':
       return true
     default:
       // Unknown prompt types are not auto-accepted

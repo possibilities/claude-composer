@@ -7,22 +7,22 @@ vi.mock('../../src/utils/notifications', () => ({
   showNotification: vi.fn(),
 }))
 
-describe('Trust Prompt Pattern Integration', () => {
+describe('Allow Trusted Root Pattern Integration', () => {
   let patternMatcher: PatternMatcher
   let mockAppConfig: AppConfig
-  let trustPromptPattern: ReturnType<typeof createTrustPromptPattern>
+  let allowTrustedRootPattern: ReturnType<typeof createTrustPromptPattern>
 
   beforeEach(() => {
     vi.clearAllMocks()
     mockAppConfig = {
       roots: ['~/test-root'],
     }
-    trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
+    allowTrustedRootPattern = createTrustPromptPattern(() => mockAppConfig)
     patternMatcher = new PatternMatcher()
-    patternMatcher.addPattern(trustPromptPattern)
+    patternMatcher.addPattern(allowTrustedRootPattern)
   })
 
-  it('should match trust prompt dialog', () => {
+  it('should match allow trusted root dialog', () => {
     const terminalOutput = `
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
 ┃ Claude Code may read files in this folder            ┃
@@ -38,22 +38,22 @@ describe('Trust Prompt Pattern Integration', () => {
     const matches = patternMatcher.processData(terminalOutput)
 
     expect(matches).toHaveLength(1)
-    expect(matches[0].patternId).toBe('trust-folder-prompt')
-    expect(matches[0].patternTitle).toBe('Trust folder')
+    expect(matches[0].patternId).toBe('allow-trusted-root')
+    expect(matches[0].patternTitle).toBe('Allow trusted root')
   })
 
   it('should return response from checkIfPwdParentInRoots function', () => {
     const terminalOutput = 'Claude Code may read files in this folder'
 
-    const originalResponse = trustPromptPattern.response
-    trustPromptPattern.response = () => ['1']
+    const originalResponse = allowTrustedRootPattern.response
+    allowTrustedRootPattern.response = () => ['1']
 
     const matches = patternMatcher.processData(terminalOutput)
 
     expect(matches).toHaveLength(1)
     expect(matches[0].response).toEqual(['1'])
 
-    trustPromptPattern.response = originalResponse
+    allowTrustedRootPattern.response = originalResponse
   })
 
   it('should match only confirmation type patterns', () => {
@@ -65,7 +65,7 @@ describe('Trust Prompt Pattern Integration', () => {
     )
 
     expect(matches).toHaveLength(1)
-    expect(matches[0].patternId).toBe('trust-folder-prompt')
+    expect(matches[0].patternId).toBe('allow-trusted-root')
   })
 
   it('should not match partial text', () => {
@@ -89,6 +89,6 @@ More output
     const matches = patternMatcher.processData(terminalOutput)
 
     expect(matches).toHaveLength(1)
-    expect(matches[0].patternId).toBe('trust-folder-prompt')
+    expect(matches[0].patternId).toBe('allow-trusted-root')
   })
 })

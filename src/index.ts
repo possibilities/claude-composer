@@ -164,7 +164,7 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
     let actionResponseIcon: string | undefined
 
     if (
-      match.patternId === 'trust-folder-prompt' &&
+      match.patternId === 'allow-trusted-root' &&
       match.response &&
       match.response.length > 0
     ) {
@@ -176,8 +176,8 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
       actionResponse = 'Accepted'
       actionResponseIcon = '👍'
 
-      if (match.patternId === 'app-started') {
-        patternMatcher.removePattern('app-started')
+      if (match.patternId === 'pipe-on-app-ready') {
+        patternMatcher.removePattern('pipe-on-app-ready')
         const triggerText = '? for shortcuts'
         const index = confirmationPatternTriggers.indexOf(triggerText)
         if (index > -1) {
@@ -504,7 +504,9 @@ export async function main() {
         patternMatcher.addPattern(appStartedPattern)
         confirmationPatternTriggers.push(appStartedPattern.triggerText!)
       } catch (error) {
-        console.error(`Failed to add app-started pattern: ${error.message}`)
+        console.error(
+          `Failed to add pipe-on-app-ready pattern: ${error.message}`,
+        )
       }
     })
 
