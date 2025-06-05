@@ -6,6 +6,23 @@ import { ConfigManager } from '../../src/config/manager'
 import { type AppConfig } from '../../src/config/schemas'
 import { trustPromptPattern } from '../../src/patterns/registry'
 
+// Mock the notifications module
+vi.mock('../../src/utils/notifications', () => ({
+  showNotification: vi.fn(),
+}))
+
+// Create a mutable mock object
+const mockAppConfig = {
+  roots: [],
+}
+
+// Mock the index module
+vi.mock('../../src/index', () => {
+  return {
+    appConfig: mockAppConfig,
+  }
+})
+
 describe('Roots Configuration', () => {
   let configManager: ConfigManager
   let tempDir: string
@@ -23,11 +40,23 @@ describe('Roots Configuration', () => {
     // Reset config manager
     ConfigManager.resetInstance()
     configManager = ConfigManager.getInstance()
+
+    // Reset the mocked appConfig
+    mockAppConfig.roots = []
+
+    // Set global for tests
+    ;(global as any).__testAppConfig = mockAppConfig
+
+    // Mock console.log to suppress output during tests
+    vi.spyOn(console, 'log').mockImplementation(() => {})
   })
 
   afterEach(() => {
     // Restore original cwd
     process.chdir(originalCwd)
+
+    // Clean up global
+    delete (global as any).__testAppConfig
 
     // Clean up temp directory
     fs.rmSync(tempDir, { recursive: true, force: true })
@@ -87,20 +116,17 @@ describe('Roots Configuration', () => {
   describe('Trust prompt pattern', () => {
     it('should match trust prompt text', () => {
       expect(trustPromptPattern.pattern).toEqual([
-        'Do you trust the files in this folder?',
+        'Claude Code may read files in this folder',
       ])
       expect(trustPromptPattern.triggerText).toBe(
-        'Do you trust the files in this folder?',
+        'Claude Code may read files in this folder',
       )
       expect(trustPromptPattern.type).toBe('confirmation')
     })
 
     it('should return "3" (No) when roots is empty', async () => {
-      // Mock config with empty roots
-      await configManager.loadConfig({
-        cliOverrides: { roots: [] },
-        ignoreGlobalConfig: true,
-      })
+      // Set mock appConfig roots
+      mockAppConfig.roots = []
 
       const response = trustPromptPattern.response
       expect(typeof response).toBe('function')
@@ -120,15 +146,14 @@ describe('Roots Configuration', () => {
       // Change to project directory
       process.chdir(projectDir)
 
-      // Mock config with root
-      await configManager.loadConfig({
-        cliOverrides: { roots: [rootDir] },
-        ignoreGlobalConfig: true,
-      })
+      // Set mock appConfig roots
+      mockAppConfig.roots = [rootDir]
 
       const response = trustPromptPattern.response
       if (typeof response === 'function') {
         const result = response()
+        // The parent of projectDir (/tempDir/trusted-root/my-project) is /tempDir/trusted-root
+        // which should match the root /tempDir/trusted-root
         expect(result).toEqual(['1'])
       }
     })
@@ -144,11 +169,8 @@ describe('Roots Configuration', () => {
       // Change to project directory
       process.chdir(projectDir)
 
-      // Mock config with different root
-      await configManager.loadConfig({
-        cliOverrides: { roots: [rootDir] },
-        ignoreGlobalConfig: true,
-      })
+      // Set mock appConfig roots
+      mockAppConfig.roots = [rootDir]
 
       const response = trustPromptPattern.response
       if (typeof response === 'function') {
@@ -167,22 +189,19 @@ describe('Roots Configuration', () => {
       // Change to project directory
       process.chdir(projectDir)
 
-      // Mock config with root
-      await configManager.loadConfig({
-        cliOverrides: { roots: [rootDir] },
-        ignoreGlobalConfig: true,
-      })
+      // Set mock appConfig roots
+      mockAppConfig.roots = [rootDir]
 
       const response = trustPromptPattern.response
       if (typeof response === 'function') {
         const result = response()
-        expect(result).toEqual(['1'])
+        expect(result).toEqual(['3']) // No longer trusts subdirectories
       }
     })
 
     it('should handle errors gracefully', () => {
-      // Force an error by resetting config manager after it's used
-      ConfigManager.resetInstance()
+      // Clear the mock roots to simulate no config
+      mockAppConfig.roots = undefined
 
       const response = trustPromptPattern.response
       if (typeof response === 'function') {
@@ -203,11 +222,8 @@ describe('Roots Configuration', () => {
       // Change to project directory
       process.chdir(projectDir)
 
-      // Mock config with environment variable path
-      await configManager.loadConfig({
-        cliOverrides: { roots: ['$TEST_ROOT/env-test'] },
-        ignoreGlobalConfig: true,
-      })
+      // Set mock appConfig roots with environment variable
+      mockAppConfig.roots = ['$TEST_ROOT/env-test']
 
       const response = trustPromptPattern.response
       if (typeof response === 'function') {

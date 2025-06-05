@@ -1,5 +1,6 @@
 import * as fs from 'fs'
 import * as path from 'path'
+import * as os from 'os'
 import { execSync } from 'child_process'
 import type { AppConfig, PreflightOptions } from '../types/preflight.js'
 import type { RulesetConfig } from '../config/schemas.js'
@@ -7,6 +8,38 @@ import { hasActiveAcceptanceRules } from '../config/rulesets.js'
 import { askYesNo } from '../cli/prompts.js'
 import { log, warn } from '../utils/logging.js'
 import { isPipedInput, exitWithPipedInputError } from '../utils/piped-input.js'
+
+function expandPath(p: string): string {
+  if (p.startsWith('~/')) {
+    return path.join(os.homedir(), p.slice(2))
+  }
+  if (p === '~') {
+    return os.homedir()
+  }
+  return path.resolve(p)
+}
+
+function isInTrustedRoot(appConfig: AppConfig): boolean {
+  const roots = appConfig.roots || []
+  if (roots.length === 0) {
+    return false
+  }
+
+  const cwd = process.cwd()
+  const parentDir = path.dirname(cwd)
+
+  for (const root of roots) {
+    const expandedRoot = expandPath(root)
+    if (
+      parentDir === expandedRoot ||
+      parentDir.startsWith(expandedRoot + path.sep)
+    ) {
+      return true
+    }
+  }
+
+  return false
+}
 
 export function checkGitInstalled(): void {
   try {
@@ -121,6 +154,12 @@ export async function handleAutomaticAcceptanceWarning(
 
   // Skip the warning if suppression is enabled
   if (appConfig.dangerously_suppress_automatic_acceptance_confirmation) {
+    return true
+  }
+
+  // Skip the warning if we're in a trusted root directory
+  if (isInTrustedRoot(appConfig)) {
+    log('※ Skipping automatic acceptance warning (trusted root directory)')
     return true
   }
 
