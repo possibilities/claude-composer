@@ -20,7 +20,6 @@ import {
   showPatternNotification,
 } from './utils/notifications.js'
 import { TerminalManager } from './terminal/manager'
-import { RemoteNotificationService } from './services/remote-notifications'
 import {
   ensureBackupDirectory,
   createBackup,
@@ -387,16 +386,6 @@ export async function main() {
   appConfig = preflightResult.appConfig
   mergedRuleset = preflightResult.mergedRuleset
   tempMcpConfigPath = preflightResult.tempMcpConfigPath
-
-  if (appConfig?.send_remote_notifications) {
-    const remoteService = RemoteNotificationService.getInstance()
-    const initialized = await remoteService.initialize()
-    if (!initialized) {
-      warn(
-        '※ Remote notifications enabled but initialization failed. Check ~/.claude-composer/remote-notifications.yaml',
-      )
-    }
-  }
 
   responseQueue = new ResponseQueue()
   terminalManager = new TerminalManager(appConfig, responseQueue)

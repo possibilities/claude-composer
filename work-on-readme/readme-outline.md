@@ -97,7 +97,6 @@
   - Notification types
   - Configuration options
   - Stickiness settings
-  - Remote notification setup
 
 - **docs/patterns-reference.md**
 

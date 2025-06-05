@@ -2,7 +2,6 @@ import notifier from 'node-notifier'
 import { MatchResult } from '../patterns/matcher'
 import { replacePlaceholders } from './template-utils'
 import { AppConfig } from '../config/schemas'
-import { RemoteNotificationService } from '../services/remote-notifications'
 
 export interface NotificationOptions {
   title?: string
@@ -77,12 +76,6 @@ export async function showNotification(
     ...defaults,
     ...options,
   })
-
-  // Send remote notification if enabled
-  if (appConfig?.send_remote_notifications) {
-    const remoteService = RemoteNotificationService.getInstance()
-    await remoteService.sendNotification(options, notificationType, isSticky)
-  }
 }
 
 export function getPatternType(

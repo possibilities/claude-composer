@@ -361,9 +361,6 @@ export class ConfigManager {
       notify_work_started: false,
       notify_work_complete: true,
 
-      // Remote notification settings
-      send_remote_notifications: false,
-
       // Other defaults
       log_all_pattern_matches: false,
       dangerously_allow_in_dirty_directory: false,
