@@ -8,16 +8,7 @@ import { hasActiveAcceptanceRules } from '../config/rulesets.js'
 import { askYesNo } from '../cli/prompts.js'
 import { log, warn } from '../utils/logging.js'
 import { isPipedInput, exitWithPipedInputError } from '../utils/piped-input.js'
-
-function expandPath(p: string): string {
-  if (p.startsWith('~/')) {
-    return path.join(os.homedir(), p.slice(2))
-  }
-  if (p === '~') {
-    return os.homedir()
-  }
-  return path.resolve(p)
-}
+import { expandPath } from '../utils/file-utils.js'
 
 function isInTrustedRoot(appConfig: AppConfig): boolean {
   const roots = appConfig.roots || []
