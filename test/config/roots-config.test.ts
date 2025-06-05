@@ -88,10 +88,10 @@ describe('Roots Configuration', () => {
       const trustPromptPattern = createTrustPromptPattern(() => mockAppConfig)
 
       expect(trustPromptPattern.pattern).toEqual([
-        'Claude Code may read files in this folder',
+        'Do you trust the files in this folder?',
       ])
       expect(trustPromptPattern.triggerText).toBe(
-        'Claude Code may read files in this folder',
+        'Do you trust the files in this folder?',
       )
     })
 
@@ -103,7 +103,7 @@ describe('Roots Configuration', () => {
       expect(typeof response).toBe('function')
       if (typeof response === 'function') {
         const result = response()
-        expect(result).toEqual(['3'])
+        expect(result).toEqual([])
       }
     })
 
@@ -140,7 +140,7 @@ describe('Roots Configuration', () => {
       const response = trustPromptPattern.response
       if (typeof response === 'function') {
         const result = response()
-        expect(result).toEqual(['3'])
+        expect(result).toEqual([])
       }
     })
 
@@ -158,7 +158,7 @@ describe('Roots Configuration', () => {
       const response = trustPromptPattern.response
       if (typeof response === 'function') {
         const result = response()
-        expect(result).toEqual(['3'])
+        expect(result).toEqual([])
       }
     })
 
@@ -169,7 +169,7 @@ describe('Roots Configuration', () => {
       const response = trustPromptPattern.response
       if (typeof response === 'function') {
         const result = response()
-        expect(result).toEqual(['3'])
+        expect(result).toEqual([])
       }
     })
 
