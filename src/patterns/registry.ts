@@ -6,6 +6,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
 import { ConfigManager } from '../config/manager'
+import { expandPath } from '../utils/file-utils'
 
 type ExtractedData = {
   body?: string
@@ -247,18 +248,6 @@ function getPipedInputResponse(): string[] {
   } catch (error) {
     return [`# Error reading piped input: ${error}`, '\r']
   }
-}
-
-function expandPath(p: string): string {
-  // Replace ~ with home directory
-  if (p.startsWith('~')) {
-    p = path.join(os.homedir(), p.slice(1))
-  }
-  // Expand environment variables
-  p = p.replace(/\$([A-Z_][A-Z0-9_]*)/gi, (match, envVar) => {
-    return process.env[envVar] || match
-  })
-  return path.resolve(p)
 }
 
 function checkIfPwdParentInRoots(): string[] {
