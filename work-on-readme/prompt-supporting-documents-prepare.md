@@ -1,4 +1,4 @@
-Let's look at the latest document @work-on-readme/readme-014.md
+Let's look at the latest document @work-on-readme/readme-015.md
 
 We are going to start working on supplemental docs
 
@@ -16,4 +16,4 @@ Go section by section (2nd level heading) and follow these instructions step-by-
 - Make a more minimal version of the section in the readme and update it
 - If needed save any supplemental information we're removing to @work-on-readme/supplemental-docs-ideas.md
 
-At the end we should have a more minimal main readme (store it in readme-015.md), an outline/plan for creating supplemental docs, and a document (@work-on-readme/supplemental-docs-ideas.md) to start from when we work on the supplemental docs.
+At the end we should have a more minimal main readme (store it in readme-016.md), an outline/plan for creating supplemental docs, and a document (@work-on-readme/supplemental-docs-ideas.md) to start from when we work on the supplemental docs.
