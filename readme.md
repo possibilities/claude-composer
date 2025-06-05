@@ -2,12 +2,14 @@
 
 > A tool for enhancing Claude Code
 
-## Features
+## What is Claude Composer?
 
-- Automatic dialog dismissal
-- System notifications for lifecycle events and dialogs
-- Toolsets: Configure tool permissions and MCP servers
-- Rulesets: Fine grained control for automatic dialog dismissal
+Claude Composer is a CLI wrapper for Claude Code that adds small enhancements around automation, UX, and configuration.
+
+- **Reduced interruptions**: Automatically handles permission dialogs based on configurable rules
+- **Flexible control**: Rulesets let you define exactly which actions to allow automatically
+- **Tool management**: Toolsets simplify configuring which tools Claude can use
+- **Enhanced visibility**: System notifications keep you informed without switching contexts
 
 ## Table of Contents
 
@@ -75,17 +77,6 @@ claude-composer  # Uses the ruleset configured during cc-init
 # Use a more permissive ruleset
 claude-composer --ruleset internal:yolo
 ```
-
-## What is Claude Composer?
-
-Claude Composer is a CLI wrapper for Claude Code that adds small enhancements around automation, UX, and configuration.
-
-Key benefits:
-
-- **Reduced interruptions**: Automatically handles permission dialogs based on configurable rules
-- **Enhanced visibility**: System notifications keep you informed without switching contexts
-- **Flexible control**: Rulesets let you define exactly which actions to allow automatically
-- **Tool management**: Toolsets simplify configuring which tools Claude can use
 
 ## Installation & Setup
 
