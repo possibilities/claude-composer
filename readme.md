@@ -2,6 +2,45 @@
 
 > A tool for enhancing Claude Code
 
+## Table of Contents
+
+- [Features](#features)
+- [Quick Start](#quick-start)
+  - [Installation](#installation)
+  - [Basic Usage](#basic-usage)
+- [What is Claude Composer?](#what-is-claude-composer)
+- [Installation & Setup](#installation--setup)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation-1)
+  - [Initial Configuration](#initial-configuration)
+  - [Directory Structure](#directory-structure)
+- [Basic Usage](#basic-usage-1)
+  - [Command Structure](#command-structure)
+  - [Common Workflows](#common-workflows)
+  - [Examples](#examples)
+- [Configuration](#configuration)
+  - [Configuration File Locations](#configuration-file-locations)
+  - [Basic Configuration Options](#basic-configuration-options)
+  - [Environment Variables](#environment-variables)
+  - [Roots Configuration](#roots-configuration)
+- [Rulesets](#rulesets)
+  - [What are Rulesets?](#what-are-rulesets)
+  - [Internal Rulesets](#internal-rulesets)
+  - [Project-Level Rulesets](#project-level-rulesets)
+  - [Using Rulesets](#using-rulesets)
+  - [Creating Custom Rulesets](#creating-custom-rulesets)
+- [Toolsets](#toolsets)
+  - [What are Toolsets?](#what-are-toolsets)
+  - [Internal Toolsets](#internal-toolsets)
+  - [Project-Level Toolsets](#project-level-toolsets)
+  - [Using Toolsets](#using-toolsets)
+  - [Creating Custom Toolsets](#creating-custom-toolsets)
+- [Command Line Options](#command-line-options)
+  - [Core Options](#core-options)
+  - [Subcommands](#subcommands)
+  - [Pass-through Options](#pass-through-options)
+  - [Advanced Notification Controls](#advanced-notification-controls)
+
 ## Features
 
 - Automatic dialog dismissal
