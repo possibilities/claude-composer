@@ -497,28 +497,3 @@ claude-composer --sticky-work-complete-notifications
 ```
 
 See [docs/notifications.md](docs/notifications.md) for detailed notification configuration.
-
-## Documentation
-
-### Getting Started
-
-- [Installation Guide](docs/installation.md) - Detailed installation instructions
-- [Configuration Guide](docs/configuration.md) - Comprehensive configuration guide
-- [Examples & Workflows](docs/examples.md) - Common usage patterns
-
-### Reference
-
-- [CLI Reference](docs/cli-reference.md) - Complete command-line options
-- [Rulesets Reference](docs/rulesets.md) - Creating and using rulesets
-- [Toolsets Reference](docs/toolsets.md) - Tool permissions and MCP servers
-
-### Additional Guides
-
-- [Notifications Guide](docs/notifications.md) - Notification configuration
-- [Environment Variables](docs/environment-variables.md) - Environment configuration
-
-### Quick Links
-
-- [Internal Rulesets](docs/internal-rulesets.md) - Built-in ruleset details
-- [Internal Toolsets](docs/internal-toolsets.md) - Built-in toolset details
-- [Roots Configuration](docs/roots-config.md) - Trusted directories setup
