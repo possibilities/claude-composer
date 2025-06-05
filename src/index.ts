@@ -168,7 +168,15 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
     let actionResponse: 'Accepted' | 'Prompted' | undefined
     let actionResponseIcon: string | undefined
 
-    if (shouldAcceptPrompt(match)) {
+    if (
+      match.patternId === 'trust-folder-prompt' &&
+      match.response &&
+      match.response.length > 0
+    ) {
+      responseQueue.enqueue(match.response)
+      actionResponse = 'Accepted'
+      actionResponseIcon = '👍'
+    } else if (shouldAcceptPrompt(match)) {
       responseQueue.enqueue(match.response)
       actionResponse = 'Accepted'
       actionResponseIcon = '👍'
@@ -234,6 +242,7 @@ function handleTerminalData(data: string): void {
     process.stdout.write(data)
 
     terminalManager.updateTerminalBuffer(data)
+
     const matchedTrigger = confirmationPatternTriggers.find(trigger =>
       data.includes(trigger),
     )
@@ -441,7 +450,8 @@ export async function main() {
 
   const hasActivePatterns = await initializePatterns()
 
-  // Add the trust prompt pattern after patterns are initialized
+  // Trust prompt pattern is added separately as it requires dynamic response generation
+  // based on the current working directory and configured roots
   try {
     patternMatcher.addPattern(trustPromptPattern)
     if (trustPromptPattern.triggerText) {

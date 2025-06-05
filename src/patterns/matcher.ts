@@ -36,6 +36,7 @@ export class PatternMatcher {
     if (!config.title) {
       throw new Error(`Pattern ${config.id} is missing required title field`)
     }
+
     const compiled = this.compilePattern(config)
     this.patterns.set(config.id, compiled)
   }

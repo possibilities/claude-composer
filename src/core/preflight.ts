@@ -495,10 +495,6 @@ export async function runPreflight(
 
   log('※ Getting ready to launch Claude CLI')
 
-  if (parsedOptions.quiet) {
-    clearScreen()
-  }
-
   // Validate that at least one ruleset is configured (unless using --print)
   if (rulesetsToLoad.length === 0 && !isPrint) {
     console.error(

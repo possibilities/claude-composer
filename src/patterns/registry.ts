@@ -214,11 +214,23 @@ const confirmationPatterns: PatternConfig[] = [
 ]
 
 export function getPipedInputPath(): string | undefined {
+  // For tests, check if appConfig is available on global
+  if (typeof (global as any).__testAppConfig !== 'undefined') {
+    return (global as any).__testPipedInputPath
+  }
+
   try {
-    const { pipedInputPath } = require('../index.js')
-    return pipedInputPath
+    // Try to import from TypeScript first (for tests)
+    const module = require('../index')
+    return module.pipedInputPath
   } catch {
-    return undefined
+    try {
+      // Fall back to compiled JavaScript (for runtime)
+      const { pipedInputPath } = require('../index.js')
+      return pipedInputPath
+    } catch {
+      return undefined
+    }
   }
 }
 
@@ -251,9 +263,28 @@ function expandPath(p: string): string {
 
 function checkIfPwdParentInRoots(): string[] {
   try {
-    const configManager = ConfigManager.getInstance()
-    const config = configManager.getAppConfig()
-    const roots = config.roots || []
+    let appConfig
+
+    // For tests, check if appConfig is available on global
+    if (typeof (global as any).__testAppConfig !== 'undefined') {
+      appConfig = (global as any).__testAppConfig
+    } else {
+      try {
+        // Try to import from TypeScript first (for tests)
+        const module = require('../index')
+        appConfig = module.appConfig
+      } catch (e) {
+        try {
+          // Fall back to compiled JavaScript (for runtime)
+          const module = require('../index.js')
+          appConfig = module.appConfig
+        } catch (e2) {
+          console.error('Failed to import appConfig:', e.message, e2.message)
+          return ['3']
+        }
+      }
+    }
+    const roots = appConfig?.roots || []
 
     if (roots.length === 0) {
       return ['3'] // No for "Do you trust the files in this folder?"
@@ -262,20 +293,54 @@ function checkIfPwdParentInRoots(): string[] {
     const cwd = process.cwd()
     const parentDir = path.dirname(cwd)
 
-    // Expand all root paths and check if parent directory matches any
     for (const root of roots) {
       const expandedRoot = expandPath(root)
-      if (
-        parentDir === expandedRoot ||
-        parentDir.startsWith(expandedRoot + path.sep)
-      ) {
-        return ['1'] // Yes for "Do you trust the files in this folder?"
+      if (parentDir === expandedRoot) {
+        // Display ASCII box warning
+        console.log('')
+        console.log(
+          '\x1b[33m╔═════════════════════════════════════════════════════════════════╗\x1b[0m',
+        )
+        console.log(
+          '\x1b[33m║                    🔓 TRUSTED ROOT DIRECTORY                    ║\x1b[0m',
+        )
+        console.log(
+          '\x1b[33m╠═════════════════════════════════════════════════════════════════╣\x1b[0m',
+        )
+        console.log(
+          '\x1b[33m║ Parent directory is in configured roots.                        ║\x1b[0m',
+        )
+        console.log(
+          '\x1b[33m║                                                                 ║\x1b[0m',
+        )
+        console.log(
+          '\x1b[33m║ This means:                                                     ║\x1b[0m',
+        )
+        console.log(
+          '\x1b[33m║ • App trust prompt automatically accepted                       ║\x1b[0m',
+        )
+        console.log(
+          '\x1b[33m║ • All confirmation prompts and warnings are skipped             ║\x1b[0m',
+        )
+        console.log(
+          '\x1b[33m║                                                                 ║\x1b[0m',
+        )
+        const rootLine = `║ Root: ${expandedRoot.length > 49 ? '...' + expandedRoot.slice(-49) : expandedRoot}`
+        console.log(`\x1b[33m${rootLine.padEnd(66)}║\x1b[0m`)
+        const dirLine = `║ Directory: ${cwd.length > 49 ? '...' + cwd.slice(-49) : cwd}`
+        console.log(`\x1b[33m${dirLine.padEnd(66)}║\x1b[0m`)
+        console.log(
+          '\x1b[33m╚═════════════════════════════════════════════════════════════════╝\x1b[0m',
+        )
+        console.log('')
+
+        return ['1']
       }
     }
 
-    return ['3'] // No if parent not in roots
+    return ['3']
   } catch (error) {
-    return ['3'] // Default to No on error
+    return ['3']
   }
 }
 
@@ -284,8 +349,8 @@ const trustPromptPattern: PatternConfig = {
   title: 'Trust folder',
   type: 'confirmation' as const,
   response: checkIfPwdParentInRoots,
-  pattern: ['Do you trust the files in this folder?'],
-  triggerText: 'Do you trust the files in this folder?',
+  pattern: ['Claude Code may read files in this folder'],
+  triggerText: 'Claude Code may read files in this folder',
 }
 
 const appStartedPattern: PatternConfig = {
