@@ -98,7 +98,7 @@ describe('Sticky notifications', () => {
 
   it('should respect sticky setting in snapshot notifications', async () => {
     const stickyConfig: AppConfig = {
-      sticky_notifications: true,
+      sticky_terminal_snapshot_notifications: true,
     }
 
     await showSnapshotNotification('my-project', stickyConfig)

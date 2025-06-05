@@ -66,9 +66,7 @@ export class ActivityMonitor {
 
           // Send work started notification if enabled
           const showWorkStarted =
-            this.appConfig.show_work_started_notifications ??
-            this.appConfig.notify_work_started ??
-            false
+            this.appConfig.show_work_started_notifications ?? false
           if (showWorkStarted) {
             const projectName = process.cwd().split('/').pop() || 'Unknown'
             showNotification(
@@ -112,11 +110,9 @@ export class ActivityMonitor {
   private triggerNotification(): void {
     const projectName = process.cwd().split('/').pop() || 'Unknown'
 
-    // Check if work complete notifications are enabled (new or legacy setting)
+    // Check if work complete notifications are enabled
     const showWorkComplete =
-      this.appConfig.show_work_complete_notifications ??
-      this.appConfig.notify_work_complete ??
-      true
+      this.appConfig.show_work_complete_notifications ?? true
 
     if (!showWorkComplete) {
       return

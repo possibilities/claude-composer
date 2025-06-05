@@ -175,8 +175,8 @@ sticky_notifications: true
       },
     )
 
-    // Config file sticky_notifications gets migrated to object format
-    expect(result.appConfig.sticky_notifications).toEqual({ global: true })
+    // Config file sticky_notifications is now a boolean
+    expect(result.appConfig.sticky_notifications).toBe(true)
     expect(result.appConfig.show_notifications).toBe(true) // default is true
   })
 })

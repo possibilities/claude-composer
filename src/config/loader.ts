@@ -56,10 +56,7 @@ export async function loadConfigFile(
 
   try {
     const configData = fs.readFileSync(finalConfigPath, 'utf8')
-    let parsed = yaml.load(configData)
-
-    // Apply migrations for backward compatibility
-    parsed = migrateConfig(parsed)
+    const parsed = yaml.load(configData)
 
     const result = validateAppConfig(parsed)
     handleValidationError(result, finalConfigPath, 'configuration')
@@ -74,36 +71,6 @@ export async function loadConfigFile(
     }
     throw new Error(`Error loading configuration file: ${error}`)
   }
-}
-
-/**
- * Migrate legacy configuration to new format
- */
-function migrateConfig(rawConfig: any): any {
-  const config = { ...rawConfig }
-
-  // Migrate legacy notify_work_* to show_work_*_notifications
-  if (
-    'notify_work_started' in config &&
-    !('show_work_started_notifications' in config)
-  ) {
-    config.show_work_started_notifications = config.notify_work_started
-  }
-  if (
-    'notify_work_complete' in config &&
-    !('show_work_complete_notifications' in config)
-  ) {
-    config.show_work_complete_notifications = config.notify_work_complete
-  }
-
-  // Migrate boolean sticky_notifications to object format
-  if (typeof config.sticky_notifications === 'boolean') {
-    config.sticky_notifications = {
-      global: config.sticky_notifications,
-    }
-  }
-
-  return config
 }
 
 export async function loadToolsetFile(

@@ -28,8 +28,7 @@ sticky_notifications: true
     const config = await loadConfigFile(configPath)
 
     expect(config.show_notifications).toBe(true)
-    // After migration, boolean true becomes { global: true }
-    expect(config.sticky_notifications).toEqual({ global: true })
+    expect(config.sticky_notifications).toBe(true)
   })
 
   it('should handle sticky_notifications: false in config', async () => {
@@ -40,8 +39,7 @@ sticky_notifications: false
 
     const config = await loadConfigFile(configPath)
 
-    // After migration, boolean false becomes { global: false }
-    expect(config.sticky_notifications).toEqual({ global: false })
+    expect(config.sticky_notifications).toBe(false)
   })
 
   it('should handle missing sticky_notifications in config', async () => {
@@ -75,25 +73,21 @@ sticky_notifications: true
     const config = await loadConfigFile(configPath)
 
     expect(config.show_notifications).toBe(false)
-    // After migration, boolean true becomes { global: true }
-    expect(config.sticky_notifications).toEqual({ global: true })
+    expect(config.sticky_notifications).toBe(true)
   })
 
-  it('should handle object format sticky_notifications directly', async () => {
+  it('should handle flat sticky_notifications_* fields', async () => {
     const configContent = `
-sticky_notifications:
-  global: true
-  work_complete: false
-  terminal_snapshot: true
+sticky_notifications: true
+sticky_work_complete_notifications: false
+sticky_terminal_snapshot_notifications: true
 `
     fs.writeFileSync(configPath, configContent)
 
     const config = await loadConfigFile(configPath)
 
-    expect(config.sticky_notifications).toEqual({
-      global: true,
-      work_complete: false,
-      terminal_snapshot: true,
-    })
+    expect(config.sticky_notifications).toBe(true)
+    expect(config.sticky_work_complete_notifications).toBe(false)
+    expect(config.sticky_terminal_snapshot_notifications).toBe(true)
   })
 })

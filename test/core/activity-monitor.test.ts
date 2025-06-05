@@ -379,13 +379,13 @@ Line 15
       )
     })
 
-    it('should not show notification when notify_work_complete is false', () => {
+    it('should not show notification when show_work_complete_notifications is false', () => {
       const snapshotWithText =
         'Press ENTER to continue or Ctrl+C to interrupt) waiting...'
       const snapshotWithoutText = 'Working... processing data...'
       const mockConfig = {
         show_notifications: true,
-        notify_work_complete: false,
+        show_work_complete_notifications: false,
       }
 
       const customMonitor = new ActivityMonitor(mockConfig as any)
@@ -407,7 +407,7 @@ Line 15
       const snapshotWithoutText = 'Working... processing data...'
       const mockConfig = {
         show_notifications: true,
-        notify_work_complete: true,
+        show_work_complete_notifications: true,
       }
 
       const customMonitor = new ActivityMonitor(mockConfig as any)
@@ -506,13 +506,13 @@ Line 15
       expect(call[0].sound).toBe(true)
     })
 
-    it('should not show record notification when notify_work_complete is false', () => {
+    it('should not show record notification when show_work_complete_notifications is false', () => {
       const snapshotWithText =
         'Press ENTER to continue or Ctrl+C to interrupt) waiting...'
       const snapshotWithoutText = 'Working... processing data...'
       const mockConfig = {
         show_notifications: true,
-        notify_work_complete: false,
+        show_work_complete_notifications: false,
       }
 
       const customMonitor = new ActivityMonitor(mockConfig as any)

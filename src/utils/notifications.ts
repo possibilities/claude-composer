@@ -1,7 +1,7 @@
 import notifier from 'node-notifier'
 import { MatchResult } from '../patterns/matcher'
 import { replacePlaceholders } from './template-utils'
-import { AppConfig, StickyNotificationsConfig } from '../config/schemas'
+import { AppConfig } from '../config/schemas'
 import { RemoteNotificationService } from '../services/remote-notifications'
 
 export interface NotificationOptions {
@@ -28,34 +28,23 @@ export function getNotificationStickiness(
 ): boolean {
   if (!appConfig) return false
 
-  const stickyConfig = appConfig.sticky_notifications
-
-  // Handle legacy boolean format
-  if (typeof stickyConfig === 'boolean') {
-    return stickyConfig
-  }
-
-  // Check global override first
-  if (stickyConfig?.global === true) {
-    return true
-  }
-
-  // Check per-type stickiness with defaults
+  // Check per-type stickiness fields first
   switch (type) {
     case 'work_started':
-      return stickyConfig?.work_started ?? false
+      return appConfig.sticky_work_started_notifications ?? false
     case 'work_complete':
-      return stickyConfig?.work_complete ?? true
+      return appConfig.sticky_work_complete_notifications ?? true
     case 'work_complete_record':
-      return stickyConfig?.work_complete_record ?? true
+      return appConfig.sticky_work_complete_record_notifications ?? true
     case 'prompted_confirmation':
-      return stickyConfig?.prompted_confirmations ?? true
+      return appConfig.sticky_prompted_confirm_notify ?? true
     case 'accepted_confirmation':
-      return stickyConfig?.accepted_confirmations ?? false
+      return appConfig.sticky_accepted_confirm_notify ?? false
     case 'terminal_snapshot':
-      return stickyConfig?.terminal_snapshot ?? false
+      return appConfig.sticky_terminal_snapshot_notifications ?? false
     default:
-      return false
+      // Fallback to global sticky_notifications setting if available
+      return appConfig.sticky_notifications ?? false
   }
 }
 
@@ -72,11 +61,8 @@ export async function showNotification(
   } else if (notificationType) {
     isSticky = getNotificationStickiness(notificationType, appConfig)
   } else if (appConfig?.sticky_notifications) {
-    // Fallback to legacy behavior
-    isSticky =
-      typeof appConfig.sticky_notifications === 'boolean'
-        ? appConfig.sticky_notifications
-        : (appConfig.sticky_notifications.global ?? false)
+    // Fallback to global sticky_notifications setting
+    isSticky = appConfig.sticky_notifications
   }
 
   const defaults: NotificationOptions = {

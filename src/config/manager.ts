@@ -156,36 +156,6 @@ export class ConfigManager {
   }
 
   /**
-   * Migrate legacy configuration to new format
-   */
-  private migrateConfig(rawConfig: any): any {
-    const config = { ...rawConfig }
-
-    // Migrate legacy notify_work_* to show_work_*_notifications
-    if (
-      'notify_work_started' in config &&
-      !('show_work_started_notifications' in config)
-    ) {
-      config.show_work_started_notifications = config.notify_work_started
-    }
-    if (
-      'notify_work_complete' in config &&
-      !('show_work_complete_notifications' in config)
-    ) {
-      config.show_work_complete_notifications = config.notify_work_complete
-    }
-
-    // Migrate boolean sticky_notifications to object format
-    if (typeof config.sticky_notifications === 'boolean') {
-      config.sticky_notifications = {
-        global: config.sticky_notifications,
-      }
-    }
-
-    return config
-  }
-
-  /**
    * Load configuration from file
    */
   private async loadConfigFile(filePath: string): Promise<AppConfig | null> {
@@ -195,10 +165,7 @@ export class ConfigManager {
 
     try {
       const configContent = fs.readFileSync(filePath, 'utf8')
-      let rawConfig = yaml.load(configContent)
-
-      // Apply migrations for backward compatibility
-      rawConfig = this.migrateConfig(rawConfig)
+      const rawConfig = yaml.load(configContent)
 
       const result = appConfigSchema.safeParse(rawConfig)
       if (!result.success) {

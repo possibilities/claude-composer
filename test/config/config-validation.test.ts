@@ -19,19 +19,19 @@ describe('Config Validation', () => {
       }
     })
 
-    it('should accept config with notify_work_started and notify_work_complete', () => {
+    it('should accept config with show_work_started_notifications and show_work_complete_notifications', () => {
       const result = validateAppConfig({
         show_notifications: true,
-        notify_work_started: false,
-        notify_work_complete: true,
+        show_work_started_notifications: false,
+        show_work_complete_notifications: true,
       })
 
       expect(result.success).toBe(true)
       if (result.success) {
         expect(result.data).toEqual({
           show_notifications: true,
-          notify_work_started: false,
-          notify_work_complete: true,
+          show_work_started_notifications: false,
+          show_work_complete_notifications: true,
         })
       }
     })
