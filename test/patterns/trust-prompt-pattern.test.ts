@@ -166,7 +166,7 @@ describe('trustPromptPattern', () => {
       expect(result).toEqual(['1'])
 
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('🔓 TRUSTED ROOT DIRECTORY'),
+        expect.stringContaining('TRUSTED ROOT DIRECTORY'),
       )
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('Parent directory is in configured roots'),
