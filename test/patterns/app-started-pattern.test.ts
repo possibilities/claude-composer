@@ -8,7 +8,6 @@ describe('App Started Pattern', () => {
   it('should have correct pattern configuration', () => {
     expect(appStartedPattern.id).toBe('app-started')
     expect(appStartedPattern.title).toBe('App started')
-    expect(appStartedPattern.type).toBe('confirmation')
     expect(appStartedPattern.pattern).toEqual(['? for shortcuts'])
     expect(appStartedPattern.triggerText).toBe('? for shortcuts')
   })

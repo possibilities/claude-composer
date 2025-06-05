@@ -33,7 +33,6 @@ describe('trustPromptPattern', () => {
 
     expect(trustPromptPattern.id).toBe('trust-folder-prompt')
     expect(trustPromptPattern.title).toBe('Trust folder')
-    expect(trustPromptPattern.type).toBe('confirmation')
     expect(trustPromptPattern.pattern).toEqual([
       'Claude Code may read files in this folder',
     ])

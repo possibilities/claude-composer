@@ -13,7 +13,6 @@ describe('Prompt Acceptance - App Started', () => {
   ): MatchResult => ({
     patternId: 'app-started',
     patternTitle: 'App started',
-    type: 'confirmation',
     response: ['test response'],
     matchedText: '? for shortcuts',
     fullMatchedContent: '? for shortcuts',

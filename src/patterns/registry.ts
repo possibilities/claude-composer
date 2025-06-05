@@ -80,7 +80,6 @@ const confirmationPatterns: PatternConfig[] = [
   {
     id: 'edit-file-prompt',
     title: 'Edit file',
-    type: 'confirmation' as const,
     response: '1',
     pattern: [
       'Edit file',
@@ -99,7 +98,6 @@ const confirmationPatterns: PatternConfig[] = [
   {
     id: 'create-file-prompt',
     title: 'Create file',
-    type: 'confirmation' as const,
     response: '1',
     pattern: ['Create file', 'Do you want to create {{ fileName }}?'],
     triggerText: 'Create file',
@@ -114,7 +112,6 @@ const confirmationPatterns: PatternConfig[] = [
   {
     id: 'bash-command-prompt-format-1',
     title: 'Bash command',
-    type: 'confirmation' as const,
     response: '1',
     pattern: [
       'Bash command',
@@ -139,7 +136,6 @@ const confirmationPatterns: PatternConfig[] = [
   {
     id: 'bash-command-prompt-format-2',
     title: 'Bash command',
-    type: 'confirmation' as const,
     response: '1',
     pattern: [
       'Bash command',
@@ -163,7 +159,6 @@ const confirmationPatterns: PatternConfig[] = [
   {
     id: 'read-files-prompt',
     title: 'Read file',
-    type: 'confirmation' as const,
     response: '1',
     pattern: ['Read files', 'Read({{ fileName }})', '1. Yes'],
     triggerText: 'Read files',
@@ -178,7 +173,6 @@ const confirmationPatterns: PatternConfig[] = [
   {
     id: 'fetch-content-prompt',
     title: 'Fetch content',
-    type: 'confirmation' as const,
     response: '1',
     pattern: [
       'Fetch',
@@ -220,7 +214,6 @@ export function createPipedInputPattern(
   return {
     id: 'app-started',
     title: 'App started',
-    type: 'confirmation' as const,
     response: getPipedInputResponse,
     pattern: ['? for shortcuts'],
     triggerText: '? for shortcuts',
@@ -295,7 +288,6 @@ export function createTrustPromptPattern(
   return {
     id: 'trust-folder-prompt',
     title: 'Trust folder',
-    type: 'confirmation' as const,
     response: checkIfPwdParentInRoots,
     pattern: ['Claude Code may read files in this folder'],
     triggerText: 'Claude Code may read files in this folder',

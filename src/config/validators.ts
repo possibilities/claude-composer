@@ -39,13 +39,6 @@ export function validatePattern(pattern: unknown): PatternValidationResult {
       }
     }
 
-    if (
-      validatedPattern.type === 'confirmation' &&
-      !validatedPattern.triggerText
-    ) {
-      errors.push('triggerText is required for confirmation-type patterns')
-    }
-
     if (errors.length > 0) {
       return { valid: false, errors }
     }
