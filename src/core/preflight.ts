@@ -78,6 +78,38 @@ export async function runPreflight(
     options?.ignoreGlobalConfig ||
     argv.includes('--ignore-global-config')
 
+  // Check for config file existence first, before doing other checks
+  if (!ignoreGlobalConfig && !isPrint && !isSubcommand) {
+    const { CONFIG_PATHS } = await import('../config/paths.js')
+    const configPath = options?.configPath || CONFIG_PATHS.getConfigFilePath()
+    const projectConfigPath = CONFIG_PATHS.getProjectConfigFilePath()
+
+    // Check if either global or project config exists
+    const fs = await import('fs')
+    const hasGlobalConfig = fs.existsSync(configPath)
+    const hasProjectConfig = fs.existsSync(projectConfigPath)
+
+    if (!hasGlobalConfig && !hasProjectConfig) {
+      console.error('\x1b[31m※ Error: No configuration file found.\x1b[0m')
+      console.error(
+        '\x1b[31m※ Claude Composer requires a configuration file to run.\x1b[0m',
+      )
+      console.error(
+        '\x1b[31m※ To create a config file, run: claude-composer cc-init\x1b[0m',
+      )
+      return {
+        appConfig,
+        toolsetArgs: [],
+        rulesetArgs: [],
+        childArgs: [],
+        shouldExit: true,
+        exitCode: 1,
+        knownOptions,
+        hasPrintOption,
+      }
+    }
+  }
+
   if (!ignoreGlobalConfig) {
     try {
       const loadedConfig = await loadConfigFile(options?.configPath)
@@ -479,9 +511,6 @@ export async function runPreflight(
     )
     console.error(
       '\x1b[31m※ Use --ruleset flag or configure rulesets in your config file.\x1b[0m',
-    )
-    console.error(
-      '\x1b[31m※ To create a config file, run: claude-composer cc-init\x1b[0m',
     )
     return {
       appConfig,
