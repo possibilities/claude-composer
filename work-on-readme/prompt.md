@@ -8,9 +8,13 @@ Each time we make a change increment the ordinal, e.g from 001, 002, 003, etc. I
 
 For every change read the full readme.md, make change, and then then write the whole changed file to the new file in the ordinal sequence.
 
-The process we will take is to build one section at a time. I will say the name of the section in the outline, you will write the content, and I will either accept it or ask for edits.
+The process we will take is to build one section at a time. Step by step you will:
 
-For all sections be pithy, minimal, give the user what they need to understand things from a high level and we will have breakout documents
-for deeper dives into individual sections.
+- Figure out which section that needs to be written next
+- Ask me if I'm ready for you to write the next section
+- Write the content and show me
+- Prompt me to either accept it or ask for edits
 
-Are you ready for me to give you the next section to work on?
+For all sections be pithy, minimal, give the user what they need to understand things from a high level and we will have breakout documents for deeper dives into individual sections.
+
+Go off <3
