@@ -93,7 +93,6 @@ describe('Roots Configuration', () => {
       expect(trustPromptPattern.triggerText).toBe(
         'Claude Code may read files in this folder',
       )
-      expect(trustPromptPattern.type).toBe('confirmation')
     })
 
     it('should return "3" (No) when roots is empty', async () => {

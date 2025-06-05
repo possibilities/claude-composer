@@ -9,13 +9,12 @@ import {
 
 describe('PatternConfig validation', () => {
   describe('validatePatternConfig', () => {
-    it('should validate a valid confirmation pattern', () => {
+    it('should validate a valid pattern with notification and triggerText', () => {
       const pattern: PatternConfig = {
         id: 'test-confirmation',
         title: 'Test Confirmation',
         pattern: ['prompt pattern', 'line 2'],
         response: '1',
-        type: 'confirmation',
         notification: 'Test notification',
         triggerText: 'Test Trigger',
       }
@@ -112,38 +111,12 @@ describe('PatternConfig validation', () => {
       }
     })
 
-    it('should reject pattern with invalid type', () => {
+    it('should accept triggerText on any pattern', () => {
       const pattern = {
         id: 'test',
         title: 'Test',
         pattern: ['test'],
         response: 'test',
-        type: 'invalid' as any,
-      }
-
-      const result = validatePatternConfig(pattern)
-      expect(result.success).toBe(false)
-    })
-
-    it('should accept pattern without type (optional)', () => {
-      const pattern = {
-        id: 'test',
-        title: 'Test',
-        pattern: ['test'],
-        response: 'test',
-      }
-
-      const result = validatePatternConfig(pattern)
-      expect(result.success).toBe(true)
-    })
-
-    it('should accept triggerText on confirmation type patterns', () => {
-      const pattern = {
-        id: 'test',
-        title: 'Test',
-        pattern: ['test'],
-        response: 'test',
-        type: 'confirmation' as const,
         triggerText: 'Trigger text',
       }
 
@@ -151,42 +124,16 @@ describe('PatternConfig validation', () => {
       expect(result.success).toBe(true)
     })
 
-    it('should reject triggerText on patterns without type', () => {
+    it('should accept patterns without triggerText', () => {
       const pattern = {
         id: 'test',
         title: 'Test',
         pattern: ['test'],
         response: 'test',
-        triggerText: 'Should not be allowed without type',
       }
 
       const result = validatePatternConfig(pattern)
-      expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error.errors[0].message).toContain(
-          'triggerText is only allowed on patterns with type "confirmation"',
-        )
-      }
-    })
-
-    it('should accept patterns without triggerText regardless of type', () => {
-      const confirmationPattern = {
-        id: 'test2',
-        title: 'Test Confirmation',
-        pattern: ['test'],
-        response: 'test',
-        type: 'confirmation' as const,
-      }
-
-      const noTypePattern = {
-        id: 'test3',
-        title: 'Test No Type',
-        pattern: ['test'],
-        response: 'test',
-      }
-
-      expect(validatePatternConfig(confirmationPattern).success).toBe(true)
-      expect(validatePatternConfig(noTypePattern).success).toBe(true)
+      expect(result.success).toBe(true)
     })
   })
 
@@ -204,7 +151,6 @@ describe('PatternConfig validation', () => {
           title: 'Pattern 2',
           pattern: ['test2', 'line2'],
           response: ['resp1', 'resp2'],
-          type: 'confirmation',
         },
       ]
 

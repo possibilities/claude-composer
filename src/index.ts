@@ -84,7 +84,7 @@ async function initializePatterns(): Promise<boolean> {
   const confirmationTriggers = new Set<string>()
 
   patternsToUse.forEach(pattern => {
-    if (pattern.type === 'confirmation' && pattern.triggerText) {
+    if (pattern.triggerText) {
       confirmationTriggers.add(pattern.triggerText)
     }
 
@@ -184,7 +184,7 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
           confirmationPatternTriggers.splice(index, 1)
         }
       }
-    } else if (match.type === 'confirmation') {
+    } else {
       actionResponse = 'Prompted'
       actionResponseIcon = '✋'
     }

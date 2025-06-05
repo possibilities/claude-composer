@@ -161,40 +161,23 @@ export function validateRulesetConfig(
 }
 
 // Pattern configuration schema
-export const patternConfigSchema = z
-  .object({
-    id: z.string().min(1, 'Pattern ID cannot be empty'),
-    title: z.string().min(1, 'Pattern title cannot be empty'),
-    pattern: z
-      .array(z.string())
-      .min(1, 'Pattern must have at least one string'),
-    response: z.union([
-      z.string(),
-      z.array(z.string()),
-      z.function().returns(z.union([z.string(), z.array(z.string())])),
-    ]),
-    type: z.enum(['confirmation']).optional(),
-    notification: z.string().optional(),
-    triggerText: z.string().optional(),
-    transformExtractedData: z
-      .function()
-      .args(z.record(z.string(), z.any()))
-      .returns(z.record(z.string(), z.string()))
-      .optional(),
-  })
-  .refine(
-    data => {
-      // triggerText is only allowed on confirmation type patterns
-      if (data.triggerText && data.type !== 'confirmation') {
-        return false
-      }
-      return true
-    },
-    {
-      message:
-        'triggerText is only allowed on patterns with type "confirmation"',
-    },
-  )
+export const patternConfigSchema = z.object({
+  id: z.string().min(1, 'Pattern ID cannot be empty'),
+  title: z.string().min(1, 'Pattern title cannot be empty'),
+  pattern: z.array(z.string()).min(1, 'Pattern must have at least one string'),
+  response: z.union([
+    z.string(),
+    z.array(z.string()),
+    z.function().returns(z.union([z.string(), z.array(z.string())])),
+  ]),
+  notification: z.string().optional(),
+  triggerText: z.string().optional(),
+  transformExtractedData: z
+    .function()
+    .args(z.record(z.string(), z.any()))
+    .returns(z.record(z.string(), z.string()))
+    .optional(),
+})
 
 export type PatternConfig = z.infer<typeof patternConfigSchema>
 

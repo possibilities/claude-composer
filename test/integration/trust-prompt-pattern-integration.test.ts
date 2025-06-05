@@ -40,7 +40,6 @@ describe('Trust Prompt Pattern Integration', () => {
     expect(matches).toHaveLength(1)
     expect(matches[0].patternId).toBe('trust-folder-prompt')
     expect(matches[0].patternTitle).toBe('Trust folder')
-    expect(matches[0].type).toBe('confirmation')
   })
 
   it('should return response from checkIfPwdParentInRoots function', () => {

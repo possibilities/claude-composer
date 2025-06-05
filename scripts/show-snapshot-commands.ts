@@ -60,10 +60,8 @@ LOG_FILES.forEach(logFile => {
               // Recreate extractedData using PatternMatcher
               const matcher = new PatternMatcher()
 
-              // Always try all confirmation patterns
-              const confirmationPatterns = patterns.filter(
-                p => p.type === 'confirmation',
-              )
+              // Use all patterns (they were all confirmation patterns anyway)
+              const confirmationPatterns = patterns
 
               // Add all confirmation patterns
               confirmationPatterns.forEach(pattern =>

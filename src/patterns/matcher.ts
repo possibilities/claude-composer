@@ -8,7 +8,6 @@ import { CONFIG_PATHS } from '../config/paths'
 export interface MatchResult {
   patternId: string
   patternTitle: string
-  type?: 'confirmation'
   response: string | string[]
   matchedText: string
   fullMatchedContent: string
@@ -50,23 +49,16 @@ export class PatternMatcher {
   }
 
   processDataByType(data: string, filterType: 'confirmation'): MatchResult[] {
-    return this.processDataInternal(data, filterType)
+    // Since all patterns were confirmation type anyway, just process all data
+    return this.processDataInternal(data)
   }
 
-  private processDataInternal(
-    data: string,
-    filterType?: 'confirmation',
-  ): MatchResult[] {
+  private processDataInternal(data: string): MatchResult[] {
     const content = data
     const strippedContent = stripAnsi(content)
     const allMatches: MatchResult[] = []
 
     for (const [id, pattern] of this.patterns) {
-      // Apply type filter if specified
-      if (filterType && pattern.config.type !== filterType) {
-        continue
-      }
-
       const hasAnsiPattern = pattern.sequence.some(p =>
         this.containsAnsiSequence(p),
       )
@@ -89,7 +81,6 @@ export class PatternMatcher {
         allMatches.push({
           patternId: id,
           patternTitle: pattern.config.title || `Unknown Pattern (${id})`,
-          type: pattern.config.type,
           response,
           matchedText: sequenceMatch.text,
           fullMatchedContent: sequenceMatch.fullMatchedContent,
