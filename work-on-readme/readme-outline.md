@@ -11,8 +11,9 @@
   - System notifications for lifecycle events and dialogs
   - Toolsets: Inject tools and allow with predefined set
   - Rulesets: Fine grained control for automatic dialog dismissal
-  - Internal rulesets and toolsets for quick setup
+  - Internal rulesets (safe, cautious, yolo) and toolsets for quick setup
   - Project-level configuration support
+  - Roots configuration for trusted directories
 
 - **Quick Start**
 
@@ -43,11 +44,12 @@
   - Configuration file location
   - Basic configuration options
   - Environment variables
+  - Roots configuration for trusted directories
 
 - **Rulesets**
 
   - What are rulesets
-  - Internal rulesets (internal:cautious, internal:yolo)
+  - Internal rulesets (internal:safe, internal:cautious, internal:yolo)
   - Project-level rulesets (project: prefix)
   - Using rulesets
   - Creating custom rulesets
@@ -72,7 +74,7 @@
   - Complete configuration reference
   - YAML schema details
   - Advanced configuration examples
-  - Merging behavior
+  - Roots configuration for trusted directories
 
 - **docs/rulesets-guide.md**
 
