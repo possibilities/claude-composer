@@ -12,6 +12,48 @@ import * as os from 'os'
 import { ConfigManager } from '../config/manager'
 import { expandPath } from '../utils/file-utils'
 
+function displayTrustedRootNotification(
+  expandedRoot: string,
+  cwd: string,
+): void {
+  console.log('')
+  console.log(
+    '\x1b[33m╔═════════════════════════════════════════════════════════════════╗\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║                      TRUSTED ROOT DIRECTORY                     ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m╠═════════════════════════════════════════════════════════════════╣\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║ Parent directory is in configured roots.                        ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║                                                                 ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║ This means:                                                     ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║ • App trust prompt automatically accepted                       ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║ • All confirmation prompts and warnings are skipped             ║\x1b[0m',
+  )
+  console.log(
+    '\x1b[33m║                                                                 ║\x1b[0m',
+  )
+  const rootLine = `║ Root: ${expandedRoot.length > 49 ? '...' + expandedRoot.slice(-49) : expandedRoot}`
+  console.log(`\x1b[33m${rootLine.padEnd(66)}║\x1b[0m`)
+  const dirLine = `║ Directory: ${cwd.length > 49 ? '...' + cwd.slice(-49) : cwd}`
+  console.log(`\x1b[33m${dirLine.padEnd(66)}║\x1b[0m`)
+  console.log(
+    '\x1b[33m╚═════════════════════════════════════════════════════════════════╝\x1b[0m',
+  )
+  console.log('')
+}
+
 type ExtractedData = {
   body?: string
   [key: string]: any
@@ -212,8 +254,8 @@ export function createPipedInputPattern(
   }
 
   return {
-    id: 'app-started',
-    title: 'App started',
+    id: 'pipe-on-app-ready',
+    title: 'Pipe on app ready',
     response: getPipedInputResponse,
     pattern: ['? for shortcuts'],
     triggerText: '? for shortcuts',
@@ -238,42 +280,7 @@ export function createTrustPromptPattern(
       for (const root of roots) {
         const expandedRoot = expandPath(root)
         if (parentDir === expandedRoot) {
-          console.log('')
-          console.log(
-            '\x1b[33m╔═════════════════════════════════════════════════════════════════╗\x1b[0m',
-          )
-          console.log(
-            '\x1b[33m║                      TRUSTED ROOT DIRECTORY                     ║\x1b[0m',
-          )
-          console.log(
-            '\x1b[33m╠═════════════════════════════════════════════════════════════════╣\x1b[0m',
-          )
-          console.log(
-            '\x1b[33m║ Parent directory is in configured roots.                        ║\x1b[0m',
-          )
-          console.log(
-            '\x1b[33m║                                                                 ║\x1b[0m',
-          )
-          console.log(
-            '\x1b[33m║ This means:                                                     ║\x1b[0m',
-          )
-          console.log(
-            '\x1b[33m║ • App trust prompt automatically accepted                       ║\x1b[0m',
-          )
-          console.log(
-            '\x1b[33m║ • All confirmation prompts and warnings are skipped             ║\x1b[0m',
-          )
-          console.log(
-            '\x1b[33m║                                                                 ║\x1b[0m',
-          )
-          const rootLine = `║ Root: ${expandedRoot.length > 49 ? '...' + expandedRoot.slice(-49) : expandedRoot}`
-          console.log(`\x1b[33m${rootLine.padEnd(66)}║\x1b[0m`)
-          const dirLine = `║ Directory: ${cwd.length > 49 ? '...' + cwd.slice(-49) : cwd}`
-          console.log(`\x1b[33m${dirLine.padEnd(66)}║\x1b[0m`)
-          console.log(
-            '\x1b[33m╚═════════════════════════════════════════════════════════════════╝\x1b[0m',
-          )
-          console.log('')
+          displayTrustedRootNotification(expandedRoot, cwd)
 
           return ['1']
         }
@@ -286,8 +293,8 @@ export function createTrustPromptPattern(
   }
 
   return {
-    id: 'trust-folder-prompt',
-    title: 'Trust folder',
+    id: 'allow-trusted-root',
+    title: 'Allow trusted root',
     response: checkIfPwdParentInRoots,
     pattern: ['Claude Code may read files in this folder'],
     triggerText: 'Claude Code may read files in this folder',
