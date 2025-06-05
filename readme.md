@@ -40,6 +40,9 @@
   - [Subcommands](#subcommands)
   - [Pass-through Options](#pass-through-options)
   - [Advanced Notification Controls](#advanced-notification-controls)
+- [Development](#development)
+  - [Contributing](#contributing)
+  - [Release Process](#release-process)
 
 ## Features
 
@@ -542,3 +545,27 @@ claude-composer --sticky-work-complete-notifications
 ```
 
 See [docs/notifications.md](docs/notifications.md) for detailed notification configuration.
+
+## Development
+
+### Contributing
+
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Release Process
+
+This project uses automated releases via npm and GitHub. See [docs/release-process.md](docs/release-process.md) for detailed release instructions.
+
+Quick release commands:
+
+```bash
+npm run release:patch  # Bug fixes (0.1.0 → 0.1.1)
+npm run release:minor  # New features (0.1.0 → 0.2.0)
+npm run release:major  # Breaking changes (0.1.0 → 1.0.0)
+```

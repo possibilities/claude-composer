@@ -1,13 +1,41 @@
 {
   "name": "claude-composer",
   "version": "0.1.0",
-  "description": "Claude Composer",
+  "description": "A tool for enhancing Claude Code",
+  "author": "Mike Bannister <notimpossiblemike@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/possibilities/claude-composer#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/possibilities/claude-composer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/possibilities/claude-composer/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "claude",
+    "cli",
+    "composer",
+    "ai",
+    "anthropic"
+  ],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "build:watch": "tsup --watch",
     "format": "prettier --write \"**/*.{js,mjs,jsx,ts,tsx,json,md,mdx,css,yml,yaml}\"",
     "test": "npm run build && vitest --reporter verbose --run",
-    "test:watch": "npm run build && vitest --watch"
+    "test:watch": "npm run build && vitest --watch",
+    "prepublishOnly": "npm run build",
+    "release": "./scripts/release.sh",
+    "release:patch": "./scripts/release.sh patch",
+    "release:minor": "./scripts/release.sh minor",
+    "release:major": "./scripts/release.sh major"
   },
   "type": "module",
   "bin": {
@@ -35,5 +63,10 @@
     "tsup": "8.3.0",
     "typescript": "^5.8.3",
     "vitest": "^3.1.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@homebridge/node-pty-prebuilt-multiarch"
+    ]
   }
 }
