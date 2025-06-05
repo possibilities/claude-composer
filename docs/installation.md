@@ -4,36 +4,7 @@ Detailed guide for installing and setting up Claude Composer.
 
 ## Prerequisites
 
-Before installing Claude Composer, ensure you have:
-
-### Required
-
-- **Node.js**: Version 18 or higher
-
-  - Check version: `node --version`
-  - Download: [nodejs.org](https://nodejs.org/)
-
-- **Package Manager**: One of:
-
-  - npm (comes with Node.js)
-  - yarn: `npm install -g yarn`
-  - pnpm: `npm install -g pnpm`
-
-- **Claude Code**: Installed and configured
-  - Installation guide: [Claude Code documentation](https://docs.anthropic.com/en/docs/claude-code)
-  - Must be accessible in your PATH
-
-### Recommended
-
-- **Git**: For version control safety features
-
-  - Check: `git --version`
-  - Download: [git-scm.com](https://git-scm.com/)
-
-- **Terminal**: Modern terminal with:
-  - UTF-8 support
-  - 256 color support
-  - Desktop notification support
+See [README prerequisites](../readme.md#prerequisites) for requirements.
 
 ## Installation Methods
 
@@ -104,102 +75,24 @@ claude-composer --help
 
 ## Initial Setup
 
-### Quick Setup
-
-The fastest way to get started:
-
-```bash
-# Run interactive setup
-claude-composer cc-init
-```
-
-This will:
-
-1. Create configuration directory
-2. Ask about ruleset preferences
-3. Ask about toolset preferences
-4. Create initial configuration
-
-### Manual Setup
-
-For more control, create configuration manually:
-
-1. **Create configuration directory**:
-
-   ```bash
-   mkdir -p ~/.claude-composer
-   ```
-
-2. **Create configuration file**:
-   ```bash
-   cat > ~/.claude-composer/config.yaml << 'EOF'
-   rulesets:
-     - internal:cautious
-   toolsets:
-     - internal:core
-   roots: []
-   show_notifications: true
-   EOF
-   ```
-
-### Project Setup
-
-For project-specific configuration:
-
-```bash
-# In your project directory
-claude-composer cc-init --project
-```
-
-This creates `.claude-composer/config.yaml` in your project.
+See [README Initial Configuration](../readme.md#initial-configuration) for setup instructions.
 
 ## Platform-Specific Notes
 
 ### macOS
 
-1. **Notifications**: Grant terminal notification permissions
-
-   - System Preferences → Notifications → Terminal
-
-2. **PATH**: If command not found after global install:
-   ```bash
-   # Add to ~/.zshrc or ~/.bash_profile
-   export PATH="$HOME/.local/share/pnpm:$PATH"
-   ```
+- **Notifications**: Grant terminal notification permissions in System Preferences
+- **PATH**: Add pnpm/npm/yarn global bin to PATH if needed
 
 ### Linux
 
-1. **Notifications**: Install notification daemon if needed:
-
-   ```bash
-   # Ubuntu/Debian
-   sudo apt-get install libnotify-bin
-
-   # Fedora
-   sudo dnf install libnotify
-
-   # Arch
-   sudo pacman -S libnotify
-   ```
-
-2. **PATH**: Add to shell profile if needed:
-   ```bash
-   # Add to ~/.bashrc or ~/.zshrc
-   export PATH="$HOME/.npm-global/bin:$PATH"
-   ```
+- **Notifications**: Install `libnotify-bin` (Debian/Ubuntu) or equivalent
+- **PATH**: Add global bin directory to shell profile
 
 ### Windows
 
-1. **Terminal**: Use Windows Terminal or PowerShell
-
-   - Windows Terminal recommended for best experience
-
-2. **PATH**: Usually added automatically, but if not:
-
-   - Open System Properties → Environment Variables
-   - Add npm/yarn/pnpm global bin to PATH
-
-3. **Notifications**: Windows 10/11 notifications work automatically
+- **Terminal**: Use Windows Terminal or PowerShell
+- **Notifications**: Work automatically on Windows 10/11
 
 ## Troubleshooting Installation
 
@@ -276,23 +169,6 @@ If you have issues with Node.js version:
    nvm use 18
    ```
 
-### Build Errors
-
-If installing from source fails:
-
-1. **Check Node.js version**: Must be 18+
-2. **Clear cache**:
-   ```bash
-   pnpm store prune
-   # or
-   npm cache clean --force
-   ```
-3. **Delete node_modules**:
-   ```bash
-   rm -rf node_modules
-   pnpm install
-   ```
-
 ## Upgrading
 
 ### Upgrade Global Installation
@@ -317,20 +193,6 @@ claude-composer --version
 # Check latest version
 npm view claude-composer version
 ```
-
-### Migration Notes
-
-When upgrading from older versions:
-
-1. **Backup configuration**:
-
-   ```bash
-   cp -r ~/.claude-composer ~/.claude-composer.backup
-   ```
-
-2. **Review changelog** for breaking changes
-
-3. **Update configuration** if needed
 
 ## Uninstalling
 
@@ -368,26 +230,7 @@ rm -rf .claude-composer
 
 ## Next Steps
 
-After installation:
-
-1. **Run initial setup**: `claude-composer cc-init`
-2. **Read quick start**: Return to main README
-3. **Explore configuration**: See [Configuration Guide](./configuration.md)
-4. **Learn about rulesets**: See [Rulesets Reference](./rulesets.md)
-5. **Configure tools**: See [Toolsets Reference](./toolsets.md)
-
-## Getting Help
-
-If you encounter issues:
-
-1. **Check documentation**: Review this guide and related docs
-2. **Search issues**: Check GitHub issues
-3. **Get support**: Open new issue with:
-   - Operating system
-   - Node.js version
-   - Installation method
-   - Error messages
-   - Steps to reproduce
+After installation, run `claude-composer cc-init` and see the [README](../readme.md) for usage.
 
 ## See Also
 

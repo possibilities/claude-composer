@@ -47,6 +47,8 @@ Key benefits:
 
 ## Installation & Setup
 
+See [docs/installation.md](docs/installation.md) for detailed installation instructions.
+
 ### Prerequisites
 
 - Node.js 18 or higher
@@ -182,6 +184,8 @@ claude-composer --ruleset internal:safe --ruleset my-overrides
 
 ### Examples
 
+See [docs/examples.md](docs/examples.md) for more usage examples and advanced workflows.
+
 #### Starting a new project
 
 ```bash
@@ -269,7 +273,7 @@ See [docs/environment-variables.md](docs/environment-variables.md) for details.
 
 ### Roots Configuration
 
-Roots define trusted parent directories where Claude Code's initial trust prompt is automatically accepted:
+Roots define trusted parent directories where Claude Code's initial trust prompt is automatically accepted. See [docs/roots-config.md](docs/roots-config.md) for detailed configuration options.
 
 ```yaml
 roots:
@@ -300,7 +304,7 @@ Rulesets are YAML files that define:
 
 ### Internal Rulesets
 
-Claude Composer includes three built-in rulesets:
+Claude Composer includes three built-in rulesets. See [docs/internal-rulesets.md](docs/internal-rulesets.md) for detailed information about each ruleset.
 
 #### `internal:safe`
 
@@ -371,7 +375,7 @@ Toolsets are YAML files that define:
 
 ### Internal Toolsets
 
-Claude Composer includes one built-in toolset:
+Claude Composer includes one built-in toolset. See [docs/internal-toolsets.md](docs/internal-toolsets.md) for detailed information.
 
 #### `internal:core`
 
@@ -422,6 +426,8 @@ claude-composer --toolset internal:core --toolset project:backend-tools
 Toolsets control which tools Claude can use and configure MCP servers. See [docs/toolsets.md](docs/toolsets.md) for complete documentation.
 
 ## Command Line Options
+
+See [docs/cli-reference.md](docs/cli-reference.md) for complete command line documentation.
 
 ### Core Options
 
