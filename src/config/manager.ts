@@ -318,34 +318,6 @@ export class ConfigManager {
   }
 
   /**
-   * Get filtered patterns based on app config
-   */
-  getActivePatterns(): PatternConfig[] {
-    const config = this.getAppConfig()
-    return this.getAllPatterns().filter(pattern => {
-      if (
-        pattern.id === 'edit-file-prompt' &&
-        !config.dangerously_accept_edit_file_prompts
-      ) {
-        return false
-      }
-      if (
-        pattern.id === 'create-file-prompt' &&
-        !config.dangerously_accept_create_file_prompts
-      ) {
-        return false
-      }
-      if (
-        pattern.id === 'bash-command-prompt' &&
-        !config.dangerously_accept_bash_command_prompts
-      ) {
-        return false
-      }
-      return true
-    })
-  }
-
-  /**
    * Get merged toolset configuration
    */
   getMergedToolsets(): {
@@ -456,9 +428,6 @@ export class ConfigManager {
 
       // Other defaults
       log_all_pattern_matches: false,
-      dangerously_accept_edit_file_prompts: false,
-      dangerously_accept_create_file_prompts: false,
-      dangerously_accept_bash_command_prompts: false,
       dangerously_allow_in_dirty_directory: false,
       dangerously_allow_without_version_control: false,
       allow_buffer_snapshots: false,
