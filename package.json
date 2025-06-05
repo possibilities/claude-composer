@@ -1,6 +1,6 @@
 {
   "name": "claude-composer",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A tool for enhancing Claude Code",
   "author": "Mike Bannister <notimpossiblemike@gmail.com>",
   "license": "MIT",
