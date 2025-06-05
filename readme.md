@@ -6,7 +6,7 @@
 
 - Automatic dialog dismissal
 - System notifications for lifecycle events and dialogs
-- Toolsets: Inject tools and allow with predefined set
+- Toolsets: Configure tool permissions and MCP servers
 - Rulesets: Fine grained control for automatic dialog dismissal
 
 ## Quick Start
@@ -25,10 +25,10 @@ pnpm add -g claude-composer
 
 ```bash
 # Initialize global configuration
-cc-init
+claude-composer cc-init
 
 # Start Claude Code with automatic dialog dismissal
-claude-composer --ruleset internal:cautious
+claude-composer  # Uses the ruleset configured during cc-init
 
 # Use a more permissive ruleset
 claude-composer --ruleset internal:yolo
@@ -43,7 +43,7 @@ Key benefits:
 - **Reduced interruptions**: Automatically handles permission dialogs based on configurable rules
 - **Enhanced visibility**: System notifications keep you informed without switching contexts
 - **Flexible control**: Rulesets let you define exactly which actions to allow automatically
-- **Tool injection**: Toolsets simplify activating tools and configuring tools permissions
+- **Tool management**: Toolsets simplify configuring which tools Claude can use
 
 ## Installation & Setup
 
@@ -70,19 +70,19 @@ npm install -g claude-composer
 
 ### Initial Configuration
 
-Run `cc-init` to create your initial configuration:
+Run `claude-composer cc-init` to create your initial configuration:
 
 ```bash
 # Create global configuration (default)
-cc-init
+claude-composer cc-init
 
 # Or create project-specific configuration
-cc-init --project
+claude-composer cc-init --project
 ```
 
 #### Global Configuration
 
-By default, `cc-init` creates a global configuration that applies to all projects:
+By default, `claude-composer cc-init` creates a global configuration that applies to all projects:
 
 - Configuration location: `~/.claude-composer/config.yaml`
 - Interactive prompts for ruleset and toolset selection
@@ -90,7 +90,7 @@ By default, `cc-init` creates a global configuration that applies to all project
 
 #### Project Configuration
 
-Use `cc-init --project` to create a project-specific configuration:
+Use `claude-composer cc-init --project` to create a project-specific configuration:
 
 - Creates `.claude-composer/config.yaml` in current directory
 - Takes precedence over global configuration when present
@@ -152,7 +152,7 @@ claude-composer --ruleset internal:safe
 
 ```bash
 # Pass model selection to Claude Code
-claude-composer -- --model claude-3-opus-20240229
+claude-composer --model claude-3-opus-20240229
 
 # Combine composer options with Claude Code args
 claude-composer --ruleset internal:yolo --model claude-3-opus-20240229
@@ -186,8 +186,8 @@ claude-composer --ruleset internal:safe --ruleset my-overrides
 
 ```bash
 mkdir my-project && cd my-project
-cc-init --project
-claude-composer
+claude-composer cc-init --project
+claude-composer  # Uses the configuration created by cc-init
 ```
 
 #### YOLO
@@ -251,13 +251,21 @@ roots:
   - ~/projects/personal
 
 # UI preferences
-showNotifications: true
-stickyNotifications: false
+show_notifications: true
+sticky_notifications: false
 ```
+
+See [docs/configuration.md](docs/configuration.md) for comprehensive configuration documentation.
 
 ### Environment Variables
 
-See [docs/environment-variables.md](docs/environment-variables.md) for available environment variables.
+Claude Composer supports environment variables for configuration:
+
+- `CLAUDE_COMPOSER_CONFIG_DIR` - Override config directory location
+- `CLAUDE_COMPOSER_NO_NOTIFY` - Disable all notifications
+- `FORCE_COLOR` - Control color output
+
+See [docs/environment-variables.md](docs/environment-variables.md) for details.
 
 ### Roots Configuration
 
@@ -296,46 +304,17 @@ Claude Composer includes three built-in rulesets:
 
 #### `internal:safe`
 
-Maximum security - all dialogs require manual confirmation.
-
-```yaml
-# Rejects all automated confirmations
-accept_project_edit_file_prompts: false
-accept_project_create_file_prompts: false
-accept_project_bash_command_prompts: false
-accept_global_bash_command_prompts: false
-accept_fetch_content_prompts: false
-```
+Maximum security - all dialogs require manual confirmation. No automatic acceptance of any operations.
 
 #### `internal:cautious`
 
-Balanced approach - allows project-level operations while protecting system files.
-
-```yaml
-# Auto-accepts project-level operations
-accept_project_edit_file_prompts: true
-accept_project_create_file_prompts: true
-accept_project_bash_command_prompts: true
-accept_project_read_files_prompts: true
-
-# Blocks global operations
-accept_global_bash_command_prompts: false
-accept_fetch_content_prompts: false
-```
+Balanced approach - automatically accepts project-level operations (file edits, creates, bash commands) while requiring confirmation for global operations and web requests.
 
 #### `internal:yolo`
 
-Maximum automation - accepts all operations without confirmation.
+Maximum automation - accepts all operations without confirmation, including global file operations and web requests. Use with caution.
 
-```yaml
-# Living dangerously - accepts everything
-accept_project_edit_file_prompts: true
-accept_project_create_file_prompts: true
-accept_project_bash_command_prompts: true
-accept_global_edit_file_prompts: true
-accept_global_bash_command_prompts: true
-accept_fetch_content_prompts: true
-```
+See [docs/rulesets.md](docs/rulesets.md) for detailed ruleset documentation and creating custom rulesets.
 
 ### Project-Level Rulesets
 
@@ -376,32 +355,170 @@ claude-composer --ruleset internal:cautious --ruleset my-defaults --ruleset proj
 
 ### Creating Custom Rulesets
 
-Basic ruleset structure:
+Custom rulesets allow fine-grained control over automation. See [docs/rulesets.md](docs/rulesets.md) for complete syntax and examples.
+
+## Toolsets
+
+Toolsets control which tools Claude can use and configure MCP (Model Context Protocol) servers. They provide a flexible way to manage Claude's capabilities on a per-project or global basis.
+
+### What are Toolsets?
+
+Toolsets are YAML files that define:
+
+- Which tools Claude is allowed to use
+- Which tools Claude is explicitly blocked from using
+- MCP server configurations for additional tool capabilities
+
+### Internal Toolsets
+
+Claude Composer includes one built-in toolset:
+
+#### `internal:core`
+
+Provides access to Context7 documentation tools, allowing Claude to fetch up-to-date library documentation.
+
+### Project-Level Toolsets
+
+Create custom toolsets in your project's `.claude-composer/toolsets/` directory:
 
 ```yaml
-name: my-ruleset
-description: Custom ruleset for my workflow
+# .claude-composer/toolsets/dev-tools.yaml
+allowed:
+  - Read
+  - Write
+  - Edit
+  - MultiEdit
+  - Bash
 
-# Project-level permissions
-accept_project_edit_file_prompts:
-  paths:
-    - 'src/**'
-    - 'docs/**/*.md'
-    - '!**/*.secret'
+disallowed:
+  - WebSearch
 
-accept_project_bash_command_prompts:
-  paths:
-    - 'scripts/**'
-    - 'package.json'
-
-# Global permissions
-accept_global_bash_command_prompts: false
-
-# Web content permissions
-accept_fetch_content_prompts:
-  domains:
-    - 'github.com'
-    - 'docs.*.com'
+mcp:
+  my-server:
+    type: stdio
+    command: node
+    args:
+      - ./tools/mcp-server.js
 ```
 
-For detailed ruleset configuration, see [docs/rulesets-guide.md](docs/rulesets-guide.md).
+### Using Toolsets
+
+```bash
+# Use internal toolset
+claude-composer --toolset internal:core
+
+# Use global custom toolset (no prefix)
+claude-composer --toolset my-tools
+
+# Use project toolset
+claude-composer --toolset project:dev-tools
+
+# Chain multiple toolsets
+claude-composer --toolset internal:core --toolset project:backend-tools
+```
+
+### Creating Custom Toolsets
+
+Toolsets control which tools Claude can use and configure MCP servers. See [docs/toolsets.md](docs/toolsets.md) for complete documentation.
+
+## Command Line Options
+
+### Core Options
+
+#### Configuration
+
+- `--ruleset <name...>` - Use specified rulesets (can be used multiple times)
+- `--toolset <name...>` - Use specified toolsets (can be used multiple times)
+- `--ignore-global-config` - Ignore global configuration file
+
+#### Safety
+
+- `--dangerously-allow-in-dirty-directory` - Allow running with uncommitted git changes
+- `--dangerously-allow-without-version-control` - Allow running outside version control
+- `--dangerously-suppress-automatic-acceptance-confirmation` - Skip confirmation prompts
+
+#### Notifications
+
+- `--show-notifications` / `--no-show-notifications` - Enable/disable desktop notifications
+- `--sticky-notifications` / `--no-sticky-notifications` - Make notifications stay until dismissed
+- `--show-work-complete-notifications` / `--no-show-work-complete-notifications` - Show/hide work completion notifications
+
+#### Debug
+
+- `--quiet` - Suppress preflight messages
+- `--allow-buffer-snapshots` - Enable Ctrl+Shift+S terminal snapshots
+- `--log-all-pattern-matches` - Log pattern matches to `~/.claude-composer/logs/`
+
+### Subcommands
+
+#### `cc-init`
+
+Initialize a new configuration file:
+
+```bash
+# Create global config
+claude-composer cc-init
+
+# Create project config
+claude-composer cc-init --project
+
+# Specify ruleset during init
+claude-composer cc-init --use-cautious-ruleset
+```
+
+Options:
+
+- `--project` - Create config in current directory
+- `--use-yolo-ruleset` - Use YOLO ruleset
+- `--use-cautious-ruleset` - Use cautious ruleset (recommended)
+- `--use-safe-ruleset` - Use safe ruleset
+- `--use-core-toolset` / `--no-use-core-toolset` - Enable/disable core toolset
+
+### Pass-through Options
+
+All unrecognized options are passed to Claude Code:
+
+```bash
+# These go to Claude Code
+claude-composer --model claude-3-opus-20240229
+claude-composer --print
+claude-composer --help  # Shows both claude-composer and claude help
+```
+
+### Advanced Notification Controls
+
+Fine-tune which notifications appear:
+
+```bash
+# Control specific notification types
+claude-composer --no-show-edit-file-confirm-notify
+claude-composer --show-accepted-confirm-notify
+claude-composer --sticky-work-complete-notifications
+```
+
+See [docs/notifications.md](docs/notifications.md) for detailed notification configuration.
+
+## Documentation
+
+### Getting Started
+
+- [Installation Guide](docs/installation.md) - Detailed installation instructions
+- [Configuration Guide](docs/configuration.md) - Comprehensive configuration guide
+- [Examples & Workflows](docs/examples.md) - Common usage patterns
+
+### Reference
+
+- [CLI Reference](docs/cli-reference.md) - Complete command-line options
+- [Rulesets Reference](docs/rulesets.md) - Creating and using rulesets
+- [Toolsets Reference](docs/toolsets.md) - Tool permissions and MCP servers
+
+### Additional Guides
+
+- [Notifications Guide](docs/notifications.md) - Notification configuration
+- [Environment Variables](docs/environment-variables.md) - Environment configuration
+
+### Quick Links
+
+- [Internal Rulesets](docs/internal-rulesets.md) - Built-in ruleset details
+- [Internal Toolsets](docs/internal-toolsets.md) - Built-in toolset details
+- [Roots Configuration](docs/roots-config.md) - Trusted directories setup
