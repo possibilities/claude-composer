@@ -136,7 +136,13 @@ describe('cc-init', () => {
       expect(writtenContent).toContain('roots: []')
     })
 
-    it('should create project config with --project option', async () => {
+    it('should create project config with --project option when global config exists', async () => {
+      // Mock global config exists
+      vi.mocked(fs.existsSync).mockImplementation(path => {
+        if (path === '/mock/.claude-composer/config.yaml') return true
+        return false
+      })
+
       await handleCcInit(['--project', '--use-cautious-ruleset'])
 
       expect(fs.writeFileSync).toHaveBeenCalledWith(
@@ -147,6 +153,22 @@ describe('cc-init', () => {
       expect(fs.mkdirSync).toHaveBeenCalledWith('.claude-composer', {
         recursive: true,
       })
+    })
+
+    it('should fail with --project option when global config does not exist', async () => {
+      // Mock global config does not exist
+      vi.mocked(fs.existsSync).mockImplementation(() => false)
+
+      await expect(
+        handleCcInit(['--project', '--use-cautious-ruleset']),
+      ).rejects.toThrow('Process exited with code 1')
+
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        'Error: Cannot create project config without a global config.',
+      )
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        'Please run "claude-composer cc-init" first to create a global configuration.',
+      )
     })
 
     it('should reject mutually exclusive ruleset options', async () => {

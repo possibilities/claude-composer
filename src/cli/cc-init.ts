@@ -162,6 +162,20 @@ export async function handleCcInit(args: string[]): Promise<void> {
     options.useCoreToolset = toolsetResponse.useCoreToolset
   }
 
+  // Check if using --project without a global config
+  if (options.project) {
+    const globalConfigPath = CONFIG_PATHS.getConfigFilePath()
+    if (!fs.existsSync(globalConfigPath)) {
+      console.error(
+        'Error: Cannot create project config without a global config.',
+      )
+      console.error(
+        'Please run "claude-composer cc-init" first to create a global configuration.',
+      )
+      process.exit(1)
+    }
+  }
+
   // Check if config file already exists
   const configPath = options.project
     ? '.claude-composer/config.yaml'
