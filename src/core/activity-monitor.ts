@@ -10,6 +10,12 @@ interface ActivityRecord {
   projectName: string
 }
 
+// Activity monitoring thresholds (in milliseconds)
+const PERSISTENCE_THRESHOLD_MS = 1000 // Time indicator must be present before considered "persistent"
+const ABSENCE_THRESHOLD_MS = 2000 // Time indicator must be absent before triggering completion
+const CONFIRMATION_PROMPT_TIMEOUT_MS = 10000 // Grace period for confirmation prompts
+const MEANINGFUL_RECORD_THRESHOLD_MS = 10000 // Minimum duration to count as a meaningful record
+
 export class ActivityMonitor {
   private targetText = 'to interrupt)'
   private isPersistentlyPresent = false
@@ -17,9 +23,6 @@ export class ActivityMonitor {
   private confirmationPromptDetected = false
   private lastSeenTime: number | null = null
   private lastNotSeenTime: number | null = null
-  private persistenceThreshold = 1000
-  private absenceThreshold = 2000
-  private confirmationPromptTimeout = 10000
   private confirmationPromptDetectedAt: number | null = null
   private hasNotified = false
   private activityStartTime: number | null = null
@@ -48,7 +51,7 @@ export class ActivityMonitor {
       this.confirmationPromptDetected &&
       this.confirmationPromptDetectedAt &&
       currentTime - this.confirmationPromptDetectedAt <
-        this.confirmationPromptTimeout
+        CONFIRMATION_PROMPT_TIMEOUT_MS
 
     this.isCurrentlyPresent =
       hasActivityIndicator ||
@@ -82,7 +85,7 @@ export class ActivityMonitor {
 
       if (
         this.lastSeenTime &&
-        currentTime - this.lastSeenTime >= this.persistenceThreshold
+        currentTime - this.lastSeenTime >= PERSISTENCE_THRESHOLD_MS
       ) {
         this.isPersistentlyPresent = true
       }
@@ -95,7 +98,7 @@ export class ActivityMonitor {
         this.isPersistentlyPresent &&
         !this.hasNotified &&
         this.lastNotSeenTime &&
-        currentTime - this.lastNotSeenTime >= this.absenceThreshold
+        currentTime - this.lastNotSeenTime >= ABSENCE_THRESHOLD_MS
       ) {
         this.triggerNotification()
         this.hasNotified = true
@@ -209,7 +212,10 @@ export class ActivityMonitor {
     const currentRecord = this.getRecord()
 
     // Only count as a meaningful record if it's > 10 seconds and beats the previous record
-    if (durationMs > currentRecord.longestDurationMs && durationMs > 10000) {
+    if (
+      durationMs > currentRecord.longestDurationMs &&
+      durationMs > MEANINGFUL_RECORD_THRESHOLD_MS
+    ) {
       const newRecord: ActivityRecord = {
         longestDurationMs: durationMs,
         lastRecordDate: new Date().toISOString(),
