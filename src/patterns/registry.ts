@@ -1,4 +1,4 @@
-import { type PatternConfig, validatePatternConfigs } from '../config/schemas'
+import { type PatternConfig, type AppConfig, validatePatternConfigs } from '../config/schemas'
 import { execSync } from 'child_process'
 import { stripBoxChars } from '../utils/strip-box-chars'
 import dedent from 'dedent'
@@ -214,66 +214,37 @@ const confirmationPatterns: PatternConfig[] = [
   },
 ]
 
-export function getPipedInputPath(): string | undefined {
-  // For tests, check if appConfig is available on global
-  if (typeof (global as any).__testAppConfig !== 'undefined') {
-    return (global as any).__testPipedInputPath
-  }
+export function createPipedInputPattern(getPipedInputPath: () => string | undefined): PatternConfig {
+  const getPipedInputResponse = (): string[] => {
+    const pipedInputPath = getPipedInputPath()
 
-  try {
-    // Try to import from TypeScript first (for tests)
-    const module = require('../index')
-    return module.pipedInputPath
-  } catch {
+    if (!pipedInputPath || !fs.existsSync(pipedInputPath)) {
+      return ['# No piped input available', '\r']
+    }
+
     try {
-      // Fall back to compiled JavaScript (for runtime)
-      const { pipedInputPath } = require('../index.js')
-      return pipedInputPath
-    } catch {
-      return undefined
+      const content = fs.readFileSync(pipedInputPath, 'utf8').trimEnd()
+      return [content || '# Piped input file is empty', '\r']
+    } catch (error) {
+      return [`# Error reading piped input: ${error}`, '\r']
     }
+  }
+
+  return {
+    id: 'app-started',
+    title: 'App started',
+    type: 'confirmation' as const,
+    response: getPipedInputResponse,
+    pattern: ['? for shortcuts'],
+    triggerText: '? for shortcuts',
   }
 }
 
-function getPipedInputResponse(): string[] {
-  const pipedInputPath = getPipedInputPath()
-
-  if (!pipedInputPath || !fs.existsSync(pipedInputPath)) {
-    return ['# No piped input available', '\r']
-  }
-
-  try {
-    const content = fs.readFileSync(pipedInputPath, 'utf8').trimEnd()
-    return [content || '# Piped input file is empty', '\r']
-  } catch (error) {
-    return [`# Error reading piped input: ${error}`, '\r']
-  }
-}
-
-function checkIfPwdParentInRoots(): string[] {
-  try {
-    let appConfig
-
-    // For tests, check if appConfig is available on global
-    if (typeof (global as any).__testAppConfig !== 'undefined') {
-      appConfig = (global as any).__testAppConfig
-    } else {
-      try {
-        // Try to import from TypeScript first (for tests)
-        const module = require('../index')
-        appConfig = module.appConfig
-      } catch (e) {
-        try {
-          // Fall back to compiled JavaScript (for runtime)
-          const module = require('../index.js')
-          appConfig = module.appConfig
-        } catch (e2) {
-          console.error('Failed to import appConfig:', e.message, e2.message)
-          return ['3']
-        }
-      }
-    }
-    const roots = appConfig?.roots || []
+export function createTrustPromptPattern(getAppConfig: () => AppConfig | undefined): PatternConfig {
+  const checkIfPwdParentInRoots = (): string[] => {
+    try {
+      const appConfig = getAppConfig()
+      const roots = appConfig?.roots || []
 
     if (roots.length === 0) {
       return ['3'] // No for "Do you trust the files in this folder?"
@@ -327,29 +298,22 @@ function checkIfPwdParentInRoots(): string[] {
       }
     }
 
-    return ['3']
-  } catch (error) {
-    return ['3']
+      return ['3']
+    } catch (error) {
+      return ['3']
+    }
+  }
+
+  return {
+    id: 'trust-folder-prompt',
+    title: 'Trust folder',
+    type: 'confirmation' as const,
+    response: checkIfPwdParentInRoots,
+    pattern: ['Claude Code may read files in this folder'],
+    triggerText: 'Claude Code may read files in this folder',
   }
 }
 
-const trustPromptPattern: PatternConfig = {
-  id: 'trust-folder-prompt',
-  title: 'Trust folder',
-  type: 'confirmation' as const,
-  response: checkIfPwdParentInRoots,
-  pattern: ['Claude Code may read files in this folder'],
-  triggerText: 'Claude Code may read files in this folder',
-}
-
-const appStartedPattern: PatternConfig = {
-  id: 'app-started',
-  title: 'App started',
-  type: 'confirmation' as const,
-  response: getPipedInputResponse,
-  pattern: ['? for shortcuts'],
-  triggerText: '? for shortcuts',
-}
 
 const allPatterns: PatternConfig[] = [...confirmationPatterns]
 
@@ -362,4 +326,4 @@ if (!validationResult.success) {
 
 export const patterns: PatternConfig[] = validationResult.data
 
-export { confirmationPatterns, appStartedPattern, trustPromptPattern }
+export { confirmationPatterns, createPipedInputPattern, createTrustPromptPattern }

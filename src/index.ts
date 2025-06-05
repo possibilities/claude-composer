@@ -10,8 +10,8 @@ import { ResponseQueue } from './core/response-queue'
 import {
   patterns,
   confirmationPatterns,
-  appStartedPattern,
-  trustPromptPattern,
+  createPipedInputPattern,
+  createTrustPromptPattern,
 } from './patterns/registry'
 import { type AppConfig, type RulesetConfig } from './config/schemas.js'
 import { runPreflight, log, warn } from './core/preflight.js'
@@ -184,9 +184,8 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
       // Remove app-started pattern after first use
       if (match.patternId === 'app-started') {
         patternMatcher.removePattern('app-started')
-        const index = confirmationPatternTriggers.indexOf(
-          appStartedPattern.triggerText!,
-        )
+        const triggerText = '? for shortcuts'
+        const index = confirmationPatternTriggers.indexOf(triggerText)
         if (index > -1) {
           confirmationPatternTriggers.splice(index, 1)
         }
@@ -452,6 +451,7 @@ export async function main() {
 
   // Trust prompt pattern is added separately as it requires dynamic response generation
   // based on the current working directory and configured roots
+  const trustPromptPattern = createTrustPromptPattern(() => appConfig)
   try {
     patternMatcher.addPattern(trustPromptPattern)
     if (trustPromptPattern.triggerText) {
@@ -514,6 +514,7 @@ export async function main() {
       writeStream.end()
 
       // Add app-started pattern now that we have piped input
+      const appStartedPattern = createPipedInputPattern(() => pipedInputPath)
       try {
         patternMatcher.addPattern(appStartedPattern)
         confirmationPatternTriggers.push(appStartedPattern.triggerText!)
