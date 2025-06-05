@@ -67,20 +67,7 @@ export function createClaudeComposerCommand(): Command {
       '--no-sticky-notifications',
       'Make notifications auto-dismiss after timeout (default)',
     )
-    .option(
-      '--notify-work-started',
-      'Show notification when Claude Composer starts working',
-    )
-    .option(
-      '--no-notify-work-started',
-      'Disable work started notifications (default)',
-    )
-    .option(
-      '--notify-work-complete',
-      'Show notification when Claude Composer is done working (default)',
-    )
-    .option('--no-notify-work-complete', 'Disable work complete notifications')
-    // New notification settings
+    // Notification settings
     .option(
       '--show-confirm-notify',
       'Show notifications for file operations (default)',

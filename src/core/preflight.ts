@@ -31,8 +31,8 @@ export async function runPreflight(
 ): Promise<PreflightResult> {
   let appConfig: AppConfig = {
     show_notifications: true,
-    notify_work_started: false,
-    notify_work_complete: true,
+    show_work_started_notifications: false,
+    show_work_complete_notifications: true,
     dangerously_allow_in_dirty_directory: false,
     dangerously_allow_without_version_control: false,
   }
@@ -136,14 +136,7 @@ export async function runPreflight(
   if (parsedOptions.allowBufferSnapshots !== undefined) {
     appConfig.allow_buffer_snapshots = parsedOptions.allowBufferSnapshots
   }
-  if (parsedOptions.notifyWorkStarted !== undefined) {
-    appConfig.notify_work_started = parsedOptions.notifyWorkStarted
-  }
-  if (parsedOptions.notifyWorkComplete !== undefined) {
-    appConfig.notify_work_complete = parsedOptions.notifyWorkComplete
-  }
-
-  // New confirmation notification settings
+  // Confirmation notification settings
   if (parsedOptions.showConfirmNotify !== undefined) {
     appConfig.show_confirm_notify = parsedOptions.showConfirmNotify
   }
@@ -204,45 +197,29 @@ export async function runPreflight(
   }
 
   // Per-type stickiness settings
-  if (
-    parsedOptions.stickyWorkStartedNotifications !== undefined ||
-    parsedOptions.stickyWorkCompleteNotifications !== undefined ||
-    parsedOptions.stickyWorkCompleteRecordNotifications !== undefined ||
-    parsedOptions.stickyPromptedConfirmNotify !== undefined ||
-    parsedOptions.stickyAcceptedConfirmNotify !== undefined ||
-    parsedOptions.stickyTerminalSnapshotNotifications !== undefined
-  ) {
-    // Initialize sticky_notifications as object if it's boolean or undefined
-    if (
-      typeof appConfig.sticky_notifications !== 'object' ||
-      !appConfig.sticky_notifications
-    ) {
-      appConfig.sticky_notifications = {}
-    }
-    if (parsedOptions.stickyWorkStartedNotifications !== undefined) {
-      appConfig.sticky_notifications.work_started =
-        parsedOptions.stickyWorkStartedNotifications
-    }
-    if (parsedOptions.stickyWorkCompleteNotifications !== undefined) {
-      appConfig.sticky_notifications.work_complete =
-        parsedOptions.stickyWorkCompleteNotifications
-    }
-    if (parsedOptions.stickyWorkCompleteRecordNotifications !== undefined) {
-      appConfig.sticky_notifications.work_complete_record =
-        parsedOptions.stickyWorkCompleteRecordNotifications
-    }
-    if (parsedOptions.stickyPromptedConfirmNotify !== undefined) {
-      appConfig.sticky_notifications.prompted_confirmations =
-        parsedOptions.stickyPromptedConfirmNotify
-    }
-    if (parsedOptions.stickyAcceptedConfirmNotify !== undefined) {
-      appConfig.sticky_notifications.accepted_confirmations =
-        parsedOptions.stickyAcceptedConfirmNotify
-    }
-    if (parsedOptions.stickyTerminalSnapshotNotifications !== undefined) {
-      appConfig.sticky_notifications.terminal_snapshot =
-        parsedOptions.stickyTerminalSnapshotNotifications
-    }
+  if (parsedOptions.stickyWorkStartedNotifications !== undefined) {
+    appConfig.sticky_work_started_notifications =
+      parsedOptions.stickyWorkStartedNotifications
+  }
+  if (parsedOptions.stickyWorkCompleteNotifications !== undefined) {
+    appConfig.sticky_work_complete_notifications =
+      parsedOptions.stickyWorkCompleteNotifications
+  }
+  if (parsedOptions.stickyWorkCompleteRecordNotifications !== undefined) {
+    appConfig.sticky_work_complete_record_notifications =
+      parsedOptions.stickyWorkCompleteRecordNotifications
+  }
+  if (parsedOptions.stickyPromptedConfirmNotify !== undefined) {
+    appConfig.sticky_prompted_confirm_notify =
+      parsedOptions.stickyPromptedConfirmNotify
+  }
+  if (parsedOptions.stickyAcceptedConfirmNotify !== undefined) {
+    appConfig.sticky_accepted_confirm_notify =
+      parsedOptions.stickyAcceptedConfirmNotify
+  }
+  if (parsedOptions.stickyTerminalSnapshotNotifications !== undefined) {
+    appConfig.sticky_terminal_snapshot_notifications =
+      parsedOptions.stickyTerminalSnapshotNotifications
   }
 
   let toolsetArgs: string[] = []

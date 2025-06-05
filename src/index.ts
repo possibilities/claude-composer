@@ -449,13 +449,14 @@ export async function main() {
 
   log('※ Ready, Passing off control to Claude CLI')
 
-  if (appConfig.notify_work_started === true) {
+  if (appConfig.show_work_started_notifications === true) {
     const projectName = process.cwd().split('/').pop() || 'Unknown'
     showNotification(
       {
         message: `Claude Composer started working 🚀\nProject: ${projectName}`,
       },
       appConfig,
+      'work_started',
     ).catch(err => console.error('Failed to send notification:', err))
   }
 

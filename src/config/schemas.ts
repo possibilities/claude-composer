@@ -11,22 +11,6 @@ export const confirmNotifySchema = z
   })
   .strict()
 
-// Schema for sticky notifications settings (can be boolean or object)
-export const stickyNotificationsSchema = z.union([
-  z.boolean(),
-  z
-    .object({
-      global: z.boolean().optional(),
-      work_started: z.boolean().optional(),
-      work_complete: z.boolean().optional(),
-      work_complete_record: z.boolean().optional(),
-      prompted_confirmations: z.boolean().optional(),
-      accepted_confirmations: z.boolean().optional(),
-      terminal_snapshot: z.boolean().optional(),
-    })
-    .strict(),
-])
-
 export const appConfigSchema = z
   .object({
     // Master notification controls
@@ -44,11 +28,13 @@ export const appConfigSchema = z
     show_work_complete_record_notifications: z.boolean().optional(),
 
     // Stickiness settings
-    sticky_notifications: stickyNotificationsSchema.optional(),
-
-    // Legacy notification settings (kept for backward compatibility)
-    notify_work_started: z.boolean().optional(),
-    notify_work_complete: z.boolean().optional(),
+    sticky_notifications: z.boolean().optional(),
+    sticky_work_started_notifications: z.boolean().optional(),
+    sticky_work_complete_notifications: z.boolean().optional(),
+    sticky_work_complete_record_notifications: z.boolean().optional(),
+    sticky_prompted_confirm_notify: z.boolean().optional(),
+    sticky_accepted_confirm_notify: z.boolean().optional(),
+    sticky_terminal_snapshot_notifications: z.boolean().optional(),
 
     // Remote notification settings
     send_remote_notifications: z.boolean().optional(),
@@ -72,9 +58,6 @@ export const appConfigSchema = z
   .strict()
 
 export type AppConfig = z.infer<typeof appConfigSchema>
-export type StickyNotificationsConfig = z.infer<
-  typeof stickyNotificationsSchema
->
 
 export const toolsetConfigSchema = z
   .object({
