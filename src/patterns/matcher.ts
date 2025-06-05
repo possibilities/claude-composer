@@ -19,6 +19,19 @@ export interface MatchResult {
   notification?: string
 }
 
+type PlaceholderType = 'simple' | 'multiline'
+
+interface PlaceholderInfo {
+  name: string
+  type: PlaceholderType
+  start: number
+  end: number
+}
+
+// Constants for placeholder parsing
+const PLACEHOLDER_REGEX = /\{\{\s*([^}]+)\s*\}\}/g
+const PLACEHOLDER_MARKER = '___PLACEHOLDER___'
+
 export class PatternMatcher {
   private patterns: Map<string, CompiledPattern> = new Map()
   private previousMatch: MatchResult | null = null
@@ -29,6 +42,53 @@ export class PatternMatcher {
     if (this.logAllMatches) {
       this.ensureLogDirectory()
     }
+  }
+
+  // Utility methods for placeholder parsing
+  private parsePlaceholder(content: string): {
+    name: string
+    type: PlaceholderType
+  } {
+    if (content.includes('|')) {
+      const parts = content.split('|').map(p => p.trim())
+      const name = parts[0]
+      const type = parts[1] === 'multiline' ? 'multiline' : 'simple'
+      return { name, type }
+    }
+    return { name: content, type: 'simple' }
+  }
+
+  private extractPlaceholders(pattern: string): PlaceholderInfo[] {
+    const placeholders: PlaceholderInfo[] = []
+    let match: RegExpExecArray | null
+
+    // Create a new regex instance to avoid shared state issues
+    const regex = new RegExp(PLACEHOLDER_REGEX.source, PLACEHOLDER_REGEX.flags)
+
+    while ((match = regex.exec(pattern)) !== null) {
+      const content = match[1].trim()
+      const { name, type } = this.parsePlaceholder(content)
+
+      placeholders.push({
+        name,
+        type,
+        start: match.index,
+        end: match.index + match[0].length,
+      })
+    }
+
+    return placeholders
+  }
+
+  private hasMultilinePlaceholder(pattern: string): boolean {
+    const placeholders = this.extractPlaceholders(pattern)
+    return placeholders.some(p => p.type === 'multiline')
+  }
+
+  private getMultilinePlaceholderName(pattern: string): string | null {
+    const placeholders = this.extractPlaceholders(pattern)
+    const multiline = placeholders.find(p => p.type === 'multiline')
+    return multiline ? multiline.name : null
   }
 
   addPattern(config: PatternConfig): void {
@@ -285,40 +345,7 @@ export class PatternMatcher {
     pattern: string,
   ): LineMatchResult {
     const extractedData: Record<string, string> = {}
-
-    // Check if pattern contains placeholders
-    const placeholderRegex = /\{\{\s*([^}]+)\s*\}\}/g
-    const placeholders: Array<{
-      name: string
-      type: 'simple' | 'multiline'
-      start: number
-      end: number
-    }> = []
-    let match
-
-    while ((match = placeholderRegex.exec(pattern)) !== null) {
-      const content = match[1].trim()
-      let name: string
-      let type: 'simple' | 'multiline' = 'simple'
-
-      if (content.includes('|')) {
-        const parts = content.split('|').map(p => p.trim())
-        name = parts[0]
-        const typeStr = parts[1]
-        if (typeStr === 'multiline') {
-          type = 'multiline'
-        }
-      } else {
-        name = content
-      }
-
-      placeholders.push({
-        name,
-        type,
-        start: match.index,
-        end: match.index + match[0].length,
-      })
-    }
+    const placeholders = this.extractPlaceholders(pattern)
 
     if (placeholders.length === 0) {
       return {
@@ -329,7 +356,6 @@ export class PatternMatcher {
 
     let regexPattern = pattern
 
-    const PLACEHOLDER_MARKER = '___PLACEHOLDER___'
     for (let i = placeholders.length - 1; i >= 0; i--) {
       const placeholder = placeholders[i]
       const before = regexPattern.substring(0, placeholder.start)
@@ -378,37 +404,12 @@ export class PatternMatcher {
   }
 
   private isMultilinePlaceholderPattern(pattern: string): boolean {
-    const placeholderRegex = /\{\{\s*([^}]+)\s*\}\}/g
-    let match
-
-    while ((match = placeholderRegex.exec(pattern)) !== null) {
-      const content = match[1].trim()
-      if (
-        content.includes('|') &&
-        content.split('|')[1]?.trim() === 'multiline'
-      ) {
-        return true
-      }
-    }
-
-    return false
+    return this.hasMultilinePlaceholder(pattern)
   }
 
   private parseMultilinePlaceholder(pattern: string): { name: string } | null {
-    const placeholderRegex = /\{\{\s*([^}]+)\s*\}\}/g
-    let match
-
-    while ((match = placeholderRegex.exec(pattern)) !== null) {
-      const content = match[1].trim()
-      if (content.includes('|')) {
-        const parts = content.split('|').map(p => p.trim())
-        if (parts[1] === 'multiline') {
-          return { name: parts[0] }
-        }
-      }
-    }
-
-    return null
+    const name = this.getMultilinePlaceholderName(pattern)
+    return name ? { name } : null
   }
 
   private findPreviousConcreteMatch(
