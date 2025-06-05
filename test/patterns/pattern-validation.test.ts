@@ -94,7 +94,7 @@ describe('PatternConfig validation', () => {
       }
     })
 
-    it('should reject pattern with empty pattern array', () => {
+    it('should accept pattern with empty pattern array', () => {
       const pattern = {
         id: 'test',
         title: 'Test',
@@ -103,12 +103,19 @@ describe('PatternConfig validation', () => {
       }
 
       const result = validatePatternConfig(pattern)
-      expect(result.success).toBe(false)
-      if (!result.success) {
-        expect(result.error.errors[0].message).toContain(
-          'Pattern must have at least one string',
-        )
+      expect(result.success).toBe(true)
+    })
+
+    it('should accept pattern without pattern field', () => {
+      const pattern = {
+        id: 'test',
+        title: 'Test',
+        response: 'test',
+        triggerText: 'Trigger',
       }
+
+      const result = validatePatternConfig(pattern)
+      expect(result.success).toBe(true)
     })
 
     it('should accept triggerText on any pattern', () => {
@@ -196,11 +203,11 @@ describe('PatternConfig validation', () => {
       const invalidPattern = {
         id: 'test',
         title: 'Test',
-        pattern: [], // Invalid empty array
+        pattern: [], // Now valid - empty arrays are allowed
         response: 'test',
       }
 
-      expect(() => parsePatternConfig(invalidPattern)).toThrow()
+      expect(() => parsePatternConfig(invalidPattern)).not.toThrow()
     })
   })
 })
