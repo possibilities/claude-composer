@@ -1,4 +1,8 @@
-import { type PatternConfig, type AppConfig, validatePatternConfigs } from '../config/schemas'
+import {
+  type PatternConfig,
+  type AppConfig,
+  validatePatternConfigs,
+} from '../config/schemas'
 import { execSync } from 'child_process'
 import { stripBoxChars } from '../utils/strip-box-chars'
 import dedent from 'dedent'
@@ -17,37 +21,24 @@ function extractCommandAndReasonFromPromptBody(
   data: ExtractedData,
 ): ExtractedData {
   if (data.body) {
-    // Strip box characters and split into lines
     const stripped = stripBoxChars(data.body)
     const lines = stripped
       .split(/\r?\n/)
       .map(line => line.trim())
       .filter(line => line.length > 0)
 
-    // The body format is typically:
-    // │                                                      │  (empty line)
-    // │   command here                                       │
-    // │   (potentially more command lines)                   │
-    // │   reason here                                        │
-    // │                                                      │  (empty line)
-
-    // Find the actual content lines (non-empty after removing box chars)
     const contentLines = lines
       .map(line => {
-        // Remove any remaining box characters and trim
         return line.replace(/[│║]/g, '').trim()
       })
       .filter(line => line.length > 0)
 
     if (contentLines.length >= 2) {
-      // Find where the reason starts (usually after a line break in the original format)
-      // The reason typically starts with a lowercase letter or specific phrases
       let commandLines: string[] = []
       let reasonIndex = -1
 
       for (let i = 0; i < contentLines.length; i++) {
         const line = contentLines[i]
-        // Common reason starters
         if (
           line.match(
             /^(to |for |because |this will |this is |checking |running |executing |creating |updating |installing |removing |deleting |building |testing |fixing |adding |modifying )/i,
@@ -59,31 +50,25 @@ function extractCommandAndReasonFromPromptBody(
       }
 
       if (reasonIndex > 0) {
-        // Everything before the reason is the command
         commandLines = contentLines.slice(0, reasonIndex)
         const reasonLines = contentLines.slice(reasonIndex)
 
-        // Join command lines with spaces, clean up extra spaces
         const command = commandLines.join(' ').replace(/\s+/g, ' ').trim()
-        // Join reason lines similarly
         const reason = reasonLines.join(' ').replace(/\s+/g, ' ').trim()
 
         return { ...data, command, reason }
       } else {
-        // If we can't identify the reason, treat all but the last line as command
         if (contentLines.length > 1) {
           commandLines = contentLines.slice(0, -1)
           const command = commandLines.join(' ').replace(/\s+/g, ' ').trim()
           const reason = contentLines[contentLines.length - 1]
           return { ...data, command, reason }
         } else {
-          // Single line - it's all command
           const command = contentLines[0]
           return { ...data, command, reason: '' }
         }
       }
     } else if (contentLines.length === 1) {
-      // Only command, no reason
       const command = contentLines[0]
       return { ...data, command, reason: '' }
     }
@@ -214,7 +199,9 @@ const confirmationPatterns: PatternConfig[] = [
   },
 ]
 
-export function createPipedInputPattern(getPipedInputPath: () => string | undefined): PatternConfig {
+export function createPipedInputPattern(
+  getPipedInputPath: () => string | undefined,
+): PatternConfig {
   const getPipedInputResponse = (): string[] => {
     const pipedInputPath = getPipedInputPath()
 
@@ -240,63 +227,64 @@ export function createPipedInputPattern(getPipedInputPath: () => string | undefi
   }
 }
 
-export function createTrustPromptPattern(getAppConfig: () => AppConfig | undefined): PatternConfig {
+export function createTrustPromptPattern(
+  getAppConfig: () => AppConfig | undefined,
+): PatternConfig {
   const checkIfPwdParentInRoots = (): string[] => {
     try {
       const appConfig = getAppConfig()
       const roots = appConfig?.roots || []
 
-    if (roots.length === 0) {
-      return ['3'] // No for "Do you trust the files in this folder?"
-    }
-
-    const cwd = process.cwd()
-    const parentDir = path.dirname(cwd)
-
-    for (const root of roots) {
-      const expandedRoot = expandPath(root)
-      if (parentDir === expandedRoot) {
-        // Display ASCII box warning
-        console.log('')
-        console.log(
-          '\x1b[33m╔═════════════════════════════════════════════════════════════════╗\x1b[0m',
-        )
-        console.log(
-          '\x1b[33m║                    🔓 TRUSTED ROOT DIRECTORY                    ║\x1b[0m',
-        )
-        console.log(
-          '\x1b[33m╠═════════════════════════════════════════════════════════════════╣\x1b[0m',
-        )
-        console.log(
-          '\x1b[33m║ Parent directory is in configured roots.                        ║\x1b[0m',
-        )
-        console.log(
-          '\x1b[33m║                                                                 ║\x1b[0m',
-        )
-        console.log(
-          '\x1b[33m║ This means:                                                     ║\x1b[0m',
-        )
-        console.log(
-          '\x1b[33m║ • App trust prompt automatically accepted                       ║\x1b[0m',
-        )
-        console.log(
-          '\x1b[33m║ • All confirmation prompts and warnings are skipped             ║\x1b[0m',
-        )
-        console.log(
-          '\x1b[33m║                                                                 ║\x1b[0m',
-        )
-        const rootLine = `║ Root: ${expandedRoot.length > 49 ? '...' + expandedRoot.slice(-49) : expandedRoot}`
-        console.log(`\x1b[33m${rootLine.padEnd(66)}║\x1b[0m`)
-        const dirLine = `║ Directory: ${cwd.length > 49 ? '...' + cwd.slice(-49) : cwd}`
-        console.log(`\x1b[33m${dirLine.padEnd(66)}║\x1b[0m`)
-        console.log(
-          '\x1b[33m╚═════════════════════════════════════════════════════════════════╝\x1b[0m',
-        )
-        console.log('')
-
-        return ['1']
+      if (roots.length === 0) {
+        return ['3']
       }
-    }
+
+      const cwd = process.cwd()
+      const parentDir = path.dirname(cwd)
+
+      for (const root of roots) {
+        const expandedRoot = expandPath(root)
+        if (parentDir === expandedRoot) {
+          console.log('')
+          console.log(
+            '\x1b[33m╔═════════════════════════════════════════════════════════════════╗\x1b[0m',
+          )
+          console.log(
+            '\x1b[33m║                    🔓 TRUSTED ROOT DIRECTORY                    ║\x1b[0m',
+          )
+          console.log(
+            '\x1b[33m╠═════════════════════════════════════════════════════════════════╣\x1b[0m',
+          )
+          console.log(
+            '\x1b[33m║ Parent directory is in configured roots.                        ║\x1b[0m',
+          )
+          console.log(
+            '\x1b[33m║                                                                 ║\x1b[0m',
+          )
+          console.log(
+            '\x1b[33m║ This means:                                                     ║\x1b[0m',
+          )
+          console.log(
+            '\x1b[33m║ • App trust prompt automatically accepted                       ║\x1b[0m',
+          )
+          console.log(
+            '\x1b[33m║ • All confirmation prompts and warnings are skipped             ║\x1b[0m',
+          )
+          console.log(
+            '\x1b[33m║                                                                 ║\x1b[0m',
+          )
+          const rootLine = `║ Root: ${expandedRoot.length > 49 ? '...' + expandedRoot.slice(-49) : expandedRoot}`
+          console.log(`\x1b[33m${rootLine.padEnd(66)}║\x1b[0m`)
+          const dirLine = `║ Directory: ${cwd.length > 49 ? '...' + cwd.slice(-49) : cwd}`
+          console.log(`\x1b[33m${dirLine.padEnd(66)}║\x1b[0m`)
+          console.log(
+            '\x1b[33m╚═════════════════════════════════════════════════════════════════╝\x1b[0m',
+          )
+          console.log('')
+
+          return ['1']
+        }
+      }
 
       return ['3']
     } catch (error) {
@@ -314,7 +302,6 @@ export function createTrustPromptPattern(getAppConfig: () => AppConfig | undefin
   }
 }
 
-
 const allPatterns: PatternConfig[] = [...confirmationPatterns]
 
 const validationResult = validatePatternConfigs(allPatterns)
@@ -326,4 +313,4 @@ if (!validationResult.success) {
 
 export const patterns: PatternConfig[] = validationResult.data
 
-export { confirmationPatterns, createPipedInputPattern, createTrustPromptPattern }
+export { confirmationPatterns }

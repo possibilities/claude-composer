@@ -1,7 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { appStartedPattern } from '../../src/patterns/registry'
+import { createPipedInputPattern } from '../../src/patterns/registry'
 
 describe('App Started Pattern', () => {
+  const mockGetPipedInputPath = () => undefined
+  const appStartedPattern = createPipedInputPattern(mockGetPipedInputPath)
+
   it('should have correct pattern configuration', () => {
     expect(appStartedPattern.id).toBe('app-started')
     expect(appStartedPattern.title).toBe('App started')
