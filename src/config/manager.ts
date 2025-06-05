@@ -285,35 +285,6 @@ export class ConfigManager {
   }
 
   /**
-   * Get merged toolset configuration
-   */
-  getMergedToolsets(): {
-    allowedTools: Set<string>
-    disallowedTools: Set<string>
-    mcp: McpConfig
-  } {
-    const allowedTools = new Set<string>()
-    const disallowedTools = new Set<string>()
-    let mcp: McpConfig = { servers: {} }
-
-    for (const toolset of this.state.toolsets.values()) {
-      if (toolset.allowed_tools) {
-        toolset.allowed_tools.forEach(tool => allowedTools.add(tool))
-      }
-
-      if (toolset.disallowed_tools) {
-        toolset.disallowed_tools.forEach(tool => disallowedTools.add(tool))
-      }
-
-      if (toolset.mcp?.servers) {
-        mcp.servers = { ...mcp.servers, ...toolset.mcp.servers }
-      }
-    }
-
-    return { allowedTools, disallowedTools, mcp }
-  }
-
-  /**
    * Get environment configuration
    */
   getEnvironment(): EnvironmentConfig {
