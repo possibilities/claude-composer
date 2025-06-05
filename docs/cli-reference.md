@@ -24,9 +24,6 @@ claude-composer --ruleset internal:cautious
 
 # Multiple rulesets (later overrides earlier)
 claude-composer --ruleset internal:safe --ruleset my-overrides
-
-# Mix internal and custom
-claude-composer --ruleset internal:cautious --ruleset project:custom
 ```
 
 **Ruleset prefixes:**
@@ -45,9 +42,6 @@ claude-composer --toolset internal:core
 
 # Multiple toolsets (merge together)
 claude-composer --toolset internal:core --toolset my-tools
-
-# Project toolset
-claude-composer --toolset project:api-tools
 ```
 
 **Toolset prefixes:**
@@ -142,22 +136,7 @@ claude-composer --no-show-work-complete-notifications
 
 ### Fine-grained Notification Controls
 
-Control specific notification types:
-
-```bash
-# Dialog confirmations
---show-edit-file-confirm-notify
---no-show-edit-file-confirm-notify
-
-# Accepted confirmations
---show-accepted-confirm-notify
---no-show-accepted-confirm-notify
-
-# Sticky controls per type
---sticky-edit-file-confirm-notifications
---sticky-accepted-confirm-notifications
---sticky-work-complete-notifications
-```
+Control specific notification types. See [notifications.md](./notifications.md) for all options.
 
 ### Debug Options
 
@@ -249,19 +228,6 @@ claude-composer cc-init --use-core-toolset
 claude-composer cc-init --no-use-core-toolset
 ```
 
-#### Examples
-
-```bash
-# Interactive global setup
-claude-composer cc-init
-
-# Quick project setup with defaults
-claude-composer cc-init --project --use-cautious-ruleset --use-core-toolset
-
-# Minimal safe setup
-claude-composer cc-init --use-safe-ruleset --no-use-core-toolset
-```
-
 ## Pass-through Arguments
 
 All unrecognized arguments are passed to Claude Code:
@@ -325,96 +291,7 @@ FORCE_COLOR=0 claude-composer
 
 ## Common Usage Patterns
 
-### Basic Usage
-
-```bash
-# Use configuration defaults
-claude-composer
-
-# Override with specific ruleset
-claude-composer --ruleset internal:yolo
-
-# Combine with Claude Code options
-claude-composer --ruleset internal:cautious --model claude-3-opus-20240229
-```
-
-### Project Setup
-
-```bash
-# Initialize project
-cd my-project
-claude-composer cc-init --project --use-cautious-ruleset
-
-# Start coding
-claude-composer
-```
-
-### CI/CD Usage
-
-```bash
-# Automated environment
-CLAUDE_COMPOSER_NO_NOTIFY=1 claude-composer \
-  --ruleset internal:cautious \
-  --dangerously-allow-in-dirty-directory \
-  --dangerously-suppress-automatic-acceptance-confirmation
-```
-
-### Debugging Rulesets
-
-```bash
-# Enable pattern logging
-claude-composer --log-all-pattern-matches --ruleset my-rules
-
-# Check logs
-tail -f ~/.claude-composer/logs/pattern-matches-*.log
-```
-
-### Maximum Safety
-
-```bash
-# All manual confirmations
-claude-composer --ruleset internal:safe
-```
-
-### Maximum Automation
-
-```bash
-# Accept everything (use with caution!)
-claude-composer \
-  --ruleset internal:yolo \
-  --dangerously-suppress-automatic-acceptance-confirmation
-```
-
-## Option Combinations
-
-### Safe Development
-
-```bash
-claude-composer \
-  --ruleset internal:cautious \
-  --toolset internal:core \
-  --show-notifications
-```
-
-### Automated Scripts
-
-```bash
-claude-composer \
-  --ruleset internal:yolo \
-  --no-show-notifications \
-  --quiet \
-  --dangerously-suppress-automatic-acceptance-confirmation
-```
-
-### Debugging Setup
-
-```bash
-claude-composer \
-  --ruleset internal:safe \
-  --log-all-pattern-matches \
-  --allow-buffer-snapshots \
-  --sticky-notifications
-```
+See [examples.md](./examples.md) for detailed usage patterns and workflows.
 
 ## Troubleshooting
 

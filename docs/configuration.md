@@ -26,31 +26,7 @@ This allows you to set sensible global defaults while overriding them for specif
 
 ## Configuration Structure
 
-A complete configuration file can include:
-
-```yaml
-# Rulesets to apply (in order)
-rulesets:
-  - internal:cautious # Built-in ruleset
-  - my-defaults # Global custom ruleset
-  - project:custom-rules # Project-specific ruleset
-
-# Toolsets to enable
-toolsets:
-  - internal:core # Built-in toolset
-  - development-tools # Global custom toolset
-  - project:my-tools # Project-specific toolset
-
-# Trusted root directories
-roots:
-  - ~/projects/work
-  - ~/projects/personal
-  - $WORK_DIR/repos # Environment variable expansion supported
-
-# UI preferences
-show_notifications: true
-sticky_notifications: false
-```
+See the [README configuration section](../readme.md#configuration) for the basic configuration structure.
 
 ## Directory Structure
 
@@ -82,33 +58,7 @@ your-project/
 
 ## Roots Configuration
 
-The `roots` configuration defines trusted parent directories where Claude Code's initial trust prompt is automatically accepted.
-
-### How Roots Work
-
-When you start Claude Composer in a directory whose **parent** is listed in roots:
-
-- The "Do you trust the files in this folder?" prompt is automatically accepted
-- The automatic acceptance confirmation prompt is suppressed
-
-**Important**: Only direct children of root directories are trusted. For example, if `~/projects` is a root, then `~/projects/my-app` is trusted, but `~/projects/my-app/src` is not.
-
-### Roots Example
-
-```yaml
-roots:
-  - ~/projects # Trust direct children of ~/projects
-  - /tmp/sandbox # Trust direct children of /tmp/sandbox
-  - $WORK_DIR/repos # Environment variable expansion supported
-```
-
-### Path Expansion
-
-The roots configuration supports:
-
-- **Absolute paths**: `/home/user/projects`
-- **Tilde expansion**: `~/work` expands to your home directory
-- **Environment variables**: `$PROJECTS_DIR/repos` expands environment variables
+See [roots-config.md](./roots-config.md) for detailed roots configuration.
 
 ## Environment Variables
 
@@ -118,35 +68,11 @@ Claude Composer expands environment variables in configuration values. This is p
 - Sharing configurations across team members
 - CI/CD integration
 
-### Example with Environment Variables
-
-```yaml
-roots:
-  - $HOME/projects
-  - $WORK_DIR/repos
-  - ${CUSTOM_PROJECTS}/active
-
-rulesets:
-  - internal:cautious
-  - $TEAM_RULESET
-```
-
 ## Configuration Workflows
 
 ### Creating Initial Configuration
 
-The easiest way to create configuration is with `cc-init`:
-
-```bash
-# Create global configuration (interactive)
-claude-composer cc-init
-
-# Create project configuration
-claude-composer cc-init --project
-
-# Skip prompts with specific options
-claude-composer cc-init --use-cautious-ruleset --use-core-toolset
-```
+Use `cc-init` to create configuration. See [CLI Reference](./cli-reference.md#cc-init) for details.
 
 ### Global vs Project Configuration
 
@@ -174,47 +100,19 @@ When both global and project configurations exist:
 
 ### 1. Start Conservative
 
-Begin with `internal:cautious` and gradually relax rules as you become comfortable:
-
-```yaml
-rulesets:
-  - internal:cautious
-  - my-relaxed-rules # Override specific cautious settings
-```
+Begin with `internal:cautious` and gradually relax rules as you become comfortable.
 
 ### 2. Use Project Configs for Teams
 
-Keep project-specific configuration in the repository:
-
-```bash
-# In your project root
-claude-composer cc-init --project
-git add .claude-composer/config.yaml
-git commit -m "Add Claude Composer configuration"
-```
+Keep project-specific configuration in the repository for consistent team behavior.
 
 ### 3. Organize Custom Rulesets
 
-Name rulesets by their purpose:
-
-```
-~/.claude-composer/rulesets/
-├── frontend-dev.yaml    # Frontend-specific rules
-├── backend-dev.yaml     # Backend-specific rules
-├── ci-automation.yaml   # CI/CD rules
-└── personal.yaml        # Personal preferences
-```
+Name rulesets by their purpose (e.g., frontend-dev, backend-dev, ci-automation).
 
 ### 4. Environment-Specific Roots
 
-Use environment variables for flexible root configuration:
-
-```yaml
-roots:
-  - $HOME/personal
-  - $WORK_DIR/projects
-  - $TEAM_REPOS/active
-```
+Use environment variables for flexible root configuration across different environments.
 
 ## Troubleshooting
 

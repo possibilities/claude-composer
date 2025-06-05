@@ -13,78 +13,11 @@ Rulesets are YAML files that define rules for automatic dialog handling. They al
 
 ## Built-in Rulesets
 
-Claude Composer includes three internal rulesets that cover common use cases:
+See [internal-rulesets.md](./internal-rulesets.md) for details on:
 
-### `internal:safe`
-
-Maximum security - all dialogs require manual confirmation.
-
-```yaml
-# All operations require manual confirmation
-accept_fetch_content_prompts: false
-accept_global_bash_command_prompts: false
-accept_global_create_file_prompts: false
-accept_global_edit_file_prompts: false
-accept_global_read_files_prompts: false
-accept_project_bash_command_prompts: false
-accept_project_create_file_prompts: false
-accept_project_edit_file_prompts: false
-accept_project_read_files_prompts: false
-```
-
-**Use when:**
-
-- Working with sensitive data
-- Learning Claude Composer
-- Maximum control is required
-
-### `internal:cautious` (Recommended)
-
-Balanced approach - automatically accepts project-level operations while requiring confirmation for global operations.
-
-```yaml
-# Project operations are automatic, global require confirmation
-accept_fetch_content_prompts: false
-accept_global_bash_command_prompts: false
-accept_global_create_file_prompts: false
-accept_global_edit_file_prompts: false
-accept_global_read_files_prompts: false
-accept_project_bash_command_prompts: true
-accept_project_create_file_prompts: true
-accept_project_edit_file_prompts: true
-accept_project_read_files_prompts: true
-```
-
-**Use when:**
-
-- Normal development workflow
-- Want automation within project boundaries
-- Need safety for system-wide operations
-
-### `internal:yolo`
-
-Maximum automation - accepts all operations without confirmation.
-
-```yaml
-# All operations are automatic
-accept_fetch_content_prompts: true
-accept_global_bash_command_prompts: true
-accept_global_create_file_prompts: true
-accept_global_edit_file_prompts: true
-accept_global_read_files_prompts: true
-accept_project_bash_command_prompts: true
-accept_project_create_file_prompts: true
-accept_project_edit_file_prompts: true
-accept_project_read_files_prompts: true
-```
-
-**Use when:**
-
-- Fully automated workflows
-- Complete trust in operations
-- CI/CD environments (with caution)
-
-⚠️ **Warning**: Use `internal:yolo` with extreme caution as it bypasses all safety confirmations.
+- `internal:safe` - Maximum security
+- `internal:cautious` - Balanced approach (recommended)
+- `internal:yolo` - Maximum automation (⚠️ use with caution)
 
 ## Ruleset Syntax
 
@@ -174,26 +107,6 @@ Path patterns use glob syntax with additional features:
 - `[abc]` - Matches any character in brackets
 - `{a,b}` - Matches any of the comma-separated patterns
 
-### Examples
-
-```yaml
-accept_project_edit_file_prompts:
-  paths:
-    # Match all JavaScript files
-    - '**/*.js'
-
-    # Match TypeScript files in src
-    - 'src/**/*.ts'
-
-    # Match test files
-    - '**/*.test.js'
-    - '**/*.spec.js'
-
-    # Match specific directories
-    - 'docs/**'
-    - 'scripts/**'
-```
-
 ### Exclusion Patterns
 
 Use `!` prefix to exclude paths:
@@ -246,98 +159,24 @@ accept_fetch_content_prompts:
 - **Global rulesets**: `~/.claude-composer/rulesets/*.yaml`
 - **Project rulesets**: `.claude-composer/rulesets/*.yaml`
 
-### Step-by-Step Guide
-
-1. **Create the directory**:
-
-   ```bash
-   # For global ruleset
-   mkdir -p ~/.claude-composer/rulesets
-
-   # For project ruleset
-   mkdir -p .claude-composer/rulesets
-   ```
-
-2. **Create ruleset file**:
-
-   ```bash
-   # Create frontend-dev.yaml
-   touch ~/.claude-composer/rulesets/frontend-dev.yaml
-   ```
-
-3. **Define rules**:
-
-   ```yaml
-   name: frontend-dev
-   description: Rules for frontend development
-
-   # Accept project operations with restrictions
-   accept_project_edit_file_prompts:
-     paths:
-       - 'src/**/*.{js,jsx,ts,tsx}'
-       - 'styles/**/*.{css,scss}'
-       - 'public/**'
-       - '!**/*.env*'
-
-   accept_project_create_file_prompts:
-     paths:
-       - 'src/components/**'
-       - 'src/pages/**'
-       - 'tests/**'
-
-   accept_project_bash_command_prompts:
-     paths:
-       - 'package.json' # npm scripts
-       - 'scripts/**' # build scripts
-
-   # Be careful with web requests
-   accept_fetch_content_prompts:
-     domains:
-       - 'npmjs.com'
-       - 'github.com'
-       - 'developer.mozilla.org'
-   ```
-
-### Common Patterns
-
-#### Backend Development
+### Example Custom Ruleset
 
 ```yaml
-name: backend-dev
-description: Rules for backend development
+name: my-ruleset
+description: Custom ruleset for my workflow
 
+# Accept project file edits with path restrictions
 accept_project_edit_file_prompts:
   paths:
-    - 'src/**/*.{js,ts,py,go}'
+    - 'src/**'
     - 'test/**'
-    - 'migrations/**'
-    - '!**/*.env*'
-    - '!**/secrets/**'
+    - '!**/*.secret'
 
-accept_project_bash_command_prompts:
-  paths:
-    - 'scripts/db/**'
-    - 'scripts/deploy/**'
-    - 'Makefile'
-```
-
-#### Documentation
-
-```yaml
-name: docs
-description: Rules for documentation work
-
-accept_project_edit_file_prompts:
-  paths:
-    - '**/*.md'
-    - 'docs/**'
-    - 'README*'
-    - 'LICENSE*'
-
-accept_project_create_file_prompts:
-  paths:
-    - 'docs/**'
-    - 'examples/**'
+# Control web requests by domain
+accept_fetch_content_prompts:
+  domains:
+    - 'github.com'
+    - '*.mydomain.com'
 ```
 
 ## Using Rulesets
@@ -391,21 +230,6 @@ rulesets:
 2. **Path arrays**: Later ruleset replaces entirely
 3. **Domain arrays**: Later ruleset replaces entirely
 
-### Override Example
-
-```yaml
-# First ruleset (internal:cautious)
-accept_project_edit_file_prompts: true
-
-# Second ruleset (my-overrides)
-accept_project_edit_file_prompts:
-  paths:
-    - 'src/**'
-    - '!src/generated/**'
-
-# Result: Edit prompts accepted only for src/** excluding generated
-```
-
 ## Best Practices
 
 ### 1. Start with Built-in Rulesets
@@ -427,77 +251,19 @@ Name rulesets by their purpose:
 - `documentation`
 - `ci-automation`
 
-### 3. Document Path Patterns
+### 3. Test Incrementally
 
-Add comments explaining complex patterns:
+Start with `internal:safe` and gradually add permissions as needed.
 
-```yaml
-accept_project_edit_file_prompts:
-  paths:
-    # Source files excluding generated
-    - 'src/**'
-    - '!src/generated/**'
+### 4. Separate Concerns
 
-    # Config files at root only
-    - '*.config.js'
-    - '.*.js'
-```
-
-### 4. Test Incrementally
-
-1. Start with `internal:safe`
-2. Add specific permissions as needed
-3. Test each addition
-4. Build up to desired automation level
-
-### 5. Separate Concerns
-
-Create focused rulesets:
-
-```yaml
-# ~/.claude-composer/rulesets/
-├── file-operations.yaml   # File handling rules
-├── commands.yaml          # Command execution rules
-├── web-requests.yaml      # Web fetching rules
-└── combined.yaml          # References all above
-```
+Create focused rulesets for different aspects (file operations, commands, web requests).
 
 ## Troubleshooting
 
-### Rules Not Working
-
-1. **Check ruleset is loaded**:
-
-   ```bash
-   claude-composer --ruleset my-ruleset
-   ```
-
-2. **Verify YAML syntax**:
-
-   - Use a YAML validator
-   - Check indentation (2 spaces)
-   - Verify quotes around patterns
-
-3. **Test path patterns**:
-   - Start with simple patterns
-   - Use `**` for recursive matching
-   - Remember exclusions come after inclusions
-
-### Unexpected Acceptances
-
-1. Check ruleset order - later overrides earlier
-2. Verify no `internal:yolo` in chain
-3. Look for overly broad patterns (`**/*`)
-4. Check for missing exclusion patterns
-
-### Debugging Patterns
-
-Use the debug flag to see pattern matching:
-
-```bash
-claude-composer --log-all-pattern-matches
-# Check ~/.claude-composer/logs/ for details
-```
+- **Rules not working**: Check YAML syntax and ruleset loading order
+- **Unexpected acceptances**: Later rulesets override earlier ones
+- **Debug patterns**: Use `--log-all-pattern-matches` to see matches
 
 ## Security Considerations
 
@@ -512,34 +278,7 @@ accept_project_edit_file_prompts:
     - '../**' # Don't do this!
 ```
 
-### Sensitive Files
-
-Always exclude sensitive files:
-
-```yaml
-accept_project_edit_file_prompts:
-  paths:
-    - '**'
-    - '!**/*.env*'
-    - '!**/*.key'
-    - '!**/*.pem'
-    - '!**/secrets/**'
-    - '!**/credentials/**'
-```
-
-### Command Execution
-
-Be specific about command paths:
-
-```yaml
-# Good - specific directories
-accept_project_bash_command_prompts:
-  paths:
-    - 'scripts/safe/**'
-
-# Bad - too broad
-accept_project_bash_command_prompts: true
-```
+Always exclude sensitive files (`*.env`, `*.key`, `secrets/`) and be specific about command execution paths.
 
 ## See Also
 

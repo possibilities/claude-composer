@@ -4,13 +4,9 @@ The `roots` configuration option allows you to specify trusted root directories 
 
 ## Configuration
 
-Add a `roots` array to your configuration file (created with `claude-composer cc-init`):
+Add a `roots` array to your configuration file:
 
 ```yaml
-rulesets:
-  - internal:cautious
-toolsets:
-  - internal:core
 roots:
   - /home/user/projects
   - ~/work
@@ -31,16 +27,10 @@ The roots configuration supports:
 
 ### Example
 
-If you have the following configuration:
+With `roots: [/home/user/projects]`:
 
-```yaml
-roots:
-  - /home/user/projects
-```
-
-And you start Claude Composer in `/home/user/projects/my-app`, the trust prompt will be automatically accepted with "Yes" (option 1).
-
-If you start in `/home/user/other/my-app`, the trust prompt will be automatically declined with "No" (option 3).
+- Starting in `/home/user/projects/my-app` → trust accepted
+- Starting in `/home/user/other/my-app` → trust declined
 
 ## Notes
 
