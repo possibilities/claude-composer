@@ -1,13 +1,12 @@
 # Internal Toolsets
 
-Claude Composer ships with pre-configured toolsets using the `internal:` prefix.
+Pre-configured toolsets shipped with Claude Composer.
 
-## Available Internal Toolsets
+## Available Toolsets
 
 ### `internal:core`
 
 Provides Context7 documentation tools.
-
 See [source](../src/internal-toolsets/core.yaml)
 
 ## Usage

@@ -1,120 +1,62 @@
 # Notifications Guide
 
-Claude Composer provides system notifications to keep you informed about operations without switching contexts. This guide covers all aspects of the notification system.
+System notifications keep you informed without switching contexts.
 
-## Overview
-
-Notifications appear for permission dialogs, automatic acceptances, work completion, and errors.
-
-## Enabling Notifications
-
-### Basic Control
+## Basic Control
 
 ```bash
-# Enable notifications
+# Enable/disable notifications
 claude-composer --show-notifications
-
-# Disable notifications
 claude-composer --no-show-notifications
 
-# In configuration
-show_notifications: true
-```
-
-### Environment Variable
-
-Disable all notifications via environment:
-
-```bash
-# Disable globally
+# Disable via environment
 export CLAUDE_COMPOSER_NO_NOTIFY=1
-
-# Useful for CI/CD
-CLAUDE_COMPOSER_NO_NOTIFY=1 claude-composer
 ```
 
 ## Notification Types
 
-- **Dialog Confirmations**: File edits, creates, commands, web fetches
-- **Automatic Acceptance**: When rules auto-accept operations
+- **Dialog Confirmations**: File operations and commands
+- **Automatic Acceptance**: When rules auto-accept
 - **Work Completion**: When Claude finishes tasks
 
 ## Sticky Notifications
 
-Sticky notifications remain visible until manually dismissed.
-
-### Global Sticky Setting
+Notifications that remain visible until dismissed:
 
 ```bash
-# All notifications stay visible
+# All notifications sticky
 claude-composer --sticky-notifications
 
-# Notifications auto-dismiss (default)
-claude-composer --no-sticky-notifications
-```
-
-### Per-Type Sticky Control
-
-Control stickiness for specific notification types:
-
-```bash
-# Sticky edit confirmations only
+# Specific types only
 claude-composer --sticky-edit-file-confirm-notifications
-
-# Sticky work completion only
 claude-composer --sticky-work-complete-notifications
-
-# Sticky acceptance confirmations
-claude-composer --sticky-accepted-confirm-notifications
 ```
 
-## Fine-Grained Controls
+## Platform Setup
 
-### Notification Type Controls
-
-Control specific notification types with `--show-*` and `--no-show-*` flags.
-
-See [CLI Reference](./cli-reference.md#notification-options) for all options.
-
-## Platform-Specific Setup
-
-- **macOS**: Grant terminal notification permissions in System Preferences
-- **Linux**: Install `libnotify-bin` or equivalent for your distribution
-- **Windows**: Works automatically on Windows 10/11
+- **macOS**: Grant terminal permissions in System Preferences
+- **Linux**: Install `libnotify-bin` or equivalent
+- **Windows**: Works automatically
 
 ## Common Patterns
 
 - **Development**: Show notifications, hide acceptance confirmations
 - **Focused Work**: Disable all notifications
-- **Debugging**: Enable all notifications with sticky mode
 - **CI/CD**: Use `CLAUDE_COMPOSER_NO_NOTIFY=1`
 
 ## Troubleshooting
 
-### Notifications Not Appearing
+### Not Appearing
 
-1. Check terminal has notification permissions
-2. Verify `CLAUDE_COMPOSER_NO_NOTIFY` is not set
-3. Ensure `show_notifications: true` in config
+1. Check terminal permissions
+2. Verify `CLAUDE_COMPOSER_NO_NOTIFY` not set
+3. Ensure `show_notifications: true`
 
-### Too Many Notifications
+### Too Many
 
 Use `--no-show-accepted-confirm-notify` to reduce noise.
 
-### Sticky Notifications Won't Dismiss
-
-Click notification to dismiss or use `--no-sticky-notifications`.
-
-## Best Practices
-
-1. Start with default settings
-2. Adjust based on workflow (active dev, background tasks, etc.)
-3. Use environment variables for consistency
-4. Configure per-project as needed
-5. Match notification verbosity to automation level
-
 ## See Also
 
-- [CLI Reference](./cli-reference.md) - All notification options
+- [CLI Reference](./cli-reference.md) - All options
 - [Configuration Guide](./configuration.md) - Setting defaults
-- [Examples](./examples.md) - Workflow patterns

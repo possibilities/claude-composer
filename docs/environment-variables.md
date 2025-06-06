@@ -1,71 +1,45 @@
 # Environment Variables
 
-Claude Composer supports several environment variables to customize its behavior without modifying configuration files.
+Claude Composer supports environment variables to customize behavior without modifying config files.
 
-## Configuration Variables
+## Configuration
 
 ### `CLAUDE_COMPOSER_CONFIG_DIR`
 
-Override the default configuration directory location.
+Override the default configuration directory.
 
 ```bash
-# Use custom config directory
 CLAUDE_COMPOSER_CONFIG_DIR=~/custom-config claude-composer
-
-# Example with project-specific config
-CLAUDE_COMPOSER_CONFIG_DIR=/path/to/project/.config claude-composer
 ```
 
-## UI Variables
+## UI Controls
 
 ### `CLAUDE_COMPOSER_NO_NOTIFY`
 
-Disable system notifications entirely.
+Disable system notifications.
 
 ```bash
-# Run without any notifications
 CLAUDE_COMPOSER_NO_NOTIFY=1 claude-composer
-
-# Useful for CI/CD environments
-export CLAUDE_COMPOSER_NO_NOTIFY=1
 ```
 
 ### `FORCE_COLOR`
 
-Force color output in terminals that don't auto-detect color support.
+Control color output in terminals.
 
 ```bash
-# Enable colors in non-TTY environments
-FORCE_COLOR=1 claude-composer
-
-# Disable colors explicitly
-FORCE_COLOR=0 claude-composer
+FORCE_COLOR=1 claude-composer  # Enable colors
+FORCE_COLOR=0 claude-composer  # Disable colors
 ```
 
-## Usage Examples
-
-### Combining Variables
+## Examples
 
 ```bash
-# Custom config with notifications disabled
+# Multiple variables
 CLAUDE_COMPOSER_CONFIG_DIR=~/work-config \
 CLAUDE_COMPOSER_NO_NOTIFY=1 \
 claude-composer --ruleset internal:yolo
-```
 
-### Setting Defaults in Shell Profile
-
-```bash
-# Add to ~/.bashrc or ~/.zshrc
+# Shell profile defaults
 export CLAUDE_COMPOSER_CONFIG_DIR=~/my-claude-config
 export FORCE_COLOR=1
-```
-
-### CI/CD Usage
-
-```bash
-# In CI pipeline
-export CLAUDE_COMPOSER_NO_NOTIFY=1
-export FORCE_COLOR=0
-claude-composer --ruleset internal:cautious
 ```
