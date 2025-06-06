@@ -51,20 +51,6 @@ claude-composer cc-init
 claude-composer cc-init --project
 ```
 
-### Configuration Structure
-
-```
-~/.claude-composer/          # Global
-├── config.yaml
-├── rulesets/*.yaml         # Custom rulesets
-└── toolsets/*.yaml         # Custom toolsets
-
-.claude-composer/           # Project-specific
-├── config.yaml
-├── rulesets/*.yaml
-└── toolsets/*.yaml
-```
-
 ### Basic Configuration
 
 ```yaml
@@ -93,85 +79,13 @@ Control which permission dialogs are automatically accepted.
 
 ### Built-in Rulesets
 
-- **`internal:safe`**: All dialogs require manual confirmation
-- **`internal:cautious`**: Auto-accepts project operations, confirms global ones
-- **`internal:yolo`**: Accepts all operations without confirmation
-
-### Using Rulesets
-
-```bash
-# Built-in
-claude-composer --ruleset internal:cautious
-
-# Custom global
-claude-composer --ruleset my-workflow
-
-# Project-specific
-claude-composer --ruleset project:backend
-
-# Chain multiple
-claude-composer --ruleset internal:cautious --ruleset my-overrides
-```
-
-### Custom Ruleset Example
-
-```yaml
-# .claude-composer/rulesets/backend.yaml
-name: backend
-description: Backend development rules
-
-accept_project_edit_file_prompts:
-  paths:
-    - 'src/**/*.js'
-    - 'test/**'
-    - '!**/*.env'
-
-accept_project_bash_command_prompts: true
-accept_fetch_content_prompts: false
-```
+Control which permission dialogs are automatically accepted.
 
 See [docs/rulesets.md](docs/rulesets.md) for complete documentation.
 
 ## Toolsets
 
 Configure which tools Claude can use and MCP server connections.
-
-### Built-in Toolsets
-
-- **`internal:core`**: Provides Context7 documentation tools
-
-### Using Toolsets
-
-```bash
-# Built-in
-claude-composer --toolset internal:core
-
-# Custom
-claude-composer --toolset my-tools
-
-# Multiple
-claude-composer --toolset internal:core --toolset project:dev-tools
-```
-
-### Custom Toolset Example
-
-```yaml
-# .claude-composer/toolsets/dev-tools.yaml
-allowed:
-  - Read
-  - Write
-  - Edit
-  - Bash
-
-disallowed:
-  - WebSearch
-
-mcp:
-  my-server:
-    type: stdio
-    command: node
-    args: [./tools/mcp-server.js]
-```
 
 See [docs/toolsets.md](docs/toolsets.md) for details.
 
@@ -218,21 +132,11 @@ See [docs/cli-reference.md](docs/cli-reference.md) for complete reference.
 
 ## Environment Variables
 
-- `CLAUDE_COMPOSER_CONFIG_DIR` - Override config directory
-- `CLAUDE_COMPOSER_NO_NOTIFY` - Disable notifications
-- `FORCE_COLOR` - Control color output
-
 See [docs/environment-variables.md](docs/environment-variables.md) for details.
 
-## Roots Configuration
+## Trusted roots
 
-Define trusted parent directories to auto-accept initial trust prompts:
-
-```yaml
-roots:
-  - ~/projects # Trusts ~/projects/my-app, not ~/projects/my-app/src
-  - $WORK_DIR/repos # Environment variable expansion supported
-```
+Use trusted roots to define trusted parent directories to auto-accept initial trust prompts:
 
 See [docs/roots-config.md](docs/roots-config.md) for details.
 
