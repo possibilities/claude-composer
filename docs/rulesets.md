@@ -19,6 +19,54 @@ See [internal-rulesets.md](./internal-rulesets.md) for details on:
 - `internal:cautious` - Balanced approach (recommended)
 - `internal:yolo` - Maximum automation (⚠️ use with caution)
 
+## Loading Rulesets
+
+### By Name
+
+Rulesets can be loaded by name from predefined locations:
+
+```bash
+# Internal ruleset (built-in)
+claude-composer --ruleset internal:cautious
+
+# User ruleset from ~/.claude-composer/rulesets/
+claude-composer --ruleset my-workflow
+
+# Project ruleset from .claude-composer/rulesets/
+claude-composer --ruleset project:backend
+```
+
+### By Path
+
+You can also specify rulesets using absolute or relative paths:
+
+```bash
+# Absolute path
+claude-composer --ruleset /opt/company/shared-rules.yaml
+
+# Path with tilde expansion
+claude-composer --ruleset ~/my-configs/custom-rules.yaml
+
+# Relative path
+claude-composer --ruleset ./local-rules.yaml
+
+# With environment variables
+claude-composer --ruleset $CONFIG_DIR/rules.yaml
+```
+
+### In Configuration Files
+
+Paths work the same way in configuration files:
+
+```yaml
+# config.yaml
+rulesets:
+  - internal:cautious
+  - ~/my-configs/base-rules.yaml
+  - /opt/shared/team-rules.yaml
+  - ./project-specific.yaml
+```
+
 ## Ruleset Syntax
 
 ### Basic Structure

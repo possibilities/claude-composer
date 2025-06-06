@@ -10,11 +10,11 @@ export function createClaudeComposerCommand(): Command {
     )
     .option(
       '--toolset <name...>',
-      'Use predefined toolsets from ~/.claude-composer/toolsets/ directory (can be specified multiple times)',
+      'Use predefined toolsets from ~/.claude-composer/toolsets/ directory or specify an absolute path (can be specified multiple times)',
     )
     .option(
       '--ruleset <name...>',
-      'Use predefined rulesets from ~/.claude-composer/rulesets/ directory (can be specified multiple times)',
+      'Use predefined rulesets from ~/.claude-composer/rulesets/ directory or specify an absolute path (can be specified multiple times)',
     )
     .option(
       '--ignore-global-config',

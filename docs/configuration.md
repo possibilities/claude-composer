@@ -28,6 +28,42 @@ This allows you to set sensible global defaults while overriding them for specif
 
 See the [README configuration section](../readme.md#configuration) for the basic configuration structure.
 
+### Path Specifications
+
+Rulesets and toolsets can be specified in several ways:
+
+1. **By Name**: References files in predefined directories
+
+   - `my-ruleset` → `~/.claude-composer/rulesets/my-ruleset.yaml`
+   - `my-toolset` → `~/.claude-composer/toolsets/my-toolset.yaml`
+
+2. **With Prefix**: Special location prefixes
+
+   - `internal:safe` → Built-in ruleset
+   - `project:backend` → `.claude-composer/rulesets/backend.yaml`
+
+3. **By Path**: Absolute or relative paths (NEW)
+   - `/opt/shared/rules.yaml` → Absolute path
+   - `~/configs/my-rules.yaml` → Home directory path
+   - `./local-rules.yaml` → Relative to current directory
+   - `$CONFIG_DIR/rules.yaml` → With environment variable
+
+Example configuration using paths:
+
+```yaml
+# Mix named references with paths
+rulesets:
+  - internal:cautious # Built-in
+  - base-rules # From ~/.claude-composer/rulesets/
+  - ~/shared/team-rules.yaml # Absolute path with ~
+  - ./project-rules.yaml # Relative path
+
+toolsets:
+  - internal:core
+  - /opt/company/tools.yaml # Absolute path
+  - $SHARED_DIR/dev.yaml # Environment variable
+```
+
 ## Directory Structure
 
 ### Global Configuration

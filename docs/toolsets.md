@@ -16,6 +16,54 @@ When multiple toolsets are loaded, their configurations merge intelligently.
 
 See [internal-toolsets.md](./internal-toolsets.md) for details on `internal:core`.
 
+## Loading Toolsets
+
+### By Name
+
+Toolsets can be loaded by name from predefined locations:
+
+```bash
+# Internal toolset (built-in)
+claude-composer --toolset internal:core
+
+# User toolset from ~/.claude-composer/toolsets/
+claude-composer --toolset my-tools
+
+# Project toolset from .claude-composer/toolsets/
+claude-composer --toolset project:dev-tools
+```
+
+### By Path
+
+You can also specify toolsets using absolute or relative paths:
+
+```bash
+# Absolute path
+claude-composer --toolset /opt/company/shared-tools.yaml
+
+# Path with tilde expansion
+claude-composer --toolset ~/my-configs/custom-tools.yaml
+
+# Relative path
+claude-composer --toolset ./local-tools.yaml
+
+# With environment variables
+claude-composer --toolset $CONFIG_DIR/tools.yaml
+```
+
+### In Configuration Files
+
+Paths work the same way in configuration files:
+
+```yaml
+# config.yaml
+toolsets:
+  - internal:core
+  - ~/my-configs/base-tools.yaml
+  - /opt/shared/team-tools.yaml
+  - ./project-specific.yaml
+```
+
 ## Toolset Syntax
 
 ### Basic Structure

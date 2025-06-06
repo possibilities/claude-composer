@@ -13,6 +13,31 @@ import {
   type RulesetConfig,
 } from './schemas.js'
 import { CONFIG_PATHS } from './paths'
+import { expandPath } from '../utils/file-utils.js'
+
+/**
+ * Helper function to resolve file path with yaml/yml extension handling
+ */
+function resolveYamlPath(filePath: string): string {
+  // If the path already ends with .yaml or .yml, use it as-is
+  if (filePath.endsWith('.yaml') || filePath.endsWith('.yml')) {
+    return filePath
+  }
+
+  // Otherwise, try .yaml first, then .yml
+  const yamlPath = `${filePath}.yaml`
+  if (fs.existsSync(yamlPath)) {
+    return yamlPath
+  }
+
+  const ymlPath = `${filePath}.yml`
+  if (fs.existsSync(ymlPath)) {
+    return ymlPath
+  }
+
+  // Return the .yaml version for error messages
+  return yamlPath
+}
 
 /**
  * Helper function to handle validation errors consistently
@@ -78,8 +103,19 @@ export async function loadToolsetFile(
 ): Promise<ToolsetConfig> {
   let toolsetPath: string
 
-  // Check if this is an internal toolset
-  if (toolsetName.startsWith('internal:')) {
+  // Check if this is an absolute or relative path
+  // Also check for environment variables
+  if (
+    toolsetName.startsWith('~') ||
+    toolsetName.startsWith('/') ||
+    toolsetName.startsWith('.') ||
+    toolsetName.includes('$')
+  ) {
+    // Treat as a path - expand and resolve it
+    const expandedPath = expandPath(toolsetName)
+    toolsetPath = resolveYamlPath(expandedPath)
+  } else if (toolsetName.startsWith('internal:')) {
+    // Check if this is an internal toolset
     const internalName = toolsetName.substring('internal:'.length)
     // Look for internal toolsets in the dist/internal-toolsets directory
     const __filename = fileURLToPath(import.meta.url)
@@ -101,18 +137,17 @@ export async function loadToolsetFile(
   } else if (toolsetName.startsWith('project:')) {
     // Project-level toolset
     const projectName = toolsetName.substring('project:'.length)
-    toolsetPath = path.join(
+    const basePath = path.join(
       process.cwd(),
       '.claude-composer',
       'toolsets',
-      `${projectName}.yaml`,
+      projectName,
     )
+    toolsetPath = resolveYamlPath(basePath)
   } else {
     // Regular user toolset
-    toolsetPath = path.join(
-      CONFIG_PATHS.getToolsetsDirectory(),
-      `${toolsetName}.yaml`,
-    )
+    const basePath = path.join(CONFIG_PATHS.getToolsetsDirectory(), toolsetName)
+    toolsetPath = resolveYamlPath(basePath)
   }
 
   if (!fs.existsSync(toolsetPath)) {
@@ -144,8 +179,19 @@ export async function loadRulesetFile(
 ): Promise<RulesetConfig> {
   let rulesetPath: string
 
-  // Check if this is an internal ruleset
-  if (rulesetName.startsWith('internal:')) {
+  // Check if this is an absolute or relative path
+  // Also check for environment variables
+  if (
+    rulesetName.startsWith('~') ||
+    rulesetName.startsWith('/') ||
+    rulesetName.startsWith('.') ||
+    rulesetName.includes('$')
+  ) {
+    // Treat as a path - expand and resolve it
+    const expandedPath = expandPath(rulesetName)
+    rulesetPath = resolveYamlPath(expandedPath)
+  } else if (rulesetName.startsWith('internal:')) {
+    // Check if this is an internal ruleset
     const internalName = rulesetName.substring('internal:'.length)
     // Look for internal rulesets in the dist/internal-rulesets directory
     const __filename = fileURLToPath(import.meta.url)
@@ -167,18 +213,17 @@ export async function loadRulesetFile(
   } else if (rulesetName.startsWith('project:')) {
     // Project-level ruleset
     const projectName = rulesetName.substring('project:'.length)
-    rulesetPath = path.join(
+    const basePath = path.join(
       process.cwd(),
       '.claude-composer',
       'rulesets',
-      `${projectName}.yaml`,
+      projectName,
     )
+    rulesetPath = resolveYamlPath(basePath)
   } else {
     // Regular user ruleset
-    rulesetPath = path.join(
-      CONFIG_PATHS.getRulesetsDirectory(),
-      `${rulesetName}.yaml`,
-    )
+    const basePath = path.join(CONFIG_PATHS.getRulesetsDirectory(), rulesetName)
+    rulesetPath = resolveYamlPath(basePath)
   }
 
   if (!fs.existsSync(rulesetPath)) {
