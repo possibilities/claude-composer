@@ -25,7 +25,7 @@ export async function handleCcInit(args: string[]): Promise<void> {
       '  --use-yolo-ruleset       Use YOLO ruleset (accepts all prompts automatically)',
     )
     console.log(
-      '  --use-cautious-ruleset   Use cautious ruleset (recommended, accepts project-level prompts)',
+      '  --use-cautious-ruleset   Use cautious ruleset (accepts project-level prompts)',
     )
     console.log(
       '  --use-safe-ruleset       Use safe ruleset (requires confirmation for all prompts)',
@@ -109,7 +109,7 @@ export async function handleCcInit(args: string[]): Promise<void> {
         message: 'Which ruleset would you like to use?',
         choices: [
           {
-            title: 'Cautious (recommended)',
+            title: 'Cautious',
             description: 'Accepts project-level prompts automatically',
             value: 'cautious',
           },

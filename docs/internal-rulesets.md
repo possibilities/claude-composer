@@ -4,7 +4,7 @@ Pre-configured rulesets that ship with Claude Composer.
 
 ## Available Rulesets
 
-### `internal:cautious` (Recommended)
+### `internal:cautious`
 
 Balanced approach - accepts project operations, confirms global operations.
 See [source](../src/internal-rulesets/cautious.yaml)

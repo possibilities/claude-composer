@@ -229,7 +229,7 @@ describe('cc-init', () => {
           message: 'Which ruleset would you like to use?',
           choices: expect.arrayContaining([
             expect.objectContaining({
-              title: 'Cautious (recommended)',
+              title: 'Cautious',
               value: 'cautious',
             }),
             expect.objectContaining({

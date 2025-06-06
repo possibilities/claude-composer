@@ -106,27 +106,6 @@ claude-composer --toolset internal:core
 claude-composer --toolset internal:core --toolset my-tools
 ```
 
-## Available Tools
-
-- **Files**: Read, Write, Edit, MultiEdit
-- **System**: LS, Glob, Grep, Bash
-- **Tasks**: TodoRead, TodoWrite
-- **Web**: WebSearch, WebFetch
-- **MCP**: Format `mcp__{server}__{tool}`
-
-## Best Practices
-
-1. Start minimal with essential tools
-2. Group tools by workflow
-3. Use environment variables for secrets
-4. Test incrementally
-
-## Security
-
-- Consider disallowing: Bash, WebFetch, Write
-- Validate MCP servers before adding
-- Use project toolsets for isolation
-
 ## See Also
 
 - [Configuration Guide](./configuration.md)

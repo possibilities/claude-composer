@@ -27,9 +27,3 @@ With `roots: [/home/user/projects]`:
 
 - `/home/user/projects/my-app` → trusted
 - `/home/user/other/my-app` → not trusted
-
-## Notes
-
-- Not available as CLI flag
-- Subdirectories inherit trust
-- Empty list added by `cc-init`

@@ -96,7 +96,7 @@ Options:
 
 - `--project` - Create project config
 - `--use-yolo-ruleset` - Use YOLO ruleset
-- `--use-cautious-ruleset` - Use cautious (recommended)
+- `--use-cautious-ruleset` - Use cautious
 - `--use-safe-ruleset` - Use safe ruleset
 - `--use-core-toolset` / `--no-use-core-toolset` - Enable/disable core toolset
 
@@ -116,13 +116,6 @@ claude-composer "my prompt"
 - `CLAUDE_COMPOSER_NO_NOTIFY` - Disable notifications
 - `FORCE_COLOR` - Control color output
 
-## Exit Codes
-
-- `0` - Success
-- `1` - General error
-- `2` - Configuration error
-- `130` - Interrupted (Ctrl+C)
-
 ## Configuration Precedence
 
 1. Command-line flags
@@ -135,4 +128,3 @@ claude-composer "my prompt"
 - [Configuration](./configuration.md)
 - [Rulesets](./rulesets.md)
 - [Toolsets](./toolsets.md)
-- [Examples](./examples.md)

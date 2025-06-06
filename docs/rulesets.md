@@ -7,7 +7,7 @@ Rulesets control which permission dialogs are automatically accepted or rejected
 See [internal-rulesets.md](./internal-rulesets.md) for:
 
 - `internal:safe` - Manual confirmation for all
-- `internal:cautious` - Balanced automation (recommended)
+- `internal:cautious` - Balanced automation
 - `internal:yolo` - Accept all (⚠️ use with caution)
 
 ## Loading Rulesets
@@ -117,21 +117,7 @@ claude-composer --ruleset internal:cautious
 claude-composer --ruleset internal:safe --ruleset my-overrides
 ```
 
-## Best Practices
-
-1. Start with built-in rulesets
-2. Use descriptive names
-3. Test incrementally
-4. Exclude sensitive files (`*.env`, `*.key`)
-
-## Troubleshooting
-
-- Check YAML syntax
-- Use `--log-all-pattern-matches` for debugging
-- Remember: later rulesets override earlier ones
-
 ## See Also
 
 - [Configuration Guide](./configuration.md)
 - [CLI Reference](./cli-reference.md)
-- [Examples](./examples.md)

@@ -34,14 +34,3 @@ git push origin main --follow-tags
 npm publish --access public
 gh release create "v$(node -p "require('./package.json').version")" --generate-notes
 ```
-
-## After Release
-
-1. Review and publish draft GitHub release
-2. Update dependent projects
-
-## Troubleshooting
-
-- **npm fails**: Run `npm login`
-- **GitHub fails**: Run `gh auth login`
-- **Version exists**: Bump version again
