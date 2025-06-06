@@ -1,51 +1,35 @@
 # Rulesets Reference
 
-Rulesets control which permission dialogs are automatically accepted or rejected in Claude Composer. They provide fine-grained control over Claude Code's interactions with your system.
-
-## What are Rulesets?
-
-Rulesets are YAML files that define rules for automatic dialog handling. They allow you to:
-
-- Automatically accept or reject permission dialogs
-- Define path-based rules for file and directory operations
-- Filter commands based on patterns
-- Control web request permissions by domain
+Rulesets control which permission dialogs are automatically accepted or rejected.
 
 ## Built-in Rulesets
 
-See [internal-rulesets.md](./internal-rulesets.md) for details on:
+See [internal-rulesets.md](./internal-rulesets.md) for:
 
-- `internal:safe` - Maximum security
-- `internal:cautious` - Balanced approach (recommended)
-- `internal:yolo` - Maximum automation (⚠️ use with caution)
+- `internal:safe` - Manual confirmation for all
+- `internal:cautious` - Balanced automation (recommended)
+- `internal:yolo` - Accept all (⚠️ use with caution)
 
 ## Loading Rulesets
 
 ### By Name
 
-Rulesets can be loaded by name from predefined locations:
-
 ```bash
-# Internal ruleset (built-in)
+# Internal (built-in)
 claude-composer --ruleset internal:cautious
 
-# User ruleset from ~/.claude-composer/rulesets/
+# Global (~/.claude-composer/rulesets/)
 claude-composer --ruleset my-workflow
 
-# Project ruleset from .claude-composer/rulesets/
+# Project (.claude-composer/rulesets/)
 claude-composer --ruleset project:backend
 ```
 
 ### By Path
 
-You can also specify rulesets using absolute or relative paths:
-
 ```bash
 # Absolute path
 claude-composer --ruleset /opt/company/shared-rules.yaml
-
-# Path with tilde expansion
-claude-composer --ruleset ~/my-configs/custom-rules.yaml
 
 # Relative path
 claude-composer --ruleset ./local-rules.yaml
@@ -54,283 +38,100 @@ claude-composer --ruleset ./local-rules.yaml
 claude-composer --ruleset $CONFIG_DIR/rules.yaml
 ```
 
-### In Configuration Files
-
-Paths work the same way in configuration files:
-
-```yaml
-# config.yaml
-rulesets:
-  - internal:cautious
-  - ~/my-configs/base-rules.yaml
-  - /opt/shared/team-rules.yaml
-  - ./project-specific.yaml
-```
-
-## Ruleset Syntax
-
-### Basic Structure
+## Ruleset Structure
 
 ```yaml
 name: my-ruleset
-description: Custom ruleset for my workflow
+description: Custom ruleset
 
 # Simple boolean rules
 accept_project_edit_file_prompts: true
-accept_project_bash_command_prompts: false
 
-# Rules with path filters
+# Path-based rules
 accept_project_create_file_prompts:
   paths:
     - 'src/**'
-    - 'test/**'
     - '!**/*.secret'
 
-# Rules with domain filters
+# Domain-based rules
 accept_fetch_content_prompts:
   domains:
     - 'github.com'
-    - 'docs.*.com'
     - '*.mydomain.com'
 ```
 
-### Rule Types
+## Rule Types
 
-#### File Operation Rules
-
-Control file creation, editing, and reading:
+### File Operations
 
 ```yaml
-# Project-level file operations
 accept_project_create_file_prompts: true
 accept_project_edit_file_prompts: true
 accept_project_read_files_prompts: true
-
-# Global file operations
-accept_global_create_file_prompts: false
-accept_global_edit_file_prompts: false
-accept_global_read_files_prompts: false
 ```
 
-#### Command Execution Rules
-
-Control bash command execution:
+### Command Execution
 
 ```yaml
-# Simple boolean
-accept_project_bash_command_prompts: true
-
-# With path filters (matches command working directory)
 accept_project_bash_command_prompts:
   paths:
     - 'scripts/**'
-    - 'tools/**'
 ```
 
-#### Web Request Rules
-
-Control fetching content from URLs:
-
-```yaml
-# Simple boolean
-accept_fetch_content_prompts: true
-
-# With domain filters
-accept_fetch_content_prompts:
-  domains:
-    - 'github.com'
-    - '*.githubusercontent.com'
-    - 'docs.*.com'
-```
-
-## Path Pattern Matching
-
-Path patterns use glob syntax with additional features:
-
-### Basic Patterns
-
-- `*` - Matches any characters except path separator
-- `**` - Matches any characters including path separators
-- `?` - Matches single character
-- `[abc]` - Matches any character in brackets
-- `{a,b}` - Matches any of the comma-separated patterns
-
-### Exclusion Patterns
-
-Use `!` prefix to exclude paths:
-
-```yaml
-accept_project_edit_file_prompts:
-  paths:
-    # Include all source files
-    - 'src/**'
-
-    # But exclude secrets
-    - '!**/*.secret'
-    - '!**/*.key'
-    - '!**/credentials/**'
-```
-
-## Domain Pattern Matching
-
-Domain patterns support wildcards for flexible matching:
-
-### Pattern Types
-
-- Exact match: `github.com`
-- Subdomain wildcard: `*.github.com`
-- Domain part wildcard: `docs.*.com`
-- Full wildcard: `*`
-
-### Examples
+### Web Requests
 
 ```yaml
 accept_fetch_content_prompts:
   domains:
-    # Exact domain
-    - 'github.com'
-
-    # All subdomains
     - '*.github.com'
-    - '*.githubusercontent.com'
-
-    # Pattern matching
-    - 'docs.*.com'
-    - '*.docs.com'
-    - 'api.*.dev'
 ```
 
-## Creating Custom Rulesets
+## Pattern Matching
 
-### File Locations
+### Path Patterns
 
-- **Global rulesets**: `~/.claude-composer/rulesets/*.yaml`
-- **Project rulesets**: `.claude-composer/rulesets/*.yaml`
+- `*` - Any chars except `/`
+- `**` - Any chars including `/`
+- `!` - Exclude pattern
 
-### Example Custom Ruleset
+### Domain Patterns
 
-```yaml
-name: my-ruleset
-description: Custom ruleset for my workflow
-
-# Accept project file edits with path restrictions
-accept_project_edit_file_prompts:
-  paths:
-    - 'src/**'
-    - 'test/**'
-    - '!**/*.secret'
-
-# Control web requests by domain
-accept_fetch_content_prompts:
-  domains:
-    - 'github.com'
-    - '*.mydomain.com'
-```
+- `github.com` - Exact match
+- `*.github.com` - Subdomain wildcard
+- `docs.*.com` - Pattern matching
 
 ## Using Rulesets
 
-### Via Configuration File
+### Configuration
 
 ```yaml
-# In config.yaml
 rulesets:
   - internal:cautious
-  - frontend-dev # Global custom ruleset
-  - project:overrides # Project-specific ruleset
+  - my-custom
 ```
 
-### Via Command Line
+### Command Line
 
 ```bash
-# Single ruleset
 claude-composer --ruleset internal:cautious
-
-# Multiple rulesets (later overrides earlier)
 claude-composer --ruleset internal:safe --ruleset my-overrides
-
-# Project ruleset
-claude-composer --ruleset project:custom
 ```
-
-### Ruleset Prefixes
-
-- `internal:` - Built-in rulesets
-- `project:` - Project-specific rulesets
-- No prefix - Global custom rulesets
-
-## Ruleset Chaining and Precedence
-
-When multiple rulesets are specified, they are applied in order with later rulesets overriding earlier ones.
-
-### Example
-
-```yaml
-# config.yaml
-rulesets:
-  - internal:safe # Start with maximum safety
-  - common-overrides # Apply common relaxations
-  - project:specific # Apply project-specific rules
-```
-
-### Merging Behavior
-
-1. **Boolean values**: Later ruleset overrides
-2. **Path arrays**: Later ruleset replaces entirely
-3. **Domain arrays**: Later ruleset replaces entirely
 
 ## Best Practices
 
-### 1. Start with Built-in Rulesets
-
-Begin with an internal ruleset and override specific behaviors:
-
-```yaml
-rulesets:
-  - internal:cautious
-  - my-customizations
-```
-
-### 2. Use Descriptive Names
-
-Name rulesets by their purpose:
-
-- `frontend-dev`
-- `backend-api`
-- `documentation`
-- `ci-automation`
-
-### 3. Test Incrementally
-
-Start with `internal:safe` and gradually add permissions as needed.
-
-### 4. Separate Concerns
-
-Create focused rulesets for different aspects (file operations, commands, web requests).
+1. Start with built-in rulesets
+2. Use descriptive names
+3. Test incrementally
+4. Exclude sensitive files (`*.env`, `*.key`)
 
 ## Troubleshooting
 
-- **Rules not working**: Check YAML syntax and ruleset loading order
-- **Unexpected acceptances**: Later rulesets override earlier ones
-- **Debug patterns**: Use `--log-all-pattern-matches` to see matches
-
-## Security Considerations
-
-### Path Traversal
-
-Be careful with patterns that might match outside project:
-
-```yaml
-# Dangerous - could match parent directories
-accept_project_edit_file_prompts:
-  paths:
-    - '../**' # Don't do this!
-```
-
-Always exclude sensitive files (`*.env`, `*.key`, `secrets/`) and be specific about command execution paths.
+- Check YAML syntax
+- Use `--log-all-pattern-matches` for debugging
+- Remember: later rulesets override earlier ones
 
 ## See Also
 
-- [Configuration Guide](./configuration.md) - Overall configuration
-- [Toolsets Reference](./toolsets.md) - Tool permissions
-- [CLI Reference](./cli-reference.md) - Command-line usage
-- [Examples](./examples.md) - Common workflows
+- [Configuration Guide](./configuration.md)
+- [CLI Reference](./cli-reference.md)
+- [Examples](./examples.md)
