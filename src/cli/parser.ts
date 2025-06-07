@@ -21,6 +21,7 @@ export function createClaudeComposerCommand(): Command {
       'Ignore configuration from ~/.claude-composer/config.yaml',
     )
     .option('--quiet', 'Suppress preflight messages')
+    .option('--mode <mode>', 'Start mode (act or plan)')
     .option(
       '--allow-buffer-snapshots',
       'Enable Ctrl+Shift+S to save terminal buffer snapshots to ~/.claude-composer/logs/',

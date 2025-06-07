@@ -32,6 +32,7 @@ export class ResponseQueue {
     if (response === null || response === undefined) {
       return
     }
+
     const queuedResponse: QueuedResponse = {
       id: `${Date.now()}-${Math.random()}`,
       response,
@@ -70,7 +71,6 @@ export class ResponseQueue {
     response: string | (string | number)[],
   ): Promise<void> {
     const responses = Array.isArray(response) ? response : [response]
-
     for (const resp of responses) {
       if (typeof resp === 'number') {
         // If it's a number, use it as a pause duration in milliseconds

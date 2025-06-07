@@ -234,12 +234,28 @@ const confirmationPatterns: PatternConfig[] = [
   },
 ]
 
-export function createPipedInputPattern(
-  getPipedInputPath: () => string | undefined,
+export function createAppReadyPattern(
+  getAppConfig: () => { pipedInputPath?: string; mode?: string },
 ): PatternConfig {
-  const getPipedInputResponse = (): string[] | undefined => {
-    const pipedInputPath = getPipedInputPath()
+  const getAppReadyResponse = (): string[] | undefined => {
+    const config = getAppConfig()
+    const pipedInputPath = config.pipedInputPath
 
+    // If plan mode is enabled, send SHIFT+TAB twice first
+    if (config.mode === 'plan') {
+      if (pipedInputPath && fs.existsSync(pipedInputPath)) {
+        try {
+          const content = fs.readFileSync(pipedInputPath, 'utf8').trimEnd()
+          return content
+            ? ['\x1b[Z', 100, '\x1b[Z', 100, content, 500, '\r']
+            : ['\x1b[Z', 100, '\x1b[Z']
+        } catch (error) {}
+      }
+      // Even without piped content, send SHIFT+TAB in plan mode
+      return ['\x1b[Z', 100, '\x1b[Z']
+    }
+
+    // Normal piped input mode (no plan mode)
     if (!pipedInputPath || !fs.existsSync(pipedInputPath)) {
       return
     }
@@ -251,9 +267,9 @@ export function createPipedInputPattern(
   }
 
   return {
-    id: 'pipe-on-app-ready',
-    title: 'Pipe on app ready',
-    response: getPipedInputResponse,
+    id: 'app-ready-handler',
+    title: 'App ready handler',
+    response: getAppReadyResponse,
     pattern: ['? for shortcuts'],
     triggerText: '? for shortcuts',
   }
