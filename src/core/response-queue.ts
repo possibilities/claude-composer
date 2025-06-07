@@ -3,7 +3,7 @@ import { ChildProcess } from 'child_process'
 
 export interface QueuedResponse {
   id: string
-  response: string | string[] | null | undefined
+  response: string | (string | number)[] | null | undefined
   timestamp: number
   delay: number
 }
@@ -25,7 +25,7 @@ export class ResponseQueue {
   }
 
   enqueue(
-    response: string | string[] | null | undefined,
+    response: string | (string | number)[] | null | undefined,
     delay: number = 0,
   ): void {
     // Skip if response is null or undefined
@@ -66,14 +66,22 @@ export class ResponseQueue {
     this.processing = false
   }
 
-  private async sendResponse(response: string | string[]): Promise<void> {
+  private async sendResponse(
+    response: string | (string | number)[],
+  ): Promise<void> {
     const responses = Array.isArray(response) ? response : [response]
 
     for (const resp of responses) {
-      if (this.ptyProcess) {
-        this.ptyProcess.write(resp)
-      } else if (this.childProcess?.stdin) {
-        this.childProcess.stdin.write(resp)
+      if (typeof resp === 'number') {
+        // If it's a number, use it as a pause duration in milliseconds
+        await this.sleep(resp)
+      } else {
+        // If it's a string, send it to the PTY or child process
+        if (this.ptyProcess) {
+          this.ptyProcess.write(resp)
+        } else if (this.childProcess?.stdin) {
+          this.childProcess.stdin.write(resp)
+        }
       }
     }
   }
