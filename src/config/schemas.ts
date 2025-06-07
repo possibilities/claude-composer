@@ -147,11 +147,16 @@ export const patternConfigSchema = z.object({
   pattern: z.array(z.string()).optional(),
   response: z.union([
     z.string(),
-    z.array(z.string()),
+    z.array(z.union([z.string(), z.number()])),
     z
       .function()
       .returns(
-        z.union([z.string(), z.array(z.string()), z.null(), z.undefined()]),
+        z.union([
+          z.string(),
+          z.array(z.union([z.string(), z.number()])),
+          z.null(),
+          z.undefined(),
+        ]),
       ),
     z.null(),
     z.undefined(),

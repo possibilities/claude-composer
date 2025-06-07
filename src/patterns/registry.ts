@@ -246,7 +246,7 @@ export function createPipedInputPattern(
 
     try {
       const content = fs.readFileSync(pipedInputPath, 'utf8').trimEnd()
-      return content ? [content, '\r'] : undefined
+      return content ? [content, 500, '\r'] : undefined
     } catch (error) {}
   }
 
