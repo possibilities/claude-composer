@@ -1,5 +1,7 @@
 # Claude Composer CLI
 
+[![Tests](https://github.com/possibilities/claude-composer/actions/workflows/test.yml/badge.svg)](https://github.com/possibilities/claude-composer/actions/workflows/test.yml)
+
 > A tool for enhancing Claude Code with automation, configuration, and better UX
 
 ## Features
