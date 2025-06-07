@@ -119,7 +119,7 @@ See [docs/toolsets.md](docs/toolsets.md) for details.
 
 ## Trusted roots
 
-Use trusted roots to define trusted parent directories to auto-accept initial trust prompts:
+Use trusted roots to define trusted parent directories to auto-accept initial trust prompts.
 
 See [docs/roots-config.md](docs/roots-config.md) for details.
 
