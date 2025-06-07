@@ -41,6 +41,36 @@ yarn global add claude-composer
 npm install -g claude-composer
 ```
 
+## Command Line Options
+
+### Core Options
+
+```bash
+# Configuration
+--ruleset <name...>              # Use specified rulesets
+--toolset <name...>              # Use specified toolsets
+--mode <mode>                    # Start in 'act' or 'plan' mode
+--ignore-global-config           # Ignore global config
+
+# Safety
+--dangerously-allow-in-dirty-directory
+--dangerously-allow-without-version-control
+--dangerously-suppress-automatic-acceptance-confirmation
+
+# Notifications
+--show-notifications / --no-show-notifications
+--sticky-notifications / --no-sticky-notifications
+
+# Debug
+--quiet                          # Suppress preflight messages
+--allow-buffer-snapshots         # Enable Ctrl+Shift+S snapshots
+--log-all-pattern-matches        # Log to ~/.claude-composer/logs/
+```
+
+All unrecognized options pass through to Claude Code.
+
+See [docs/cli-reference.md](docs/cli-reference.md) for complete reference.
+
 ## Configuration
 
 Run `claude-composer cc-init` to create configuration:
@@ -74,48 +104,6 @@ sticky_notifications: false
 ```
 
 See [docs/configuration.md](docs/configuration.md) for details.
-
-## Command Line Options
-
-### Core Options
-
-```bash
-# Configuration
---ruleset <name...>              # Use specified rulesets
---toolset <name...>              # Use specified toolsets
---mode <mode>                    # Start in 'act' or 'plan' mode
---ignore-global-config           # Ignore global config
-
-# Safety
---dangerously-allow-in-dirty-directory
---dangerously-allow-without-version-control
---dangerously-suppress-automatic-acceptance-confirmation
-
-# Notifications
---show-notifications / --no-show-notifications
---sticky-notifications / --no-sticky-notifications
-
-# Debug
---quiet                          # Suppress preflight messages
---allow-buffer-snapshots         # Enable Ctrl+Shift+S snapshots
---log-all-pattern-matches        # Log to ~/.claude-composer/logs/
-```
-
-### Subcommands
-
-```bash
-# Initialize configuration
-claude-composer cc-init [options]
-  --project                      # Create in current directory
-  --use-yolo-ruleset            # Use YOLO ruleset
-  --use-cautious-ruleset        # Use cautious ruleset
-  --use-safe-ruleset            # Use safe ruleset
-  --use-core-toolset            # Enable core toolset
-```
-
-All unrecognized options pass through to Claude Code.
-
-See [docs/cli-reference.md](docs/cli-reference.md) for complete reference.
 
 ## Rulesets
 
