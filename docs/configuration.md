@@ -86,6 +86,7 @@ roots:
 
 show_notifications: true
 sticky_notifications: false
+mode: plan # Optional: 'act' or 'plan'
 ```
 
 ## Environment Variables

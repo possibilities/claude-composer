@@ -34,6 +34,14 @@ claude-composer --toolset internal:core
 claude-composer --toolset internal:core --toolset my-tools
 ```
 
+#### `--mode <mode>`
+
+Start in specified mode ('act' or 'plan').
+
+```bash
+claude-composer --mode plan
+```
+
 #### `--ignore-global-config`
 
 Ignore global configuration file.

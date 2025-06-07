@@ -99,6 +99,7 @@ See [docs/toolsets.md](docs/toolsets.md) for details.
 # Configuration
 --ruleset <name...>              # Use specified rulesets
 --toolset <name...>              # Use specified toolsets
+--mode <mode>                    # Start in 'act' or 'plan' mode
 --ignore-global-config           # Ignore global config
 
 # Safety
