@@ -264,7 +264,7 @@ export function createPipedInputPattern(
 export function createTrustPromptPattern(
   getAppConfig: () => AppConfig | undefined,
 ): PatternConfig {
-  const checkIfPwdParentInRoots = (): string[] => {
+  const trustPromptIfPwdParentInRoots = (): string[] => {
     try {
       const appConfig = getAppConfig()
       const roots = appConfig?.roots || []
@@ -294,7 +294,7 @@ export function createTrustPromptPattern(
   return {
     id: 'allow-trusted-root',
     title: 'Allow trusted root',
-    response: checkIfPwdParentInRoots,
+    response: trustPromptIfPwdParentInRoots,
     pattern: ['Do you trust the files in this folder?'],
     triggerText: 'Do you trust the files in this folder?',
   }
