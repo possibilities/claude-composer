@@ -335,6 +335,12 @@ export async function main() {
   const preflightResult = await runPreflight(process.argv)
 
   if (preflightResult.shouldExit) {
+    // If there's an error (exitCode !== 0), exit immediately with the error code
+    // regardless of whether --print is being used
+    if (preflightResult.exitCode !== 0) {
+      process.exit(preflightResult.exitCode)
+    }
+
     if (process.argv.includes('--print')) {
       const defaultChildAppPath = path.join(
         os.homedir(),
