@@ -46,15 +46,6 @@ let pipedInputPath: string | undefined
 
 const debugLog = util.debuglog('claude-composer')
 
-// Debug logging to file (disabled in production)
-const debugLogPath = '' // path.join(os.tmpdir(), `claude-composer-debug-${Date.now()}.log`)
-const debugToFile = (msg: string) => {
-  // Uncomment for debugging
-  // try {
-  //   fs.appendFileSync(debugLogPath, `${new Date().toISOString()} ${msg}\n`)
-  // } catch (e) {}
-}
-
 export { appConfig, pipedInputPath }
 
 async function initializePatterns(): Promise<boolean> {
@@ -167,15 +158,9 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
     ? patternMatcher.processDataByType(data, filterType)
     : patternMatcher.processData(data)
 
-  debugToFile(`handlePatternMatches called, found ${matches.length} matches`)
   for (const match of matches) {
-    debugToFile(`Processing match: ${match.patternId}`)
     let actionResponse: 'Accepted' | 'Prompted' | undefined
     let actionResponseIcon: string | undefined
-
-    debugToFile(
-      `Pattern ${match.patternId}, response: ${JSON.stringify(match.response)}`,
-    )
 
     if (
       match.patternId === 'allow-trusted-root' &&
@@ -189,23 +174,13 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
       actionResponseIcon = '👍'
     } else if (match.patternId === 'app-ready-handler' && match.response) {
       // Always accept app-ready-handler responses
-      debugToFile(
-        `App ready handler accepted, enqueueing response, responseQueue exists: ${!!responseQueue}`,
-      )
-      if (responseQueue) {
-        responseQueue.enqueue(match.response)
-      } else {
-        debugToFile(`ERROR: responseQueue is not initialized!`)
-      }
+      responseQueue.enqueue(match.response)
       actionResponse = 'Accepted'
       actionResponseIcon = '👍'
     } else if (shouldAcceptPrompt(match)) {
       responseQueue.enqueue(match.response)
       actionResponse = 'Accepted'
       actionResponseIcon = '👍'
-      debugToFile(
-        `Enqueued response for ${match.patternId}: ${JSON.stringify(match.response)}`,
-      )
 
       if (match.patternId === 'app-ready-handler') {
         patternMatcher.removePattern('app-ready-handler')
@@ -262,17 +237,11 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
 function handleTerminalData(data: string): void {
   try {
     process.stdout.write(data)
-    debugToFile(
-      `Terminal data (${data.length} chars): ${JSON.stringify(data.slice(-100))}`,
-    )
 
     terminalManager.updateTerminalBuffer(data)
 
     const matchedTrigger = confirmationPatternTriggers.find(trigger =>
       data.includes(trigger),
-    )
-    debugToFile(
-      `Checking triggers, found: ${matchedTrigger}, triggers: ${confirmationPatternTriggers.join(', ')}`,
     )
     if (matchedTrigger) {
       const state = terminalManager.getTerminalState()
@@ -507,8 +476,6 @@ export async function main() {
 
   await terminalManager.initialize(terminalConfig)
 
-  console.log(`Debug log: ${debugLogPath}`)
-
   terminalManager.onData(handleTerminalData)
 
   terminalManager.onExit((code: number) => {
@@ -518,11 +485,7 @@ export async function main() {
 
   // Add app ready pattern if in plan mode or if there's piped input
   // IMPORTANT: This must be done AFTER terminal manager is initialized so response queue has targets
-  debugToFile(
-    `Checking if should add app ready pattern: mode=${appConfig?.mode}, isTTY=${process.stdin.isTTY}`,
-  )
   if (appConfig?.mode === 'plan' || !process.stdin.isTTY) {
-    debugToFile(`Adding app ready pattern`)
     const appStartedPattern = createAppReadyPattern(() => ({
       pipedInputPath,
       mode: appConfig?.mode,
@@ -530,11 +493,7 @@ export async function main() {
     try {
       patternMatcher.addPattern(appStartedPattern)
       confirmationPatternTriggers.push(appStartedPattern.triggerText!)
-      debugToFile(
-        `App ready pattern added successfully, triggerText: ${appStartedPattern.triggerText}`,
-      )
     } catch (error) {
-      debugToFile(`Failed to add app-ready-handler pattern: ${error.message}`)
       console.error(`Failed to add app-ready-handler pattern: ${error.message}`)
     }
   }
