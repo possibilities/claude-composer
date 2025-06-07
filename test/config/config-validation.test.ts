@@ -113,6 +113,71 @@ describe('Config Validation', () => {
         ).toBe(true)
       }
     })
+
+    it('should accept config with valid mode', () => {
+      const result = validateAppConfig({
+        mode: 'plan',
+      })
+
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data).toEqual({
+          mode: 'plan',
+        })
+      }
+    })
+
+    it('should accept mode act', () => {
+      const result = validateAppConfig({
+        mode: 'act',
+      })
+
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data).toEqual({
+          mode: 'act',
+        })
+      }
+    })
+
+    it('should reject invalid mode values', () => {
+      const result = validateAppConfig({
+        mode: 'invalid',
+      })
+
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error.issues[0].path).toEqual(['mode'])
+        expect(result.error.issues[0].message).toContain('Invalid enum value')
+      }
+    })
+
+    it('should reject non-string mode', () => {
+      const result = validateAppConfig({
+        mode: 123,
+      })
+
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error.issues[0].path).toEqual(['mode'])
+      }
+    })
+
+    it('should accept config without mode field', () => {
+      const result = validateAppConfig({
+        show_notifications: true,
+        toolsets: ['core'],
+      })
+
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data).toEqual({
+          show_notifications: true,
+          toolsets: ['core'],
+        })
+        expect(result.data.mode).toBeUndefined()
+      }
+    })
   })
 
   describe('ToolsetConfig validation', () => {
