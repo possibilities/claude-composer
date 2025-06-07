@@ -1,6 +1,6 @@
 # Claude Composer
 
-> A tool for enhancing Claude Code with automation, configuration, and UX tweaks
+> A tool that adds small enhancements to the Claude Code CLI
 
 [![Tests](https://github.com/possibilities/claude-composer/actions/workflows/test.yml/badge.svg)](https://github.com/possibilities/claude-composer/actions/workflows/test.yml)
 
