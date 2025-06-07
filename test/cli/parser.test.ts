@@ -76,16 +76,12 @@ describe('CLI Parser', () => {
           'claude-composer',
           '--show-notifications',
           '--sticky-notifications',
-          '--show-work-started-notifications',
-          '--show-work-complete-notifications',
         ],
         { from: 'user' },
       )
       const opts = program.opts()
       expect(opts.showNotifications).toBe(true)
       expect(opts.stickyNotifications).toBe(true)
-      expect(opts.showWorkStartedNotifications).toBe(true)
-      expect(opts.showWorkCompleteNotifications).toBe(true)
     })
 
     it('should parse safety-related flags', () => {
