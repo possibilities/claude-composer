@@ -133,15 +133,15 @@ All unrecognized options pass through to Claude Code.
 
 See [docs/cli-reference.md](docs/cli-reference.md) for complete reference.
 
-## Environment Variables
-
-See [docs/environment-variables.md](docs/environment-variables.md) for details.
-
 ## Trusted roots
 
 Use trusted roots to define trusted parent directories to auto-accept initial trust prompts:
 
 See [docs/roots-config.md](docs/roots-config.md) for details.
+
+## Environment Variables
+
+See [docs/environment-variables.md](docs/environment-variables.md) for details.
 
 ## Development
 
