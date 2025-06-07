@@ -79,7 +79,6 @@ sticky_notifications: true
   it('should handle flat sticky_notifications_* fields', async () => {
     const configContent = `
 sticky_notifications: true
-sticky_work_complete_notifications: false
 sticky_terminal_snapshot_notifications: true
 `
     fs.writeFileSync(configPath, configContent)
@@ -87,7 +86,6 @@ sticky_terminal_snapshot_notifications: true
     const config = await loadConfigFile(configPath)
 
     expect(config.sticky_notifications).toBe(true)
-    expect(config.sticky_work_complete_notifications).toBe(false)
     expect(config.sticky_terminal_snapshot_notifications).toBe(true)
   })
 })

@@ -41,7 +41,6 @@ export interface TerminalState {
   isStdinPaused: boolean
   isRawMode: boolean
   pendingPromptCheck: NodeJS.Timeout | null
-  screenReadInterval?: NodeJS.Timeout
 }
 
 export interface TerminalEvents {

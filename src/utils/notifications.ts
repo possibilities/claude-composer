@@ -14,9 +14,6 @@ export interface NotificationOptions {
 export { notifier }
 
 export type NotificationType =
-  | 'work_started'
-  | 'work_complete'
-  | 'work_complete_record'
   | 'prompted_confirmation'
   | 'accepted_confirmation'
   | 'terminal_snapshot'
@@ -29,12 +26,6 @@ export function getNotificationStickiness(
 
   // Check per-type stickiness fields first
   switch (type) {
-    case 'work_started':
-      return appConfig.sticky_work_started_notifications ?? false
-    case 'work_complete':
-      return appConfig.sticky_work_complete_notifications ?? true
-    case 'work_complete_record':
-      return appConfig.sticky_work_complete_record_notifications ?? true
     case 'prompted_confirmation':
       return appConfig.sticky_prompted_confirm_notify ?? true
     case 'accepted_confirmation':

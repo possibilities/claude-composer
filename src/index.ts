@@ -27,7 +27,6 @@ import {
   saveTerminalSnapshot,
 } from './terminal/utils'
 import type { TerminalConfig } from './terminal/types'
-import { ActivityMonitor } from './core/activity-monitor'
 import { isFileInProjectRoot } from './utils/file-utils.js'
 import {
   checkAcceptConfig,
@@ -41,7 +40,6 @@ let tempMcpConfigPath: string | undefined
 let appConfig: AppConfig | undefined
 let mergedRuleset: RulesetConfig | undefined
 let confirmationPatternTriggers: string[] = []
-let activityMonitor: ActivityMonitor | undefined
 let pipedInputPath: string | undefined
 
 const debugLog = util.debuglog('claude-composer')
@@ -440,17 +438,6 @@ export async function main() {
 
   log('※ Ready, Passing off control to Claude CLI')
 
-  if (appConfig.show_work_started_notifications === true) {
-    const projectName = process.cwd().split('/').pop() || 'Unknown'
-    showNotification(
-      {
-        message: `Claude Composer started working 🚀\nProject: ${projectName}`,
-      },
-      appConfig,
-      'work_started',
-    ).catch(err => console.error('Failed to send notification:', err))
-  }
-
   const childArgs = preflightResult.childArgs
 
   const terminalConfig: TerminalConfig = {
@@ -531,13 +518,6 @@ export async function main() {
       const newCols = process.stdout.columns || 80
       const newRows = process.stdout.rows || 30
       terminalManager.resize(newCols, newRows)
-    })
-  }
-
-  if (appConfig) {
-    activityMonitor = new ActivityMonitor(appConfig)
-    terminalManager.startTerminalPolling(1000, (snapshot: string) => {
-      activityMonitor?.checkSnapshot(snapshot)
     })
   }
 }
