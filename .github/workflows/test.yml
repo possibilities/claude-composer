@@ -31,7 +31,7 @@ jobs:
         run: rm -f pnpm-workspace.yaml
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Run tests
         run: npm run test
