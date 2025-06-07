@@ -1,7 +1,7 @@
 {
   "name": "claude-composer",
   "version": "0.1.6",
-  "description": "A tool for enhancing Claude Code",
+  "description": "A tool that adds small enhancements to Claude Code",
   "author": "Mike Bannister <notimpossiblemike@gmail.com>",
   "license": "MIT",
   "homepage": "https://github.com/possibilities/claude-composer#readme",
