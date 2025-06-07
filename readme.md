@@ -1,8 +1,8 @@
 # Claude Composer
 
-[![Tests](https://github.com/possibilities/claude-composer/actions/workflows/test.yml/badge.svg)](https://github.com/possibilities/claude-composer/actions/workflows/test.yml)
-
 > A tool for enhancing Claude Code with automation, configuration, and UX tweaks
+
+[![Tests](https://github.com/possibilities/claude-composer/actions/workflows/test.yml/badge.svg)](https://github.com/possibilities/claude-composer/actions/workflows/test.yml)
 
 ## Features
 
