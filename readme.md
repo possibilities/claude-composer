@@ -126,15 +126,3 @@ See [docs/roots-config.md](docs/roots-config.md) for details.
 ## Environment Variables
 
 See [docs/environment-variables.md](docs/environment-variables.md) for details.
-
-## Development
-
-### Release
-
-```bash
-npm run release:patch  # Bug fixes
-npm run release:minor  # New features
-npm run release:major  # Breaking changes
-```
-
-See [docs/release-process.md](docs/release-process.md) for details.
