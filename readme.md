@@ -75,22 +75,6 @@ sticky_notifications: false
 
 See [docs/configuration.md](docs/configuration.md) for details.
 
-## Rulesets
-
-Control which permission dialogs are automatically accepted.
-
-### Built-in Rulesets
-
-Control which permission dialogs are automatically accepted.
-
-See [docs/rulesets.md](docs/rulesets.md) for complete documentation.
-
-## Toolsets
-
-Configure which tools Claude can use and MCP server connections.
-
-See [docs/toolsets.md](docs/toolsets.md) for details.
-
 ## Command Line Options
 
 ### Core Options
@@ -132,6 +116,18 @@ claude-composer cc-init [options]
 All unrecognized options pass through to Claude Code.
 
 See [docs/cli-reference.md](docs/cli-reference.md) for complete reference.
+
+## Rulesets
+
+Control which permission dialogs are automatically accepted.
+
+See [docs/rulesets.md](docs/rulesets.md) for complete documentation.
+
+## Toolsets
+
+Configure which tools Claude can use and MCP server connections.
+
+See [docs/toolsets.md](docs/toolsets.md) for details.
 
 ## Trusted roots
 
