@@ -188,6 +188,10 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
           confirmationPatternTriggers.splice(index, 1)
         }
       }
+
+      if (match.patternId === 'allow-trusted-root') {
+        patternMatcher.removePattern('allow-trusted-root')
+      }
     } else {
       actionResponse = 'Prompted'
       actionResponseIcon = '✋'
