@@ -54,7 +54,7 @@ describe('allowTrustedRootPattern', () => {
         allowTrustedRootPattern.response as Function
 
       const result = checkIfPwdParentInRoots()
-      expect(result).toEqual([])
+      expect(result).toBeUndefined()
     })
 
     it('should return Yes (1) when parent directory matches a root', () => {
@@ -90,7 +90,7 @@ describe('allowTrustedRootPattern', () => {
       process.chdir(testDir)
 
       const result = checkIfPwdParentInRoots()
-      expect(result).toEqual([])
+      expect(result).toBeUndefined()
     })
 
     it('should return empty array when parent directory does not match any root', () => {
@@ -109,7 +109,7 @@ describe('allowTrustedRootPattern', () => {
       process.chdir(testDir)
 
       const result = checkIfPwdParentInRoots()
-      expect(result).toEqual([])
+      expect(result).toBeUndefined()
     })
 
     it('should expand ~ in root paths', () => {
@@ -166,7 +166,7 @@ describe('allowTrustedRootPattern', () => {
       }
 
       const result = checkIfPwdParentInRoots()
-      expect(result).toEqual([])
+      expect(result).toBeUndefined()
 
       process.cwd = originalCwd
     })

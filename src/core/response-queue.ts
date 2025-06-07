@@ -3,7 +3,7 @@ import { ChildProcess } from 'child_process'
 
 export interface QueuedResponse {
   id: string
-  response: string | string[]
+  response: string | string[] | null | undefined
   timestamp: number
   delay: number
 }
@@ -24,7 +24,14 @@ export class ResponseQueue {
     this.childProcess = childProcess
   }
 
-  enqueue(response: string | string[], delay: number = 0): void {
+  enqueue(
+    response: string | string[] | null | undefined,
+    delay: number = 0,
+  ): void {
+    // Skip if response is null or undefined
+    if (response === null || response === undefined) {
+      return
+    }
     const queuedResponse: QueuedResponse = {
       id: `${Date.now()}-${Math.random()}`,
       response,

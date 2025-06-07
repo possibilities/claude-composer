@@ -165,7 +165,9 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
     if (
       match.patternId === 'allow-trusted-root' &&
       match.response &&
-      match.response.length > 0
+      (Array.isArray(match.response)
+        ? match.response.length > 0
+        : match.response !== '')
     ) {
       responseQueue.enqueue(match.response)
       actionResponse = 'Accepted'
