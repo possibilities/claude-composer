@@ -87,31 +87,6 @@ export function createClaudeComposerCommand(): Command {
       'Show notifications when prompted (default)',
     )
     .option('--no-show-prompted-confirm-notify', 'Hide prompted notifications')
-    // New work notification settings
-    .option(
-      '--show-work-started-notifications',
-      'Show work started notification',
-    )
-    .option(
-      '--no-show-work-started-notifications',
-      'Hide work started notification (default)',
-    )
-    .option(
-      '--show-work-complete-notifications',
-      'Show work complete notification (default)',
-    )
-    .option(
-      '--no-show-work-complete-notifications',
-      'Hide work complete notification',
-    )
-    .option(
-      '--show-work-complete-record-notifications',
-      'Show record-breaking notification (default)',
-    )
-    .option(
-      '--no-show-work-complete-record-notifications',
-      'Hide record-breaking notification',
-    )
     // Per-confirmation type flags
     .option(
       '--show-edit-file-confirm-notify',
@@ -154,30 +129,6 @@ export function createClaudeComposerCommand(): Command {
       'Hide notifications for content fetches',
     )
     // Per-type stickiness flags
-    .option(
-      '--sticky-work-started-notifications',
-      'Make work started notifications sticky',
-    )
-    .option(
-      '--no-sticky-work-started-notifications',
-      'Make work started notifications auto-dismiss',
-    )
-    .option(
-      '--sticky-work-complete-notifications',
-      'Make work complete notifications sticky',
-    )
-    .option(
-      '--no-sticky-work-complete-notifications',
-      'Make work complete notifications auto-dismiss',
-    )
-    .option(
-      '--sticky-work-complete-record-notifications',
-      'Make record-breaking notifications sticky',
-    )
-    .option(
-      '--no-sticky-work-complete-record-notifications',
-      'Make record-breaking notifications auto-dismiss',
-    )
     .option(
       '--sticky-prompted-confirm-notify',
       'Make prompted confirmation notifications sticky',

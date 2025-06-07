@@ -17,7 +17,6 @@ export CLAUDE_COMPOSER_NO_NOTIFY=1
 
 - **Dialog Confirmations**: File operations and commands
 - **Automatic Acceptance**: When rules auto-accept
-- **Work Completion**: When Claude finishes tasks
 
 ## Sticky Notifications
 
@@ -29,7 +28,6 @@ claude-composer --sticky-notifications
 
 # Specific types only
 claude-composer --sticky-edit-file-confirm-notifications
-claude-composer --sticky-work-complete-notifications
 ```
 
 ## See Also

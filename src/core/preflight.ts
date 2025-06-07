@@ -31,8 +31,6 @@ export async function runPreflight(
 ): Promise<PreflightResult> {
   let appConfig: AppConfig = {
     show_notifications: true,
-    show_work_started_notifications: false,
-    show_work_complete_notifications: true,
     dangerously_allow_in_dirty_directory: false,
     dangerously_allow_without_version_control: false,
   }
@@ -186,20 +184,6 @@ export async function runPreflight(
       parsedOptions.showPromptedConfirmNotify
   }
 
-  // New work notification settings
-  if (parsedOptions.showWorkStartedNotifications !== undefined) {
-    appConfig.show_work_started_notifications =
-      parsedOptions.showWorkStartedNotifications
-  }
-  if (parsedOptions.showWorkCompleteNotifications !== undefined) {
-    appConfig.show_work_complete_notifications =
-      parsedOptions.showWorkCompleteNotifications
-  }
-  if (parsedOptions.showWorkCompleteRecordNotifications !== undefined) {
-    appConfig.show_work_complete_record_notifications =
-      parsedOptions.showWorkCompleteRecordNotifications
-  }
-
   // Per-confirmation type settings
   if (
     parsedOptions.showEditFileConfirmNotify !== undefined ||
@@ -234,18 +218,6 @@ export async function runPreflight(
   }
 
   // Per-type stickiness settings
-  if (parsedOptions.stickyWorkStartedNotifications !== undefined) {
-    appConfig.sticky_work_started_notifications =
-      parsedOptions.stickyWorkStartedNotifications
-  }
-  if (parsedOptions.stickyWorkCompleteNotifications !== undefined) {
-    appConfig.sticky_work_complete_notifications =
-      parsedOptions.stickyWorkCompleteNotifications
-  }
-  if (parsedOptions.stickyWorkCompleteRecordNotifications !== undefined) {
-    appConfig.sticky_work_complete_record_notifications =
-      parsedOptions.stickyWorkCompleteRecordNotifications
-  }
   if (parsedOptions.stickyPromptedConfirmNotify !== undefined) {
     appConfig.sticky_prompted_confirm_notify =
       parsedOptions.stickyPromptedConfirmNotify

@@ -72,10 +72,6 @@ Enable/disable desktop notifications.
 
 Keep notifications visible until dismissed.
 
-#### `--show-work-complete-notifications` / `--no-show-work-complete-notifications`
-
-Show/hide work completion notifications.
-
 ### Debug
 
 #### `--quiet`

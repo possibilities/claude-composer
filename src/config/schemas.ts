@@ -22,16 +22,8 @@ export const appConfigSchema = z
     show_prompted_confirm_notify: z.boolean().optional(),
     confirm_notify: confirmNotifySchema.optional(),
 
-    // Work notification settings
-    show_work_started_notifications: z.boolean().optional(),
-    show_work_complete_notifications: z.boolean().optional(),
-    show_work_complete_record_notifications: z.boolean().optional(),
-
     // Stickiness settings
     sticky_notifications: z.boolean().optional(),
-    sticky_work_started_notifications: z.boolean().optional(),
-    sticky_work_complete_notifications: z.boolean().optional(),
-    sticky_work_complete_record_notifications: z.boolean().optional(),
     sticky_prompted_confirm_notify: z.boolean().optional(),
     sticky_accepted_confirm_notify: z.boolean().optional(),
     sticky_terminal_snapshot_notifications: z.boolean().optional(),

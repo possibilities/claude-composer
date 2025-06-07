@@ -29,19 +29,10 @@ export interface ParsedOptions {
   showNotifications?: boolean
   stickyNotifications?: boolean
 
-  // Legacy notification settings
-  notifyWorkStarted?: boolean
-  notifyWorkComplete?: boolean
-
   // New confirmation notification settings
   showConfirmNotify?: boolean
   showAcceptedConfirmNotify?: boolean
   showPromptedConfirmNotify?: boolean
-
-  // New work notification settings
-  showWorkStartedNotifications?: boolean
-  showWorkCompleteNotifications?: boolean
-  showWorkCompleteRecordNotifications?: boolean
 
   // Per-confirmation type settings
   showEditFileConfirmNotify?: boolean
@@ -51,9 +42,6 @@ export interface ParsedOptions {
   showFetchContentConfirmNotify?: boolean
 
   // Per-type stickiness settings
-  stickyWorkStartedNotifications?: boolean
-  stickyWorkCompleteNotifications?: boolean
-  stickyWorkCompleteRecordNotifications?: boolean
   stickyPromptedConfirmNotify?: boolean
   stickyAcceptedConfirmNotify?: boolean
   stickyTerminalSnapshotNotifications?: boolean

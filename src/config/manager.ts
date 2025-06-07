@@ -341,25 +341,13 @@ export class ConfigManager {
         fetch_content: true,
       },
 
-      // Work notification settings
-      show_work_started_notifications: false,
-      show_work_complete_notifications: true,
-      show_work_complete_record_notifications: true,
-
       // Stickiness settings with smart defaults
       sticky_notifications: {
         global: false,
-        work_started: false,
-        work_complete: true,
-        work_complete_record: true,
         prompted_confirmations: true,
         accepted_confirmations: false,
         terminal_snapshot: false,
       },
-
-      // Legacy notification settings (for backward compatibility)
-      notify_work_started: false,
-      notify_work_complete: true,
 
       // Other defaults
       log_all_pattern_matches: false,

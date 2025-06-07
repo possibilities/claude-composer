@@ -19,23 +19,6 @@ describe('Config Validation', () => {
       }
     })
 
-    it('should accept config with show_work_started_notifications and show_work_complete_notifications', () => {
-      const result = validateAppConfig({
-        show_notifications: true,
-        show_work_started_notifications: false,
-        show_work_complete_notifications: true,
-      })
-
-      expect(result.success).toBe(true)
-      if (result.success) {
-        expect(result.data).toEqual({
-          show_notifications: true,
-          show_work_started_notifications: false,
-          show_work_complete_notifications: true,
-        })
-      }
-    })
-
     it('should reject config with invalid field types', () => {
       const result = validateAppConfig({
         show_notifications: 'yes',
