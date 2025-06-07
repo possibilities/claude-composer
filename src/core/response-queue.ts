@@ -70,7 +70,6 @@ export class ResponseQueue {
     const responses = Array.isArray(response) ? response : [response]
 
     for (const resp of responses) {
-      await new Promise(resolve => setTimeout(resolve, 10))
       if (this.ptyProcess) {
         this.ptyProcess.write(resp)
       } else if (this.childProcess?.stdin) {
