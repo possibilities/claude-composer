@@ -27,6 +27,9 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Remove pnpm workspace file for CI
+        run: rm -f pnpm-workspace.yaml
+
       - name: Install dependencies
         run: pnpm install
 
