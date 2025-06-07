@@ -148,7 +148,13 @@ export const patternConfigSchema = z.object({
   response: z.union([
     z.string(),
     z.array(z.string()),
-    z.function().returns(z.union([z.string(), z.array(z.string())])),
+    z
+      .function()
+      .returns(
+        z.union([z.string(), z.array(z.string()), z.null(), z.undefined()]),
+      ),
+    z.null(),
+    z.undefined(),
   ]),
   notification: z.string().optional(),
   triggerText: z.string().optional(),

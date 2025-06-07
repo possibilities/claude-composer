@@ -103,7 +103,7 @@ describe('Roots Configuration', () => {
       expect(typeof response).toBe('function')
       if (typeof response === 'function') {
         const result = response()
-        expect(result).toEqual([])
+        expect(result).toBeUndefined()
       }
     })
 
@@ -140,7 +140,7 @@ describe('Roots Configuration', () => {
       const response = trustPromptPattern.response
       if (typeof response === 'function') {
         const result = response()
-        expect(result).toEqual([])
+        expect(result).toBeUndefined()
       }
     })
 
@@ -158,7 +158,7 @@ describe('Roots Configuration', () => {
       const response = trustPromptPattern.response
       if (typeof response === 'function') {
         const result = response()
-        expect(result).toEqual([])
+        expect(result).toBeUndefined()
       }
     })
 
@@ -169,7 +169,7 @@ describe('Roots Configuration', () => {
       const response = trustPromptPattern.response
       if (typeof response === 'function') {
         const result = response()
-        expect(result).toEqual([])
+        expect(result).toBeUndefined()
       }
     })
 

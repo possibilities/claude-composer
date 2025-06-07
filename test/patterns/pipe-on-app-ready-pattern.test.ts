@@ -17,16 +17,19 @@ describe('Pipe on App Ready Pattern', () => {
     expect(typeof pipeOnAppReadyPattern.response).toBe('function')
   })
 
-  it('should return an empty array when no piped input path', () => {
-    const response = pipeOnAppReadyPattern.response as () => string[]
+  it('should return undefined when no piped input path', () => {
+    const response = pipeOnAppReadyPattern.response as () =>
+      | string[]
+      | undefined
     const result = response()
-    expect(Array.isArray(result)).toBe(true)
-    expect(result).toHaveLength(0)
+    expect(result).toBeUndefined()
   })
 
-  it('should return empty array when piped input path is undefined', () => {
-    const response = pipeOnAppReadyPattern.response as () => string[]
+  it('should return undefined when piped input path is undefined', () => {
+    const response = pipeOnAppReadyPattern.response as () =>
+      | string[]
+      | undefined
     const result = response()
-    expect(result).toEqual([])
+    expect(result).toBeUndefined()
   })
 })

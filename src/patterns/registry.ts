@@ -237,19 +237,17 @@ const confirmationPatterns: PatternConfig[] = [
 export function createPipedInputPattern(
   getPipedInputPath: () => string | undefined,
 ): PatternConfig {
-  const getPipedInputResponse = (): string[] => {
+  const getPipedInputResponse = (): string[] | undefined => {
     const pipedInputPath = getPipedInputPath()
 
     if (!pipedInputPath || !fs.existsSync(pipedInputPath)) {
-      return []
+      return
     }
 
     try {
       const content = fs.readFileSync(pipedInputPath, 'utf8').trimEnd()
-      return content ? [content, '\r'] : []
-    } catch (error) {
-      return []
-    }
+      return content ? [content, '\r'] : undefined
+    } catch (error) {}
   }
 
   return {
@@ -264,13 +262,13 @@ export function createPipedInputPattern(
 export function createTrustPromptPattern(
   getAppConfig: () => AppConfig | undefined,
 ): PatternConfig {
-  const trustPromptIfPwdParentInRoots = (): string[] => {
+  const trustPromptIfPwdParentInRoots = (): string[] | undefined => {
     try {
       const appConfig = getAppConfig()
       const roots = appConfig?.roots || []
 
       if (roots.length === 0) {
-        return []
+        return
       }
 
       const cwd = process.cwd()
@@ -284,11 +282,7 @@ export function createTrustPromptPattern(
           return ['1']
         }
       }
-
-      return []
-    } catch (error) {
-      return []
-    }
+    } catch (error) {}
   }
 
   return {

@@ -8,7 +8,7 @@ import { CONFIG_PATHS } from '../config/paths'
 export interface MatchResult {
   patternId: string
   patternTitle: string
-  response: string | string[]
+  response: string | string[] | null | undefined
   matchedText: string
   fullMatchedContent: string
   firstLineNumber: number
