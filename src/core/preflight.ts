@@ -168,6 +168,11 @@ export async function runPreflight(
   if (parsedOptions.allowBufferSnapshots !== undefined) {
     appConfig.allow_buffer_snapshots = parsedOptions.allowBufferSnapshots
   }
+  // Handle mode: CLI flag takes precedence over config
+  if (parsedOptions.mode !== undefined) {
+    appConfig.mode = parsedOptions.mode
+  }
+  // If no CLI flag provided, config value is preserved from loadConfigFile above
   // Confirmation notification settings
   if (parsedOptions.showConfirmNotify !== undefined) {
     appConfig.show_confirm_notify = parsedOptions.showConfirmNotify
@@ -368,6 +373,8 @@ export async function runPreflight(
     } else if (arg === '--toolset' && i + 1 < argv.length) {
       i++
     } else if (arg === '--ruleset' && i + 1 < argv.length) {
+      i++
+    } else if (arg === '--mode' && i + 1 < argv.length) {
       i++
     }
   }

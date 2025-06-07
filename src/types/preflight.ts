@@ -70,6 +70,7 @@ export interface ParsedOptions {
   logAllPatternMatches?: boolean
   allowBufferSnapshots?: boolean
   quiet?: boolean
+  mode?: string
 }
 
 // Re-export for convenience
