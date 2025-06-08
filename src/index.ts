@@ -175,6 +175,14 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
       responseQueue.enqueue(match.response)
       actionResponse = 'Accepted'
       actionResponseIcon = '👍'
+
+      // Remove the pattern after first use to prevent re-triggering
+      patternMatcher.removePattern('app-ready-handler')
+      const triggerText = '? for shortcuts'
+      const index = confirmationPatternTriggers.indexOf(triggerText)
+      if (index > -1) {
+        confirmationPatternTriggers.splice(index, 1)
+      }
     } else if (shouldAcceptPrompt(match)) {
       responseQueue.enqueue(match.response)
       actionResponse = 'Accepted'
