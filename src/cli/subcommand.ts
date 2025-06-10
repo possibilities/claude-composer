@@ -25,8 +25,10 @@ export function detectSubcommand(args: string[]): SubcommandDetectionResult {
     return { isSubcommand: false }
   }
 
-  // Check if it's a single word (no spaces)
-  const isSubcommand = !firstNonOption.includes(' ')
+  // Check if it's a single word (no spaces) and not a path
+  const hasSpaces = firstNonOption.includes(' ')
+  const isPath = firstNonOption.startsWith('/') || firstNonOption.includes('/')
+  const isSubcommand = !hasSpaces && !isPath
 
   return {
     isSubcommand,
