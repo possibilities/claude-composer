@@ -15,13 +15,6 @@
   "engines": {
     "node": ">=20"
   },
-  "keywords": [
-    "claude",
-    "cli",
-    "composer",
-    "ai",
-    "anthropic"
-  ],
   "files": [
     "dist"
   ],
