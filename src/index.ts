@@ -229,7 +229,7 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
               sound: true,
             },
             appConfig,
-          ).catch(err => console.error('Failed to send notification:', err))
+          ).catch(err => {})
           return
         }
       }
@@ -239,7 +239,7 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
         appConfig,
         actionResponse,
         actionResponseIcon,
-      ).catch(err => console.error('Failed to send notification:', err))
+      ).catch(err => {})
     }
   }
 }
@@ -456,7 +456,7 @@ export async function main() {
       confirmationPatternTriggers.push(trustPromptPattern.triggerText)
     }
   } catch (error) {
-    console.error(`Failed to add trust prompt pattern: ${error.message}`)
+    // Silently fail - don't output to console after child process starts
   }
 
   log('※ Ready, Passing off control to Claude CLI')
@@ -493,7 +493,7 @@ export async function main() {
       patternMatcher.addPattern(appStartedPattern)
       confirmationPatternTriggers.push(appStartedPattern.triggerText!)
     } catch (error) {
-      console.error(`Failed to add app-ready-handler pattern: ${error.message}`)
+      // Silently fail - don't output to console after child process starts
     }
   }
 
@@ -536,7 +536,7 @@ export async function main() {
           terminalManager.resize(newCols, newRows)
         })
       } catch (error) {
-        console.warn('※ Could not open /dev/tty for input:', error)
+        // Silently fail - don't output to console after child process starts
       }
     }
   }

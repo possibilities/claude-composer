@@ -171,7 +171,7 @@ describe('allowTrustedRootPattern', () => {
       process.cwd = originalCwd
     })
 
-    it('should show console output when trusting a directory', () => {
+    it('should not show console output when trusting a directory', () => {
       const consoleSpy = vi.spyOn(console, 'log')
       const testRoot = path.join(tempDir, 'test-root')
       const testDir = path.join(testRoot, 'project')
@@ -190,12 +190,8 @@ describe('allowTrustedRootPattern', () => {
 
       expect(result).toEqual(['1'])
 
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('TRUSTED ROOT DIRECTORY'),
-      )
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Parent directory is in configured roots'),
-      )
+      // Should not output to console to avoid interrupting child process
+      expect(consoleSpy).not.toHaveBeenCalled()
 
       consoleSpy.mockRestore()
     })

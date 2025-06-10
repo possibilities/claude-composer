@@ -11,48 +11,6 @@ import * as path from 'path'
 import * as os from 'os'
 import { expandPath } from '../utils/file-utils'
 
-function displayTrustedRootNotification(
-  expandedRoot: string,
-  cwd: string,
-): void {
-  console.log('')
-  console.log(
-    '\x1b[33m╔═════════════════════════════════════════════════════════════════╗\x1b[0m',
-  )
-  console.log(
-    '\x1b[33m║                      TRUSTED ROOT DIRECTORY                     ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[33m╠═════════════════════════════════════════════════════════════════╣\x1b[0m',
-  )
-  console.log(
-    '\x1b[33m║ Parent directory is in configured roots.                        ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[33m║                                                                 ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[33m║ This means:                                                     ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[33m║ • App trust prompt automatically accepted                       ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[33m║ • All confirmation prompts and warnings are skipped             ║\x1b[0m',
-  )
-  console.log(
-    '\x1b[33m║                                                                 ║\x1b[0m',
-  )
-  const rootLine = `║ Root: ${expandedRoot.length > 49 ? '...' + expandedRoot.slice(-49) : expandedRoot}`
-  console.log(`\x1b[33m${rootLine.padEnd(66)}║\x1b[0m`)
-  const dirLine = `║ Directory: ${cwd.length > 49 ? '...' + cwd.slice(-49) : cwd}`
-  console.log(`\x1b[33m${dirLine.padEnd(66)}║\x1b[0m`)
-  console.log(
-    '\x1b[33m╚═════════════════════════════════════════════════════════════════╝\x1b[0m',
-  )
-  console.log('')
-}
-
 type ExtractedData = {
   body?: string
   [key: string]: any
@@ -293,8 +251,6 @@ export function createTrustPromptPattern(
       for (const root of roots) {
         const expandedRoot = expandPath(root)
         if (parentDir === expandedRoot) {
-          displayTrustedRootNotification(expandedRoot, cwd)
-
           return ['1']
         }
       }
