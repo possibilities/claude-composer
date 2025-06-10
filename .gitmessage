@@ -1,0 +1,3 @@
+Add emojis and conditional checks to release script
+
+Enhance release.sh with visual feedback using emojis throughout the process and add conditional checks for test/build scripts to skip steps when package.json scripts don't exist. Improves user experience with clearer status indicators and handles projects without standard npm scripts gracefully.
