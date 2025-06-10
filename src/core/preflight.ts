@@ -342,6 +342,15 @@ export async function runPreflight(
     const arg = argv[i]
     if (!knownOptions.has(arg)) {
       childArgs.push(arg)
+      // If this is an unknown option that expects a value, include the next argument too
+      if (arg.startsWith('--') && !arg.includes('=') && i + 1 < argv.length) {
+        const nextArg = argv[i + 1]
+        // Only skip the next arg if it's not another option
+        if (nextArg && !nextArg.startsWith('-')) {
+          i++
+          childArgs.push(nextArg)
+        }
+      }
     } else if (arg === '--toolset' && i + 1 < argv.length) {
       i++
     } else if (arg === '--ruleset' && i + 1 < argv.length) {
