@@ -6,9 +6,9 @@
 
 ## Features
 
-- **Reduced interruptions**: Simple YOLO mode for automatic prompt acceptance
+- **Reduced interruptions**: Automatic confirmation prompt acceptance
 - **Tool management**: Toolsets configure which tools Claude can use
-- **Enhanced visibility**: System notifications keep you informed
+- **Enhanced visibility**: System notifications keep you informed (BROKEN, WILL FIX SOON)
 
 ## Quick Start
 
