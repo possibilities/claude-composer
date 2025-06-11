@@ -40,11 +40,11 @@ let tempMcpConfigPath: string | undefined
 let appConfig: AppConfig | undefined
 let yolo: boolean | undefined
 let confirmationPatternTriggers: string[] = []
-let pipedInputPath: string | undefined
+let positionalArgContentPath: string | undefined
 
 const debugLog = util.debuglog('claude-composer')
 
-export { appConfig, pipedInputPath }
+export { appConfig, positionalArgContentPath }
 
 async function initializePatterns(): Promise<boolean> {
   let patternsToUse = patterns
@@ -110,9 +110,9 @@ function cleanup() {
     } catch (e) {}
   }
 
-  if (pipedInputPath && fs.existsSync(pipedInputPath)) {
+  if (positionalArgContentPath && fs.existsSync(positionalArgContentPath)) {
     try {
-      fs.unlinkSync(pipedInputPath)
+      fs.unlinkSync(positionalArgContentPath)
     } catch (e) {}
   }
 
@@ -261,6 +261,47 @@ function handleStdinData(data: Buffer): void {
 }
 
 export async function main() {
+  // Check for piped input and exit immediately
+  if (!process.stdin.isTTY) {
+    console.error(
+      '\x1b[31m╔══════════════════════════════════════════════════════╗\x1b[0m',
+    )
+    console.error(
+      '\x1b[31m║                    PIPED INPUT NOT SUPPORTED         ║\x1b[0m',
+    )
+    console.error(
+      '\x1b[31m╠══════════════════════════════════════════════════════╣\x1b[0m',
+    )
+    console.error(
+      "\x1b[31m║ Claude Composer doesn't support piped input.         ║\x1b[0m",
+    )
+    console.error(
+      '\x1b[31m║                                                      ║\x1b[0m',
+    )
+    console.error(
+      '\x1b[31m║ Instead, pass your content as a positional argument: ║\x1b[0m',
+    )
+    console.error(
+      '\x1b[31m║                                                      ║\x1b[0m',
+    )
+    console.error(
+      '\x1b[31m║   claude "your content here"                         ║\x1b[0m',
+    )
+    console.error(
+      '\x1b[31m║                                                      ║\x1b[0m',
+    )
+    console.error(
+      '\x1b[31m║ Example:                                             ║\x1b[0m',
+    )
+    console.error(
+      '\x1b[31m║   claude "explain this error: ..."                   ║\x1b[0m',
+    )
+    console.error(
+      '\x1b[31m╚══════════════════════════════════════════════════════╝\x1b[0m',
+    )
+    process.exit(1)
+  }
+
   if (process.argv[2] === 'cc-init') {
     const { handleCcInit } = await import('./cli/cc-init.js')
     await handleCcInit(process.argv.slice(3))
@@ -448,10 +489,13 @@ export async function main() {
     // Save the positional argument to a file
     const tmpDir = os.tmpdir()
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-    pipedInputPath = path.join(tmpDir, `claude-composer-piped-${timestamp}.txt`)
+    positionalArgContentPath = path.join(
+      tmpDir,
+      `claude-composer-positional-${timestamp}.txt`,
+    )
 
     // Write the first positional argument to the file
-    fs.writeFileSync(pipedInputPath, childArgs[0])
+    fs.writeFileSync(positionalArgContentPath, childArgs[0])
 
     // Remove the argument from childArgs
     childArgs.splice(0, 1)
@@ -476,11 +520,11 @@ export async function main() {
     process.exit(code)
   })
 
-  // Add app ready pattern if in plan mode, if there's piped input, or if we saved positional args
+  // Add app ready pattern if in plan mode or if we saved positional args
   // IMPORTANT: This must be done AFTER terminal manager is initialized so response queue has targets
-  if (appConfig?.mode === 'plan' || !process.stdin.isTTY || pipedInputPath) {
+  if (appConfig?.mode === 'plan' || positionalArgContentPath) {
     const appStartedPattern = createAppReadyPattern(() => ({
-      pipedInputPath,
+      positionalArgContentPath,
       mode: appConfig?.mode,
     }))
     try {
@@ -491,57 +535,13 @@ export async function main() {
     }
   }
 
-  if (process.stdin.isTTY) {
-    process.stdin.on('data', handleStdinData)
-  } else {
-    const fs = await import('fs')
-    const os = await import('os')
-    const path = await import('path')
+  process.stdin.on('data', handleStdinData)
 
-    const tmpDir = os.tmpdir()
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
-    pipedInputPath = path.join(tmpDir, `claude-composer-piped-${timestamp}.txt`)
-    const writeStream = fs.createWriteStream(pipedInputPath)
-
-    process.stdin.on('data', chunk => {
-      writeStream.write(chunk)
-    })
-
-    process.stdin.on('end', () => {
-      writeStream.end()
-    })
-
-    process.stdin.resume()
-
-    const tty = await import('tty')
-    if (os.platform() !== 'win32') {
-      try {
-        const ttyFd = fs.openSync('/dev/tty', 'r')
-        const ttyStream = new tty.ReadStream(ttyFd)
-
-        ttyStream.setRawMode(true)
-
-        ttyStream.on('data', handleStdinData)
-        ;(global as any).__ttyStream = ttyStream
-
-        process.stdout.on('resize', () => {
-          const newCols = process.stdout.columns || 80
-          const newRows = process.stdout.rows || 30
-          terminalManager.resize(newCols, newRows)
-        })
-      } catch (error) {
-        // Silently fail - don't output to console after child process starts
-      }
-    }
-  }
-
-  if (process.stdin.isTTY) {
-    process.stdout.on('resize', () => {
-      const newCols = process.stdout.columns || 80
-      const newRows = process.stdout.rows || 30
-      terminalManager.resize(newCols, newRows)
-    })
-  }
+  process.stdout.on('resize', () => {
+    const newCols = process.stdout.columns || 80
+    const newRows = process.stdout.rows || 30
+    terminalManager.resize(newCols, newRows)
+  })
 }
 
 main().catch(error => {

@@ -193,33 +193,37 @@ const confirmationPatterns: PatternConfig[] = [
 ]
 
 export function createAppReadyPattern(
-  getAppConfig: () => { pipedInputPath?: string; mode?: string },
+  getAppConfig: () => { positionalArgContentPath?: string; mode?: string },
 ): PatternConfig {
   const getAppReadyResponse = (): string[] | undefined => {
     const config = getAppConfig()
-    const pipedInputPath = config.pipedInputPath
+    const positionalArgContentPath = config.positionalArgContentPath
 
     // If plan mode is enabled, send SHIFT+TAB twice first
     if (config.mode === 'plan') {
-      if (pipedInputPath && fs.existsSync(pipedInputPath)) {
+      if (positionalArgContentPath && fs.existsSync(positionalArgContentPath)) {
         try {
-          const content = fs.readFileSync(pipedInputPath, 'utf8').trimEnd()
+          const content = fs
+            .readFileSync(positionalArgContentPath, 'utf8')
+            .trimEnd()
           return content
             ? ['\x1b[Z', 100, '\x1b[Z', 100, content, 500, '\r']
             : ['\x1b[Z', 100, '\x1b[Z']
         } catch (error) {}
       }
-      // Even without piped content, send SHIFT+TAB in plan mode
+      // Even without positional arg content, send SHIFT+TAB in plan mode
       return ['\x1b[Z', 100, '\x1b[Z']
     }
 
-    // Normal piped input mode (no plan mode)
-    if (!pipedInputPath || !fs.existsSync(pipedInputPath)) {
+    // Normal positional arg injection mode (no plan mode)
+    if (!positionalArgContentPath || !fs.existsSync(positionalArgContentPath)) {
       return
     }
 
     try {
-      const content = fs.readFileSync(pipedInputPath, 'utf8').trimEnd()
+      const content = fs
+        .readFileSync(positionalArgContentPath, 'utf8')
+        .trimEnd()
       return content ? [content, 500, '\r'] : undefined
     } catch (error) {}
   }

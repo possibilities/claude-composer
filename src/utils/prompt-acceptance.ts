@@ -11,8 +11,8 @@ export function shouldAcceptPrompt(
     return true
   }
 
-  // Special case: always accept pipe-on-app-ready
-  if (match.patternId === 'pipe-on-app-ready') {
+  // Special case: always accept inject-positional-arg-on-app-ready
+  if (match.patternId === 'inject-positional-arg-on-app-ready') {
     return true
   }
 

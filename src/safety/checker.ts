@@ -5,7 +5,6 @@ import { execSync } from 'child_process'
 import type { AppConfig, PreflightOptions } from '../types/preflight.js'
 import { askYesNo } from '../cli/prompts.js'
 import { log, warn } from '../utils/logging.js'
-import { isPipedInput, exitWithPipedInputError } from '../utils/piped-input.js'
 import { expandPath } from '../utils/file-utils.js'
 
 function isInTrustedRoot(appConfig: AppConfig): boolean {
@@ -64,9 +63,6 @@ export async function checkVersionControl(
 
   if (!fs.existsSync(gitDir)) {
     if (!allowWithoutVersionControl) {
-      if (isPipedInput()) {
-        exitWithPipedInputError('version control check')
-      }
       warn('※ Running in project without version control')
       const proceed = await askYesNo(
         '※ Do you want to continue?',
@@ -97,9 +93,6 @@ export async function checkDirtyDirectory(
 
     if (gitStatus !== '') {
       if (!allowInDirtyDirectory) {
-        if (isPipedInput()) {
-          exitWithPipedInputError('dirty directory check (uncommitted changes)')
-        }
         warn('※ Running in directory with uncommitted changes')
         const proceed = await askYesNo(
           '※ Do you want to continue?',
@@ -187,10 +180,6 @@ export async function handleAutomaticAcceptanceWarning(
   console.log(
     '\x1b[33m╚═════════════════════════════════════════════════════════════════╝\x1b[0m',
   )
-
-  if (isPipedInput()) {
-    exitWithPipedInputError('yolo mode warning')
-  }
 
   const proceed = await askYesNo(
     '※ Do you want to continue with YOLO mode enabled?',
