@@ -443,6 +443,20 @@ export async function main() {
 
   const childArgs = preflightResult.childArgs
 
+  // Check if we have positional arguments that should be treated as content
+  if (childArgs.length > 0 && childArgs[0] && !childArgs[0].startsWith('-')) {
+    // Save the positional argument to a file
+    const tmpDir = os.tmpdir()
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-')
+    pipedInputPath = path.join(tmpDir, `claude-composer-piped-${timestamp}.txt`)
+
+    // Write the first positional argument to the file
+    fs.writeFileSync(pipedInputPath, childArgs[0])
+
+    // Remove the argument from childArgs
+    childArgs.splice(0, 1)
+  }
+
   const terminalConfig: TerminalConfig = {
     isTTY: !preflightResult.hasPrintOption,
     cols: process.stdout.columns || 80,
@@ -462,9 +476,9 @@ export async function main() {
     process.exit(code)
   })
 
-  // Add app ready pattern if in plan mode or if there's piped input
+  // Add app ready pattern if in plan mode, if there's piped input, or if we saved positional args
   // IMPORTANT: This must be done AFTER terminal manager is initialized so response queue has targets
-  if (appConfig?.mode === 'plan' || !process.stdin.isTTY) {
+  if (appConfig?.mode === 'plan' || !process.stdin.isTTY || pipedInputPath) {
     const appStartedPattern = createAppReadyPattern(() => ({
       pipedInputPath,
       mode: appConfig?.mode,
