@@ -8,7 +8,7 @@
 
 - **Reduced interruptions**: Automatic confirmation prompt acceptance
 - **Tool management**: Toolsets configure which tools Claude can use
-- **Enhanced visibility**: System notifications keep you informed (BROKEN, WILL FIX SOON)
+- **Enhanced visibility**: System notifications keep you informed (BROKEN, WILL GET BIG UPDATE SOON)
 
 ## Quick Start
 
