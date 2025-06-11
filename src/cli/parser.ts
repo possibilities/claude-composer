@@ -51,6 +51,14 @@ export function createClaudeComposerCommand(): Command {
       '--no-dangerously-suppress-yolo-confirmation',
       'Show the confirmation prompt when yolo mode is enabled',
     )
+    .option(
+      '--dangerously-allow-in-untrusted-root',
+      'Allow running in any directory without trust confirmation',
+    )
+    .option(
+      '--no-dangerously-allow-in-untrusted-root',
+      'Require trust confirmation for directories not in roots list',
+    )
     // Notification options (moved to end)
     .option(
       '--show-notifications',

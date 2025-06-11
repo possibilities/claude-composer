@@ -10,6 +10,7 @@ export const appConfigSchema = z
     dangerously_allow_in_dirty_directory: z.boolean().optional(),
     dangerously_allow_without_version_control: z.boolean().optional(),
     dangerously_suppress_yolo_confirmation: z.boolean().optional(),
+    dangerously_allow_in_untrusted_root: z.boolean().optional(),
 
     // Other settings
     toolsets: z.array(z.string()).optional(),

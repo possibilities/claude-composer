@@ -144,7 +144,7 @@ export async function handleAutomaticAcceptanceWarning(
 
   // Skip the warning if we're in a trusted root directory
   if (isInTrustedRoot(appConfig)) {
-    log('※ Skipping automatic acceptance warning (trusted root directory)')
+    log('※ Skipping yolo confirmation warning (trusted root directory)')
     return true
   }
 

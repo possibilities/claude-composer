@@ -239,6 +239,12 @@ export function createTrustPromptPattern(
   const trustPromptIfPwdParentInRoots = (): string[] | undefined => {
     try {
       const appConfig = getAppConfig()
+
+      // If dangerously_allow_in_untrusted_root is set, always accept
+      if (appConfig?.dangerously_allow_in_untrusted_root) {
+        return ['1']
+      }
+
       const roots = appConfig?.roots || []
 
       if (roots.length === 0) {

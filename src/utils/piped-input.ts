@@ -55,15 +55,15 @@ export function exitWithPipedInputError(context: string): never {
     console.error(
       '\x1b[31m║   your configuration file                                       ║\x1b[0m',
     )
-  } else if (context.includes('automatic acceptance')) {
+  } else if (context.includes('yolo confirmation')) {
     console.error(
-      '\x1b[31m║ • Use --dangerously-suppress-automatic-acceptance-confirmation  ║\x1b[0m',
+      '\x1b[31m║ • Use --dangerously-suppress-yolo-confirmation  ║\x1b[0m',
     )
     console.error(
       '\x1b[31m║   flag                                                          ║\x1b[0m',
     )
     console.error(
-      '\x1b[31m║ • Set dangerously_suppress_automatic_acceptance_confirmation:   ║\x1b[0m',
+      '\x1b[31m║ • Set dangerously_suppress_yolo_confirmation:   ║\x1b[0m',
     )
     console.error(
       '\x1b[31m║   true in your configuration file                               ║\x1b[0m',
