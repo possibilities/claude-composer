@@ -6,8 +6,7 @@
 
 ## Features
 
-- **Reduced interruptions**: Auto-handles permission dialogs based on configurable rules
-- **Flexible control**: Rulesets define which actions to allow automatically
+- **Reduced interruptions**: Simple YOLO mode for automatic prompt acceptance
 - **Tool management**: Toolsets configure which tools Claude can use
 - **Enhanced visibility**: System notifications keep you informed
 
@@ -23,9 +22,8 @@ claude-composer cc-init
 # Run with default settings
 claude-composer
 
-# Use different rulesets
-claude-composer --ruleset internal:yolo  # Accept all prompts
-claude-composer --ruleset internal:safe  # Manual confirmation only
+# Use YOLO mode (accept all prompts)
+claude-composer --yolo
 ```
 
 ## Installation
@@ -47,7 +45,7 @@ npm install -g claude-composer
 
 ```bash
 # Configuration
---ruleset <name...>              # Use specified rulesets
+--yolo                           # Accept all prompts automatically
 --toolset <name...>              # Use specified toolsets
 --mode <mode>                    # Start in 'act' or 'plan' mode
 --ignore-global-config           # Ignore global config
@@ -55,7 +53,7 @@ npm install -g claude-composer
 # Safety
 --dangerously-allow-in-dirty-directory
 --dangerously-allow-without-version-control
---dangerously-suppress-automatic-acceptance-confirmation
+--dangerously-suppress-yolo-confirmation
 
 # Notifications
 --show-notifications / --no-show-notifications
@@ -87,9 +85,7 @@ claude-composer cc-init --project
 
 ```yaml
 # config.yaml
-rulesets:
-  - internal:cautious
-  - my-custom-rules
+yolo: false # Set to true to accept all prompts
 
 toolsets:
   - internal:core
@@ -105,11 +101,9 @@ sticky_notifications: false
 
 See [docs/configuration.md](docs/configuration.md) for details.
 
-## Rulesets
+## YOLO Mode
 
-Control which permission dialogs are automatically accepted.
-
-See [docs/rulesets.md](docs/rulesets.md) for complete documentation.
+When enabled with `--yolo` flag or `yolo: true` in config, Claude Composer will automatically accept all prompts without confirmation. Use with caution!
 
 ## Toolsets
 

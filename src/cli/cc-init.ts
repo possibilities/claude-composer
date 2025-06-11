@@ -5,9 +5,7 @@ import { CONFIG_PATHS } from '../config/paths.js'
 import { log, warn } from '../utils/logging.js'
 
 export interface CcInitOptions {
-  useYoloRuleset?: boolean
-  useCautiousRuleset?: boolean
-  useSafeRuleset?: boolean
+  useYolo?: boolean
   useCoreToolset?: boolean
   noUseCoreToolset?: boolean
   project?: boolean
@@ -22,13 +20,7 @@ export async function handleCcInit(args: string[]): Promise<void> {
     console.log('\nInitialize a new Claude Composer configuration file')
     console.log('\nOptions:')
     console.log(
-      '  --use-yolo-ruleset       Use YOLO ruleset (accepts all prompts automatically)',
-    )
-    console.log(
-      '  --use-cautious-ruleset   Use cautious ruleset (accepts project-level prompts)',
-    )
-    console.log(
-      '  --use-safe-ruleset       Use safe ruleset (requires confirmation for all prompts)',
+      '  --use-yolo               Accept all prompts automatically (use with caution)',
     )
     console.log('  --use-core-toolset       Enable core toolset')
     console.log('  --no-use-core-toolset    Disable core toolset')
@@ -37,9 +29,6 @@ export async function handleCcInit(args: string[]): Promise<void> {
     )
     console.log('  -h, --help               Show this help message')
     console.log('\nNotes:')
-    console.log(
-      '  - Ruleset options (--use-yolo-ruleset, --use-cautious-ruleset, --use-safe-ruleset) are mutually exclusive',
-    )
     console.log(
       '  - --use-core-toolset and --no-use-core-toolset are mutually exclusive',
     )
@@ -50,14 +39,8 @@ export async function handleCcInit(args: string[]): Promise<void> {
   for (let i = 0; i < args.length; i++) {
     const arg = args[i]
     switch (arg) {
-      case '--use-yolo-ruleset':
-        options.useYoloRuleset = true
-        break
-      case '--use-cautious-ruleset':
-        options.useCautiousRuleset = true
-        break
-      case '--use-safe-ruleset':
-        options.useSafeRuleset = true
+      case '--use-yolo':
+        options.useYolo = true
         break
       case '--use-core-toolset':
         options.useCoreToolset = true
@@ -77,17 +60,6 @@ export async function handleCcInit(args: string[]): Promise<void> {
   }
 
   // Validate mutually exclusive options
-  const rulesetCount = [
-    options.useYoloRuleset,
-    options.useCautiousRuleset,
-    options.useSafeRuleset,
-  ].filter(Boolean).length
-  if (rulesetCount > 1) {
-    console.error(
-      'Error: Ruleset options (--use-yolo-ruleset, --use-cautious-ruleset, --use-safe-ruleset) are mutually exclusive',
-    )
-    process.exit(1)
-  }
 
   if (options.useCoreToolset && options.noUseCoreToolset) {
     console.error(
@@ -96,35 +68,16 @@ export async function handleCcInit(args: string[]): Promise<void> {
     process.exit(1)
   }
 
-  // Prompt for ruleset if none specified
-  if (
-    !options.useYoloRuleset &&
-    !options.useCautiousRuleset &&
-    !options.useSafeRuleset
-  ) {
-    const rulesetResponse = await prompts(
+  // Prompt for yolo mode if not specified
+  if (options.useYolo === undefined) {
+    const yoloResponse = await prompts(
       {
-        type: 'select',
-        name: 'ruleset',
-        message: 'Which ruleset would you like to use?',
-        choices: [
-          {
-            title: 'Cautious',
-            description: 'Accepts project-level prompts automatically',
-            value: 'cautious',
-          },
-          {
-            title: 'Safe',
-            description: 'Requires confirmation for all prompts',
-            value: 'safe',
-          },
-          {
-            title: 'YOLO',
-            description: 'Accepts all prompts automatically',
-            value: 'yolo',
-          },
-        ],
-        initial: 0,
+        type: 'confirm',
+        name: 'useYolo',
+        message:
+          'Would you like to enable YOLO mode? (accepts all prompts automatically)',
+        initial: false,
+        hint: 'Use with caution - Claude will perform actions without confirmation',
       },
       {
         onCancel: () => {
@@ -133,13 +86,7 @@ export async function handleCcInit(args: string[]): Promise<void> {
       },
     )
 
-    if (rulesetResponse.ruleset === 'yolo') {
-      options.useYoloRuleset = true
-    } else if (rulesetResponse.ruleset === 'safe') {
-      options.useSafeRuleset = true
-    } else {
-      options.useCautiousRuleset = true
-    }
+    options.useYolo = yoloResponse.useYolo
   }
 
   // Prompt for toolset if none specified
@@ -189,14 +136,9 @@ export async function handleCcInit(args: string[]): Promise<void> {
   // Build config object
   const config: any = {}
 
-  // Add rulesets
-  config.rulesets = []
-  if (options.useYoloRuleset) {
-    config.rulesets.push('internal:yolo')
-  } else if (options.useCautiousRuleset) {
-    config.rulesets.push('internal:cautious')
-  } else if (options.useSafeRuleset) {
-    config.rulesets.push('internal:safe')
+  // Add yolo mode if requested
+  if (options.useYolo) {
+    config.yolo = true
   }
 
   // Add toolsets if requested
@@ -222,16 +164,10 @@ export async function handleCcInit(args: string[]): Promise<void> {
     fs.writeFileSync(configPath, yamlStr, 'utf8')
     log(`✅ Created configuration file at ${configPath}`)
 
-    if (options.useYoloRuleset) {
-      warn(
-        '⚠️  Using YOLO ruleset - all prompts will be automatically accepted',
-      )
-    } else if (options.useCautiousRuleset) {
-      log(
-        '✓ Using cautious ruleset - project-level prompts will be automatically accepted',
-      )
-    } else if (options.useSafeRuleset) {
-      log('✓ Using safe ruleset - all prompts will require confirmation')
+    if (options.useYolo) {
+      warn('⚠️  YOLO mode enabled - all prompts will be automatically accepted')
+    } else {
+      log('✓ YOLO mode disabled - all prompts will require confirmation')
     }
 
     if (options.useCoreToolset) {

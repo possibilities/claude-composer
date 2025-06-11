@@ -3,8 +3,6 @@ import * as path from 'path'
 import * as os from 'os'
 import { execSync } from 'child_process'
 import type { AppConfig, PreflightOptions } from '../types/preflight.js'
-import type { RulesetConfig } from '../config/schemas.js'
-import { hasActiveAcceptanceRules } from '../config/rulesets.js'
 import { askYesNo } from '../cli/prompts.js'
 import { log, warn } from '../utils/logging.js'
 import { isPipedInput, exitWithPipedInputError } from '../utils/piped-input.js'
@@ -132,16 +130,15 @@ export async function checkDirtyDirectory(
 
 export async function handleAutomaticAcceptanceWarning(
   appConfig: AppConfig,
-  mergedRuleset: RulesetConfig | undefined,
   preflightOptions?: PreflightOptions,
 ): Promise<boolean> {
-  // Only show warning if there are active acceptance rules
-  if (!hasActiveAcceptanceRules(mergedRuleset)) {
+  // Only show warning if yolo mode is enabled
+  if (!appConfig.yolo) {
     return true
   }
 
   // Skip the warning if suppression is enabled
-  if (appConfig.dangerously_suppress_automatic_acceptance_confirmation) {
+  if (appConfig.dangerously_suppress_yolo_confirmation) {
     return true
   }
 
@@ -155,13 +152,13 @@ export async function handleAutomaticAcceptanceWarning(
     '\x1b[33m╔═════════════════════════════════════════════════════════════════╗\x1b[0m',
   )
   console.log(
-    '\x1b[33m║                AUTOMATIC ACCEPTANCE ENABLED                     ║\x1b[0m',
+    '\x1b[33m║                     YOLO MODE ENABLED                           ║\x1b[0m',
   )
   console.log(
     '\x1b[33m╠═════════════════════════════════════════════════════════════════╣\x1b[0m',
   )
   console.log(
-    '\x1b[33m║ Rulesets are configured to automatically accept prompts for:    ║\x1b[0m',
+    '\x1b[33m║ YOLO mode will automatically accept ALL prompts for:           ║\x1b[0m',
   )
   console.log(
     '\x1b[33m║                                                                 ║\x1b[0m',
@@ -182,21 +179,21 @@ export async function handleAutomaticAcceptanceWarning(
     '\x1b[33m║                                                                 ║\x1b[0m',
   )
   console.log(
-    '\x1b[33m║ Claude will perform actions based on your ruleset configuration ║\x1b[0m',
+    '\x1b[33m║ Claude will perform ALL actions WITHOUT asking for              ║\x1b[0m',
   )
   console.log(
-    '\x1b[33m║ WITHOUT asking for confirmation!                                ║\x1b[0m',
+    '\x1b[33m║ confirmation!                                                   ║\x1b[0m',
   )
   console.log(
     '\x1b[33m╚═════════════════════════════════════════════════════════════════╝\x1b[0m',
   )
 
   if (isPipedInput()) {
-    exitWithPipedInputError('automatic acceptance warning')
+    exitWithPipedInputError('yolo mode warning')
   }
 
   const proceed = await askYesNo(
-    '※ Do you want to continue with automatic acceptance enabled?',
+    '※ Do you want to continue with YOLO mode enabled?',
     true,
     preflightOptions?.stdin,
     preflightOptions?.stdout,
@@ -207,6 +204,6 @@ export async function handleAutomaticAcceptanceWarning(
     return false
   }
 
-  warn('※ Continuing with automatic acceptance enabled!')
+  warn('※ Continuing with YOLO mode enabled!')
   return true
 }

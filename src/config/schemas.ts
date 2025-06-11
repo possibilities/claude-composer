@@ -1,43 +1,19 @@
 import { z } from 'zod'
 
-// Schema for per-confirmation type settings
-export const confirmNotifySchema = z
-  .object({
-    edit_file: z.boolean().optional(),
-    create_file: z.boolean().optional(),
-    bash_command: z.boolean().optional(),
-    read_file: z.boolean().optional(),
-    fetch_content: z.boolean().optional(),
-  })
-  .strict()
-
 export const appConfigSchema = z
   .object({
     // Master notification controls
     show_notifications: z.boolean().optional(),
-
-    // Confirmation notification settings
-    show_confirm_notify: z.boolean().optional(),
-    show_accepted_confirm_notify: z.boolean().optional(),
-    show_prompted_confirm_notify: z.boolean().optional(),
-    confirm_notify: confirmNotifySchema.optional(),
-
-    // Stickiness settings
     sticky_notifications: z.boolean().optional(),
-    sticky_prompted_confirm_notify: z.boolean().optional(),
-    sticky_accepted_confirm_notify: z.boolean().optional(),
-    sticky_terminal_snapshot_notifications: z.boolean().optional(),
 
     // Safety settings
     dangerously_allow_in_dirty_directory: z.boolean().optional(),
     dangerously_allow_without_version_control: z.boolean().optional(),
-    dangerously_suppress_automatic_acceptance_confirmation: z
-      .boolean()
-      .optional(),
+    dangerously_suppress_yolo_confirmation: z.boolean().optional(),
 
     // Other settings
     toolsets: z.array(z.string()).optional(),
-    rulesets: z.array(z.string()).optional(),
+    yolo: z.boolean().optional(),
     log_all_pattern_matches: z.boolean().optional(),
     allow_buffer_snapshots: z.boolean().optional(),
     mode: z.enum(['plan', 'act']).optional(),
@@ -59,50 +35,6 @@ export const toolsetConfigSchema = z
 
 export type ToolsetConfig = z.infer<typeof toolsetConfigSchema>
 
-export const acceptPromptConfigSchema = z.union([
-  z.boolean(),
-  z
-    .object({
-      paths: z
-        .array(z.string())
-        .min(1, 'Paths array must have at least one pattern'),
-    })
-    .strict(),
-])
-
-export type AcceptPromptConfig = z.infer<typeof acceptPromptConfigSchema>
-
-export const acceptFetchContentConfigSchema = z.union([
-  z.boolean(),
-  z
-    .object({
-      domains: z
-        .array(z.string())
-        .min(1, 'Domains array must have at least one domain'),
-    })
-    .strict(),
-])
-
-export type AcceptFetchContentConfig = z.infer<
-  typeof acceptFetchContentConfigSchema
->
-
-export const rulesetConfigSchema = z
-  .object({
-    accept_project_edit_file_prompts: acceptPromptConfigSchema.optional(),
-    accept_project_create_file_prompts: acceptPromptConfigSchema.optional(),
-    accept_project_bash_command_prompts: acceptPromptConfigSchema.optional(),
-    accept_project_read_files_prompts: acceptPromptConfigSchema.optional(),
-    accept_global_edit_file_prompts: acceptPromptConfigSchema.optional(),
-    accept_global_create_file_prompts: acceptPromptConfigSchema.optional(),
-    accept_global_bash_command_prompts: acceptPromptConfigSchema.optional(),
-    accept_global_read_files_prompts: acceptPromptConfigSchema.optional(),
-    accept_fetch_content_prompts: acceptFetchContentConfigSchema.optional(),
-  })
-  .strict()
-
-export type RulesetConfig = z.infer<typeof rulesetConfigSchema>
-
 export function parseAppConfig(data: unknown): AppConfig {
   return appConfigSchema.parse(data)
 }
@@ -121,16 +53,6 @@ export function validateToolsetConfig(
   data: unknown,
 ): z.SafeParseReturnType<unknown, ToolsetConfig> {
   return toolsetConfigSchema.safeParse(data)
-}
-
-export function parseRulesetConfig(data: unknown): RulesetConfig {
-  return rulesetConfigSchema.parse(data)
-}
-
-export function validateRulesetConfig(
-  data: unknown,
-): z.SafeParseReturnType<unknown, RulesetConfig> {
-  return rulesetConfigSchema.safeParse(data)
 }
 
 // Pattern configuration schema

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import * as path from 'path'
 import type { MatchResult } from '../../src/patterns/matcher'
-import type { AppConfig, RulesetConfig } from '../../src/config/schemas'
+import type { AppConfig } from '../../src/config/schemas'
 import { showNotification } from '../../src/utils/notifications'
 import {
   checkAcceptConfig,
@@ -36,14 +36,14 @@ describe('Bash Command Path-based Acceptance Integration', () => {
   function shouldAcceptPromptWithValidation(
     match: MatchResult,
     appConfig: AppConfig,
-    mergedRuleset: RulesetConfig | undefined,
+    yolo: boolean | undefined,
   ): boolean {
     // Use the imported function
-    return shouldAcceptPrompt(match, appConfig, mergedRuleset)
+    return shouldAcceptPrompt(match, appConfig, yolo)
   }
 
   describe('Path-based bash command acceptance', () => {
-    it('should accept bash command when directory matches path pattern', () => {
+    it('should accept bash command when yolo is true', () => {
       // Setup: command running in src/utils directory
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-1',
@@ -58,20 +58,14 @@ describe('Bash Command Path-based Acceptance Integration', () => {
 
       const appConfig: AppConfig = {}
 
-      const ruleset: RulesetConfig = {
-        accept_project_bash_command_prompts: {
-          paths: ['src/**', 'test/**'],
-        },
-      }
-
       // Mock that we're in project root
       mockIsFileInProjectRoot.mockReturnValue(true)
 
-      const result = shouldAcceptPromptWithValidation(match, appConfig, ruleset)
+      const result = shouldAcceptPromptWithValidation(match, appConfig, true)
       expect(result).toBe(true)
     })
 
-    it('should not accept bash command when directory does not match pattern', () => {
+    it('should not accept bash command when yolo is false', () => {
       // Setup: command running in node_modules directory
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-1',
@@ -84,24 +78,16 @@ describe('Bash Command Path-based Acceptance Integration', () => {
         notification: 'Bash command prompt',
       }
 
-      const appConfig: AppConfig = {
-        dangerously_accept_bash_command_prompts: true,
-      }
-
-      const ruleset: RulesetConfig = {
-        accept_project_bash_command_prompts: {
-          paths: ['src/**', 'test/**'],
-        },
-      }
+      const appConfig: AppConfig = {}
 
       // Mock that we're in project root
       mockIsFileInProjectRoot.mockReturnValue(true)
 
-      const result = shouldAcceptPromptWithValidation(match, appConfig, ruleset)
+      const result = shouldAcceptPromptWithValidation(match, appConfig, false)
       expect(result).toBe(false)
     })
 
-    it('should not accept when no directory is provided with path config', () => {
+    it('should not accept when yolo is undefined', () => {
       // Setup: format-2 prompt without directory
       const match: MatchResult = {
         patternId: 'bash-command-prompt-format-2',
@@ -114,20 +100,16 @@ describe('Bash Command Path-based Acceptance Integration', () => {
         notification: 'Bash command prompt',
       }
 
-      const appConfig: AppConfig = {
-        dangerously_accept_bash_command_prompts: true,
-      }
-
-      const ruleset: RulesetConfig = {
-        accept_project_bash_command_prompts: {
-          paths: ['src/**'],
-        },
-      }
+      const appConfig: AppConfig = {}
 
       // Mock that we're in project root
       mockIsFileInProjectRoot.mockReturnValue(true)
 
-      const result = shouldAcceptPromptWithValidation(match, appConfig, ruleset)
+      const result = shouldAcceptPromptWithValidation(
+        match,
+        appConfig,
+        undefined,
+      )
       expect(result).toBe(false)
     })
 

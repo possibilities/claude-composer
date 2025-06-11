@@ -10,20 +10,13 @@ claude-composer [options] [claude-code-args]
 
 ### Configuration
 
-#### `--ruleset <name...>`
+#### `--yolo`
 
-Specify rulesets to use. Can be used multiple times.
+Accept all prompts automatically (use with caution).
 
 ```bash
-claude-composer --ruleset internal:cautious
-claude-composer --ruleset internal:safe --ruleset my-overrides
+claude-composer --yolo
 ```
-
-Prefixes:
-
-- `internal:` - Built-in (safe, cautious, yolo)
-- `project:` - From `.claude-composer/rulesets/`
-- No prefix - From `~/.claude-composer/rulesets/`
 
 #### `--toolset <name...>`
 
@@ -58,9 +51,9 @@ Allow running with uncommitted changes.
 
 Allow running outside git.
 
-#### `--dangerously-suppress-automatic-acceptance-confirmation`
+#### `--dangerously-suppress-yolo-confirmation`
 
-Skip auto-acceptance confirmations.
+Skip the confirmation prompt when yolo mode is enabled.
 
 ### Notifications
 
@@ -99,9 +92,7 @@ claude-composer cc-init [options]
 Options:
 
 - `--project` - Create project config
-- `--use-yolo-ruleset` - Use YOLO ruleset
-- `--use-cautious-ruleset` - Use cautious
-- `--use-safe-ruleset` - Use safe ruleset
+- `--use-yolo` - Enable YOLO mode (accept all prompts)
 - `--use-core-toolset` / `--no-use-core-toolset` - Enable/disable core toolset
 
 ## Pass-through Arguments
@@ -130,5 +121,4 @@ claude-composer "my prompt"
 ## See Also
 
 - [Configuration](./configuration.md)
-- [Rulesets](./rulesets.md)
 - [Toolsets](./toolsets.md)
