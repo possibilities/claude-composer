@@ -14,7 +14,7 @@ git init
 git add .
 git commit -m "Let's frikken go"
 ${cli_path} \
-  --mode act \
+  --mode plan \
   --dangerously-allow-in-untrusted-root \
   --dangerously-suppress-yolo-confirmation \
 "$(cat <<'EOF'
