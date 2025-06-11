@@ -1,8 +1,4 @@
-import type {
-  AppConfig,
-  ToolsetConfig,
-  RulesetConfig,
-} from '../config/schemas.js'
+import type { AppConfig, ToolsetConfig } from '../config/schemas.js'
 
 export interface PreflightOptions {
   configPath?: string
@@ -14,14 +10,13 @@ export interface PreflightOptions {
 export interface PreflightResult {
   appConfig: AppConfig
   toolsetArgs: string[]
-  rulesetArgs: string[]
-  mergedRuleset?: RulesetConfig
   childArgs: string[]
   tempMcpConfigPath?: string
   shouldExit: boolean
   exitCode?: number
   knownOptions: Set<string>
   hasPrintOption?: boolean
+  yolo?: boolean
 }
 
 export interface ParsedOptions {
@@ -29,31 +24,14 @@ export interface ParsedOptions {
   showNotifications?: boolean
   stickyNotifications?: boolean
 
-  // New confirmation notification settings
-  showConfirmNotify?: boolean
-  showAcceptedConfirmNotify?: boolean
-  showPromptedConfirmNotify?: boolean
-
-  // Per-confirmation type settings
-  showEditFileConfirmNotify?: boolean
-  showCreateFileConfirmNotify?: boolean
-  showBashCommandConfirmNotify?: boolean
-  showReadFileConfirmNotify?: boolean
-  showFetchContentConfirmNotify?: boolean
-
-  // Per-type stickiness settings
-  stickyPromptedConfirmNotify?: boolean
-  stickyAcceptedConfirmNotify?: boolean
-  stickyTerminalSnapshotNotifications?: boolean
-
   // Safety settings
   dangerouslyAllowInDirtyDirectory?: boolean
   dangerouslyAllowWithoutVersionControl?: boolean
-  dangerouslySuppressAutomaticAcceptanceConfirmation?: boolean
+  dangerouslySuppressYoloConfirmation?: boolean
 
   // Other settings
   toolset?: string[]
-  ruleset?: string[]
+  yolo?: boolean
   ignoreGlobalConfig?: boolean
   logAllPatternMatches?: boolean
   allowBufferSnapshots?: boolean
@@ -62,4 +40,4 @@ export interface ParsedOptions {
 }
 
 // Re-export for convenience
-export type { AppConfig, ToolsetConfig, RulesetConfig }
+export type { AppConfig, ToolsetConfig }

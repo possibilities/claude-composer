@@ -114,7 +114,7 @@ toolsets:
       if (path === '/test/project/.claude-composer/config.yaml') {
         return `
 show_notifications: false
-rulesets: ["test-ruleset"]
+yolo: true
 `
       }
       throw new Error('File not found')
@@ -125,7 +125,7 @@ rulesets: ["test-ruleset"]
 
     // Project values override global
     expect(config.show_notifications).toBe(false)
-    expect(config.rulesets).toEqual(['test-ruleset'])
+    expect(config.yolo).toBe(true)
 
     // Global value used when not in project
     expect(config.toolsets).toEqual(['global'])
@@ -140,7 +140,7 @@ rulesets: ["test-ruleset"]
       if (path === '/test/project/.claude-composer/config.yaml') {
         return `
 show_notifications: false
-rulesets: ["test-ruleset"]
+yolo: true
 `
       }
       throw new Error('File not found')
@@ -157,7 +157,7 @@ rulesets: ["test-ruleset"]
     expect(config.show_notifications).toBe(true)
 
     // Project value used when no CLI override
-    expect(config.rulesets).toEqual(['test-ruleset'])
+    expect(config.yolo).toBe(true)
   })
 
   it('should handle toolsets with complete replacement at each level', async () => {
@@ -218,7 +218,7 @@ toolsets:
 
     // Should have defaults
     expect(config.show_notifications).toBe(true)
-    expect(config.rulesets).toBeUndefined()
+    expect(config.yolo).toBeUndefined()
     expect(config.toolsets).toBeUndefined()
   })
 })

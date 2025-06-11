@@ -4,16 +4,13 @@ import type {
   PreflightOptions,
   PreflightResult,
   AppConfig,
-  RulesetConfig,
 } from '../types/preflight.js'
 import {
   ensureConfigDirectory,
   loadConfigFile,
   createTempMcpConfig,
-  loadRulesetFile,
 } from '../config/loader.js'
 import { buildToolsetArgs, mergeToolsets } from '../config/toolsets.js'
-import { buildRulesetArgs, mergeRulesets } from '../config/rulesets.js'
 import {
   checkGitInstalled,
   checkChildAppPath,
@@ -62,7 +59,6 @@ export async function runPreflight(
     return {
       appConfig,
       toolsetArgs: [],
-      rulesetArgs: [],
       childArgs: [],
       shouldExit: true,
       exitCode: 0,
@@ -98,7 +94,6 @@ export async function runPreflight(
       return {
         appConfig,
         toolsetArgs: [],
-        rulesetArgs: [],
         childArgs: [],
         shouldExit: true,
         exitCode: 1,
@@ -117,7 +112,6 @@ export async function runPreflight(
       return {
         appConfig,
         toolsetArgs: [],
-        rulesetArgs: [],
         childArgs: [],
         shouldExit: true,
         exitCode: 1,
@@ -153,12 +147,12 @@ export async function runPreflight(
     appConfig.dangerously_allow_without_version_control =
       parsedOptions.dangerouslyAllowWithoutVersionControl
   }
-  if (
-    parsedOptions.dangerouslySuppressAutomaticAcceptanceConfirmation !==
-    undefined
-  ) {
-    appConfig.dangerously_suppress_automatic_acceptance_confirmation =
-      parsedOptions.dangerouslySuppressAutomaticAcceptanceConfirmation
+  if (parsedOptions.dangerouslySuppressYoloConfirmation !== undefined) {
+    appConfig.dangerously_suppress_yolo_confirmation =
+      parsedOptions.dangerouslySuppressYoloConfirmation
+  }
+  if (parsedOptions.yolo !== undefined) {
+    appConfig.yolo = parsedOptions.yolo
   }
   if (parsedOptions.logAllPatternMatches !== undefined) {
     appConfig.log_all_pattern_matches = parsedOptions.logAllPatternMatches
@@ -171,69 +165,8 @@ export async function runPreflight(
     appConfig.mode = parsedOptions.mode
   }
   // If no CLI flag provided, config value is preserved from loadConfigFile above
-  // Confirmation notification settings
-  if (parsedOptions.showConfirmNotify !== undefined) {
-    appConfig.show_confirm_notify = parsedOptions.showConfirmNotify
-  }
-  if (parsedOptions.showAcceptedConfirmNotify !== undefined) {
-    appConfig.show_accepted_confirm_notify =
-      parsedOptions.showAcceptedConfirmNotify
-  }
-  if (parsedOptions.showPromptedConfirmNotify !== undefined) {
-    appConfig.show_prompted_confirm_notify =
-      parsedOptions.showPromptedConfirmNotify
-  }
-
-  // Per-confirmation type settings
-  if (
-    parsedOptions.showEditFileConfirmNotify !== undefined ||
-    parsedOptions.showCreateFileConfirmNotify !== undefined ||
-    parsedOptions.showBashCommandConfirmNotify !== undefined ||
-    parsedOptions.showReadFileConfirmNotify !== undefined ||
-    parsedOptions.showFetchContentConfirmNotify !== undefined
-  ) {
-    if (!appConfig.confirm_notify) {
-      appConfig.confirm_notify = {}
-    }
-    if (parsedOptions.showEditFileConfirmNotify !== undefined) {
-      appConfig.confirm_notify.edit_file =
-        parsedOptions.showEditFileConfirmNotify
-    }
-    if (parsedOptions.showCreateFileConfirmNotify !== undefined) {
-      appConfig.confirm_notify.create_file =
-        parsedOptions.showCreateFileConfirmNotify
-    }
-    if (parsedOptions.showBashCommandConfirmNotify !== undefined) {
-      appConfig.confirm_notify.bash_command =
-        parsedOptions.showBashCommandConfirmNotify
-    }
-    if (parsedOptions.showReadFileConfirmNotify !== undefined) {
-      appConfig.confirm_notify.read_file =
-        parsedOptions.showReadFileConfirmNotify
-    }
-    if (parsedOptions.showFetchContentConfirmNotify !== undefined) {
-      appConfig.confirm_notify.fetch_content =
-        parsedOptions.showFetchContentConfirmNotify
-    }
-  }
-
-  // Per-type stickiness settings
-  if (parsedOptions.stickyPromptedConfirmNotify !== undefined) {
-    appConfig.sticky_prompted_confirm_notify =
-      parsedOptions.stickyPromptedConfirmNotify
-  }
-  if (parsedOptions.stickyAcceptedConfirmNotify !== undefined) {
-    appConfig.sticky_accepted_confirm_notify =
-      parsedOptions.stickyAcceptedConfirmNotify
-  }
-  if (parsedOptions.stickyTerminalSnapshotNotifications !== undefined) {
-    appConfig.sticky_terminal_snapshot_notifications =
-      parsedOptions.stickyTerminalSnapshotNotifications
-  }
 
   let toolsetArgs: string[] = []
-  let rulesetArgs: string[] = []
-  let mergedRuleset: RulesetConfig | undefined
   let tempMcpConfigPath: string | undefined
 
   let toolsetsToLoad: string[] = []
@@ -259,42 +192,6 @@ export async function runPreflight(
       return {
         appConfig,
         toolsetArgs: [],
-        rulesetArgs: [],
-        childArgs: [],
-        shouldExit: true,
-        exitCode: 1,
-        knownOptions,
-        hasPrintOption,
-      }
-    }
-  }
-
-  let rulesetsToLoad: string[] = []
-  if (parsedOptions.ruleset && parsedOptions.ruleset.length > 0) {
-    rulesetsToLoad = parsedOptions.ruleset
-  } else if (appConfig.rulesets && appConfig.rulesets.length > 0) {
-    rulesetsToLoad = appConfig.rulesets
-  }
-
-  if (rulesetsToLoad.length > 0) {
-    try {
-      const rulesetConfigs = await Promise.all(
-        rulesetsToLoad.map(name => loadRulesetFile(name)),
-      )
-      mergedRuleset = mergeRulesets(rulesetConfigs)
-      rulesetArgs = buildRulesetArgs(mergedRuleset)
-
-      rulesetsToLoad.forEach(name => {
-        log(`※ Loaded ruleset: ${name}`)
-      })
-    } catch (error) {
-      console.error(
-        `\x1b[31m※ Error: ${error instanceof Error ? error.message : error}\x1b[0m`,
-      )
-      return {
-        appConfig,
-        toolsetArgs: [],
-        rulesetArgs: [],
         childArgs: [],
         shouldExit: true,
         exitCode: 1,
@@ -328,7 +225,6 @@ export async function runPreflight(
     return {
       appConfig,
       toolsetArgs: [],
-      rulesetArgs: [],
       childArgs: [],
       shouldExit: true,
       exitCode: 1,
@@ -353,22 +249,19 @@ export async function runPreflight(
       }
     } else if (arg === '--toolset' && i + 1 < argv.length) {
       i++
-    } else if (arg === '--ruleset' && i + 1 < argv.length) {
-      i++
     } else if (arg === '--mode' && i + 1 < argv.length) {
       i++
     }
   }
 
   childArgs.push(...toolsetArgs)
-  childArgs.push(...rulesetArgs)
 
   if (isPrint) {
     log(`※ Starting Claude Code in non-interactive mode due to --print option`)
     return {
       appConfig,
       toolsetArgs,
-      rulesetArgs,
+
       childArgs,
       shouldExit: true,
       exitCode: 0,
@@ -383,7 +276,7 @@ export async function runPreflight(
     return {
       appConfig,
       toolsetArgs,
-      rulesetArgs,
+
       childArgs: argv.slice(2), // Use original args for subcommands
       shouldExit: true,
       exitCode: 0,
@@ -399,7 +292,7 @@ export async function runPreflight(
     return {
       appConfig,
       toolsetArgs,
-      rulesetArgs,
+
       childArgs,
       shouldExit: true,
       exitCode: 1,
@@ -423,7 +316,7 @@ export async function runPreflight(
     return {
       appConfig,
       toolsetArgs,
-      rulesetArgs,
+
       childArgs,
       shouldExit: true,
       exitCode: 1,
@@ -459,7 +352,7 @@ export async function runPreflight(
     return {
       appConfig,
       toolsetArgs,
-      rulesetArgs,
+
       childArgs,
       shouldExit: true,
       exitCode: 1,
@@ -474,14 +367,13 @@ export async function runPreflight(
 
   const automaticAcceptanceConfirmed = await handleAutomaticAcceptanceWarning(
     appConfig,
-    mergedRuleset,
     options,
   )
   if (!automaticAcceptanceConfirmed) {
     return {
       appConfig,
       toolsetArgs,
-      rulesetArgs,
+
       childArgs,
       shouldExit: true,
       exitCode: 0,
@@ -492,36 +384,15 @@ export async function runPreflight(
 
   log('※ Getting ready to launch Claude CLI')
 
-  // Validate that at least one ruleset is configured (unless using --print)
-  if (rulesetsToLoad.length === 0 && !isPrint) {
-    console.error(
-      '\x1b[31m※ Error: No rulesets configured. At least one ruleset is required.\x1b[0m',
-    )
-    console.error(
-      '\x1b[31m※ Use --ruleset flag or configure rulesets in your config file.\x1b[0m',
-    )
-    return {
-      appConfig,
-      toolsetArgs: [],
-      rulesetArgs: [],
-      childArgs,
-      shouldExit: true,
-      exitCode: 1,
-      knownOptions,
-      hasPrintOption,
-    }
-  }
-
   return {
     appConfig,
     toolsetArgs,
-    rulesetArgs,
-    mergedRuleset,
     childArgs,
     tempMcpConfigPath,
     shouldExit: false,
     knownOptions,
     hasPrintOption,
+    yolo: appConfig.yolo,
   }
 }
 

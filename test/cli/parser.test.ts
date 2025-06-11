@@ -100,22 +100,15 @@ describe('CLI Parser', () => {
       expect(opts.dangerouslyAllowWithoutVersionControl).toBe(true)
     })
 
-    it('should parse toolset and ruleset flags', () => {
+    it('should parse toolset and yolo flags', () => {
       const program = createClaudeComposerCommand()
       program.parse(
-        [
-          'node',
-          'claude-composer',
-          '--toolset',
-          'custom-tools',
-          '--ruleset',
-          'internal:safe',
-        ],
+        ['node', 'claude-composer', '--toolset', 'custom-tools', '--yolo'],
         { from: 'user' },
       )
       const opts = program.opts()
       expect(opts.toolset).toEqual(['custom-tools'])
-      expect(opts.ruleset).toEqual(['internal:safe'])
+      expect(opts.yolo).toBe(true)
     })
   })
 })

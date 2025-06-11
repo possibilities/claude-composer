@@ -6,7 +6,6 @@ Claude Composer uses YAML files for configuration:
 
 - **Global**: `~/.claude-composer/config.yaml`
 - **Project**: `.claude-composer/config.yaml`
-- **Rulesets**: `{config-dir}/rulesets/*.yaml`
 - **Toolsets**: `{config-dir}/toolsets/*.yaml`
 
 ## Configuration Precedence
@@ -18,34 +17,27 @@ Claude Composer uses YAML files for configuration:
 
 ### Path Specifications
 
-Rulesets and toolsets can be specified in several ways:
+Toolsets can be specified in several ways:
 
 1. **By Name**: References files in predefined directories
 
-   - `my-ruleset` → `~/.claude-composer/rulesets/my-ruleset.yaml`
    - `my-toolset` → `~/.claude-composer/toolsets/my-toolset.yaml`
 
 2. **With Prefix**: Special location prefixes
 
-   - `internal:safe` → Built-in ruleset
-   - `project:backend` → `.claude-composer/rulesets/backend.yaml`
+   - `internal:core` → Built-in toolset
+   - `project:backend` → `.claude-composer/toolsets/backend.yaml`
 
-3. **By Path**: Absolute or relative paths (NEW)
-   - `/opt/shared/rules.yaml` → Absolute path
-   - `~/configs/my-rules.yaml` → Home directory path
-   - `./local-rules.yaml` → Relative to current directory
-   - `$CONFIG_DIR/rules.yaml` → With environment variable
+3. **By Path**: Absolute or relative paths
+   - `/opt/shared/tools.yaml` → Absolute path
+   - `~/configs/my-tools.yaml` → Home directory path
+   - `./local-tools.yaml` → Relative to current directory
+   - `$CONFIG_DIR/tools.yaml` → With environment variable
 
 Example configuration using paths:
 
 ```yaml
 # Mix named references with paths
-rulesets:
-  - internal:cautious # Built-in
-  - base-rules # From ~/.claude-composer/rulesets/
-  - ~/shared/team-rules.yaml # Absolute path with ~
-  - ./project-rules.yaml # Relative path
-
 toolsets:
   - internal:core
   - /opt/company/tools.yaml # Absolute path
@@ -58,13 +50,11 @@ toolsets:
 # Global
 ~/.claude-composer/
 ├── config.yaml
-├── rulesets/*.yaml
 └── toolsets/*.yaml
 
 # Project
 .claude-composer/
 ├── config.yaml
-├── rulesets/*.yaml
 └── toolsets/*.yaml
 ```
 
@@ -72,9 +62,7 @@ toolsets:
 
 ```yaml
 # config.yaml
-rulesets:
-  - internal:cautious
-  - my-custom-rules
+yolo: false # Accept all prompts automatically when true
 
 toolsets:
   - internal:core
@@ -101,6 +89,5 @@ roots:
 
 ## See Also
 
-- [Rulesets](./rulesets.md)
 - [Toolsets](./toolsets.md)
 - [CLI Reference](./cli-reference.md)

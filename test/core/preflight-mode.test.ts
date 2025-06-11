@@ -152,7 +152,7 @@ describe('Preflight - Mode handling', () => {
 
   describe('Mode value validation', () => {
     it('should accept mode act', async () => {
-      fs.writeFileSync(configPath, 'rulesets:\n  - internal:cautious\n')
+      fs.writeFileSync(configPath, 'yolo: false\n')
 
       const result = await runPreflight(
         ['node', 'claude-composer', '--mode', 'act'],
@@ -165,7 +165,7 @@ describe('Preflight - Mode handling', () => {
     })
 
     it('should accept mode plan', async () => {
-      fs.writeFileSync(configPath, 'rulesets:\n  - internal:cautious\n')
+      fs.writeFileSync(configPath, 'yolo: false\n')
 
       const result = await runPreflight(
         ['node', 'claude-composer', '--mode', 'plan'],

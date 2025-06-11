@@ -7,10 +7,8 @@ import { fileURLToPath } from 'node:url'
 import {
   validateAppConfig,
   validateToolsetConfig,
-  validateRulesetConfig,
   type AppConfig,
   type ToolsetConfig,
-  type RulesetConfig,
 } from './schemas.js'
 import { CONFIG_PATHS } from './paths'
 import { expandPath } from '../utils/file-utils.js'
@@ -171,82 +169,6 @@ export async function loadToolsetFile(
       throw error
     }
     throw new Error(`Error loading toolset file: ${error}`)
-  }
-}
-
-export async function loadRulesetFile(
-  rulesetName: string,
-): Promise<RulesetConfig> {
-  let rulesetPath: string
-
-  // Check if this is an absolute or relative path
-  // Also check for environment variables
-  if (
-    rulesetName.startsWith('~') ||
-    rulesetName.startsWith('/') ||
-    rulesetName.startsWith('.') ||
-    rulesetName.includes('$')
-  ) {
-    // Treat as a path - expand and resolve it
-    const expandedPath = expandPath(rulesetName)
-    rulesetPath = resolveYamlPath(expandedPath)
-  } else if (rulesetName.startsWith('internal:')) {
-    // Check if this is an internal ruleset
-    const internalName = rulesetName.substring('internal:'.length)
-    // Look for internal rulesets in the dist/internal-rulesets directory
-    const __filename = fileURLToPath(import.meta.url)
-    const __dirname = path.dirname(__filename)
-    rulesetPath = path.join(
-      __dirname,
-      'internal-rulesets',
-      `${internalName}.yaml`,
-    )
-
-    // In development/test, check src directory if dist doesn't exist
-    if (!fs.existsSync(rulesetPath)) {
-      // Try replacing dist with src in the path
-      const srcPath = rulesetPath.replace('/dist/', '/src/')
-      if (fs.existsSync(srcPath)) {
-        rulesetPath = srcPath
-      }
-    }
-  } else if (rulesetName.startsWith('project:')) {
-    // Project-level ruleset
-    const projectName = rulesetName.substring('project:'.length)
-    const basePath = path.join(
-      process.cwd(),
-      '.claude-composer',
-      'rulesets',
-      projectName,
-    )
-    rulesetPath = resolveYamlPath(basePath)
-  } else {
-    // Regular user ruleset
-    const basePath = path.join(CONFIG_PATHS.getRulesetsDirectory(), rulesetName)
-    rulesetPath = resolveYamlPath(basePath)
-  }
-
-  if (!fs.existsSync(rulesetPath)) {
-    throw new Error(`Ruleset file not found: ${rulesetPath}`)
-  }
-
-  try {
-    const rulesetData = fs.readFileSync(rulesetPath, 'utf8')
-    const parsed = yaml.load(rulesetData)
-    // Handle empty YAML files which parse to undefined or null
-    const data = parsed === null || parsed === undefined ? {} : parsed
-    const result = validateRulesetConfig(data)
-    handleValidationError(result, rulesetPath, 'ruleset configuration')
-
-    return result.data
-  } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message === 'ruleset configuration validation failed'
-    ) {
-      throw error
-    }
-    throw new Error(`Error loading ruleset file: ${error}`)
   }
 }
 

@@ -13,7 +13,7 @@ import {
   createAppReadyPattern,
   createTrustPromptPattern,
 } from './patterns/registry'
-import { type AppConfig, type RulesetConfig } from './config/schemas.js'
+import { type AppConfig } from './config/schemas.js'
 import { runPreflight, log, warn } from './core/preflight.js'
 import {
   showNotification,
@@ -38,7 +38,7 @@ let responseQueue: ResponseQueue
 let terminalManager: TerminalManager
 let tempMcpConfigPath: string | undefined
 let appConfig: AppConfig | undefined
-let mergedRuleset: RulesetConfig | undefined
+let yolo: boolean | undefined
 let confirmationPatternTriggers: string[] = []
 let pipedInputPath: string | undefined
 
@@ -148,7 +148,7 @@ process.on('uncaughtException', error => {
 })
 
 function shouldAcceptPrompt(match: MatchResult): boolean {
-  return shouldAcceptPromptUtil(match, appConfig, mergedRuleset)
+  return shouldAcceptPromptUtil(match, appConfig, yolo)
 }
 
 function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
@@ -211,27 +211,7 @@ function handlePatternMatches(data: string, filterType?: 'confirmation'): void {
           match.patternId === 'bash-command-prompt-format-2') &&
         !match.extractedData?.directory
       ) {
-        const isInProjectRoot = isFileInProjectRoot(process.cwd())
-        const bashConfig = isInProjectRoot
-          ? mergedRuleset?.accept_project_bash_command_prompts
-          : mergedRuleset?.accept_global_bash_command_prompts
-
-        if (
-          bashConfig &&
-          typeof bashConfig === 'object' &&
-          'paths' in bashConfig
-        ) {
-          showNotification(
-            {
-              title: '🚨 Claude Composer',
-              message: 'UNACCEPTABLE DIALOG BECAUSE NO DIRECTORY IS SPECIFIED',
-              timeout: false,
-              sound: true,
-            },
-            appConfig,
-          ).catch(err => {})
-          return
-        }
+        // Skip this check in yolo mode
       }
 
       showPatternNotification(
@@ -407,7 +387,7 @@ export async function main() {
   }
 
   appConfig = preflightResult.appConfig
-  mergedRuleset = preflightResult.mergedRuleset
+  yolo = preflightResult.yolo
   tempMcpConfigPath = preflightResult.tempMcpConfigPath
 
   responseQueue = new ResponseQueue()

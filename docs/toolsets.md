@@ -109,5 +109,4 @@ claude-composer --toolset internal:core --toolset my-tools
 ## See Also
 
 - [Configuration Guide](./configuration.md)
-- [Rulesets Reference](./rulesets.md)
 - [CLI Reference](./cli-reference.md)

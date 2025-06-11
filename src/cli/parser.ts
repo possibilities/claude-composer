@@ -12,10 +12,7 @@ export function createClaudeComposerCommand(): Command {
       '--toolset <name...>',
       'Use predefined toolsets from ~/.claude-composer/toolsets/ directory or specify an absolute path (can be specified multiple times)',
     )
-    .option(
-      '--ruleset <name...>',
-      'Use predefined rulesets from ~/.claude-composer/rulesets/ directory or specify an absolute path (can be specified multiple times)',
-    )
+    .option('--yolo', 'Accept all prompts automatically (use with caution)')
     .option(
       '--ignore-global-config',
       'Ignore configuration from ~/.claude-composer/config.yaml',
@@ -47,12 +44,12 @@ export function createClaudeComposerCommand(): Command {
       'Do not allow running in a directory not under version control',
     )
     .option(
-      '--dangerously-suppress-automatic-acceptance-confirmation',
-      'Suppress the confirmation prompt when automatic acceptance is enabled',
+      '--dangerously-suppress-yolo-confirmation',
+      'Suppress the confirmation prompt when yolo mode is enabled',
     )
     .option(
-      '--no-dangerously-suppress-automatic-acceptance-confirmation',
-      'Show the confirmation prompt when automatic acceptance is enabled',
+      '--no-dangerously-suppress-yolo-confirmation',
+      'Show the confirmation prompt when yolo mode is enabled',
     )
     // Notification options (moved to end)
     .option(
@@ -67,91 +64,6 @@ export function createClaudeComposerCommand(): Command {
     .option(
       '--no-sticky-notifications',
       'Make notifications auto-dismiss after timeout (default)',
-    )
-    // Notification settings
-    .option(
-      '--show-confirm-notify',
-      'Show notifications for file operations (default)',
-    )
-    .option('--no-show-confirm-notify', 'Hide all file operation notifications')
-    .option(
-      '--show-accepted-confirm-notify',
-      'Show notifications for auto-accepted actions',
-    )
-    .option(
-      '--no-show-accepted-confirm-notify',
-      'Hide auto-accepted notifications (default)',
-    )
-    .option(
-      '--show-prompted-confirm-notify',
-      'Show notifications when prompted (default)',
-    )
-    .option('--no-show-prompted-confirm-notify', 'Hide prompted notifications')
-    // Per-confirmation type flags
-    .option(
-      '--show-edit-file-confirm-notify',
-      'Show notifications for file edits',
-    )
-    .option(
-      '--no-show-edit-file-confirm-notify',
-      'Hide notifications for file edits',
-    )
-    .option(
-      '--show-create-file-confirm-notify',
-      'Show notifications for file creates',
-    )
-    .option(
-      '--no-show-create-file-confirm-notify',
-      'Hide notifications for file creates',
-    )
-    .option(
-      '--show-bash-command-confirm-notify',
-      'Show notifications for bash commands',
-    )
-    .option(
-      '--no-show-bash-command-confirm-notify',
-      'Hide notifications for bash commands',
-    )
-    .option(
-      '--show-read-file-confirm-notify',
-      'Show notifications for file reads',
-    )
-    .option(
-      '--no-show-read-file-confirm-notify',
-      'Hide notifications for file reads',
-    )
-    .option(
-      '--show-fetch-content-confirm-notify',
-      'Show notifications for content fetches',
-    )
-    .option(
-      '--no-show-fetch-content-confirm-notify',
-      'Hide notifications for content fetches',
-    )
-    // Per-type stickiness flags
-    .option(
-      '--sticky-prompted-confirm-notify',
-      'Make prompted confirmation notifications sticky',
-    )
-    .option(
-      '--no-sticky-prompted-confirm-notify',
-      'Make prompted confirmation notifications auto-dismiss',
-    )
-    .option(
-      '--sticky-accepted-confirm-notify',
-      'Make accepted confirmation notifications sticky',
-    )
-    .option(
-      '--no-sticky-accepted-confirm-notify',
-      'Make accepted confirmation notifications auto-dismiss',
-    )
-    .option(
-      '--sticky-terminal-snapshot-notifications',
-      'Make terminal snapshot notifications sticky',
-    )
-    .option(
-      '--no-sticky-terminal-snapshot-notifications',
-      'Make terminal snapshot notifications auto-dismiss',
     )
     .allowUnknownOption()
     .argument('[args...]', 'Arguments to pass to `claude`')
