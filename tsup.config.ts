@@ -23,7 +23,6 @@ export default defineConfig({
   entry: {
     cli: 'src/index.ts',
     'test-patterns': 'test/utils/test-patterns.ts',
-    'show-snapshot-commands': 'scripts/show-snapshot-commands.ts',
   },
   format: ['esm'],
   target: 'node18',
@@ -45,12 +44,6 @@ export default defineConfig({
     }
   },
   onSuccess: async () => {
-    // Copy internal-toolsets directory to dist
     copyDir('src/internal-toolsets', 'dist/internal-toolsets')
-
-    // Copy with-pipe.sh script to dist
-    copyFileSync('scripts/with-pipe.sh', 'dist/with-pipe.sh')
-    // Make it executable
-    chmodSync('dist/with-pipe.sh', 0o755)
   },
 })
