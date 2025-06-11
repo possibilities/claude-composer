@@ -1,5 +1,5 @@
 import { defineConfig } from 'tsup'
-import { copyFileSync, mkdirSync, readdirSync, statSync } from 'fs'
+import { copyFileSync, mkdirSync, readdirSync, statSync, chmodSync } from 'fs'
 import { join } from 'path'
 
 // Helper function to copy directory recursively
@@ -47,5 +47,10 @@ export default defineConfig({
   onSuccess: async () => {
     // Copy internal-toolsets directory to dist
     copyDir('src/internal-toolsets', 'dist/internal-toolsets')
+
+    // Copy with-pipe.sh script to dist
+    copyFileSync('scripts/with-pipe.sh', 'dist/with-pipe.sh')
+    // Make it executable
+    chmodSync('dist/with-pipe.sh', 0o755)
   },
 })

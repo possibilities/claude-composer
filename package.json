@@ -32,7 +32,8 @@
   },
   "type": "module",
   "bin": {
-    "claude-composer": "./dist/cli.js"
+    "claude-composer": "./dist/cli.js",
+    "claude-composer-with-pipe": "./dist/with-pipe.sh"
   },
   "dependencies": {
     "@homebridge/node-pty-prebuilt-multiarch": "^0.12.0",
