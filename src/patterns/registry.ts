@@ -207,12 +207,12 @@ export function createAppReadyPattern(
             .readFileSync(positionalArgContentPath, 'utf8')
             .trimEnd()
           return content
-            ? [content, 250, '\x1b[Z', 250, '\x1b[Z', 300, '\r']
-            : ['\x1b[Z', 250, '\x1b[Z']
+            ? [content, 400, '\x1b[Z', 400, '\x1b[Z', 500, '\r']
+            : ['\x1b[Z', 400, '\x1b[Z']
         } catch (error) {}
       }
       // Even without positional arg content, send SHIFT+TAB in plan mode
-      return ['\x1b[Z', 250, '\x1b[Z']
+      return ['\x1b[Z', 400, '\x1b[Z']
     }
 
     // Normal positional arg injection mode (no plan mode)
@@ -224,7 +224,7 @@ export function createAppReadyPattern(
       const content = fs
         .readFileSync(positionalArgContentPath, 'utf8')
         .trimEnd()
-      return content ? [content, 300, '\r'] : undefined
+      return content ? [content, 500, '\r'] : undefined
     } catch (error) {}
   }
 
