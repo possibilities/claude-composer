@@ -2,7 +2,6 @@ import { defineConfig } from 'tsup'
 import { copyFileSync, mkdirSync, readdirSync, statSync, chmodSync } from 'fs'
 import { join } from 'path'
 
-// Helper function to copy directory recursively
 function copyDir(src: string, dest: string) {
   mkdirSync(dest, { recursive: true })
   const entries = readdirSync(src, { withFileTypes: true })
