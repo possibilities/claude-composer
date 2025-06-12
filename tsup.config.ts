@@ -20,10 +20,7 @@ function copyDir(src: string, dest: string) {
 }
 
 export default defineConfig({
-  entry: {
-    cli: 'src/index.ts',
-    'test-patterns': 'test/utils/test-patterns.ts',
-  },
+  entry: { cli: 'src/index.ts' },
   format: ['esm'],
   target: 'node18',
   outDir: 'dist',
