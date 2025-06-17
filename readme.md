@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/possibilities-claude-composer-badge.png)](https://mseep.ai/app/possibilities-claude-composer)
+
 # Claude Composer
 
 > A tool that adds small enhancements to Claude Code
