@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import * as yaml from 'js-yaml'
 import prompts from 'prompts'
+import { execSync } from 'child_process'
 import { CONFIG_PATHS } from '../config/paths.js'
 import { log, warn } from '../utils/logging.js'
 
@@ -9,6 +10,15 @@ export interface CcInitOptions {
   useCoreToolset?: boolean
   noUseCoreToolset?: boolean
   project?: boolean
+}
+
+function commandExists(command: string): boolean {
+  try {
+    execSync(`command -v ${command}`, { stdio: 'ignore' })
+    return true
+  } catch {
+    return false
+  }
 }
 
 export async function handleCcInit(args: string[]): Promise<void> {
@@ -109,6 +119,53 @@ export async function handleCcInit(args: string[]): Promise<void> {
     options.useCoreToolset = toolsetResponse.useCoreToolset
   }
 
+  // Prompt for output formatter
+  let outputFormatter: string | undefined
+  const jqExists = commandExists('jq')
+
+  const formatterResponse = await prompts(
+    {
+      type: 'select',
+      name: 'formatterChoice',
+      message:
+        'Would you like to configure an output formatter for JSON output?',
+      choices: [
+        { title: 'No formatter', value: 'none' },
+        ...(jqExists
+          ? [{ title: 'Use jq (detected on system)', value: 'jq' }]
+          : []),
+        { title: 'Custom formatter', value: 'custom' },
+      ],
+      initial: 0,
+      hint: 'Formatters process --print output when --output-format is json or stream-json',
+    },
+    {
+      onCancel: () => {
+        process.exit(130)
+      },
+    },
+  )
+
+  if (formatterResponse.formatterChoice === 'jq') {
+    outputFormatter = 'jq'
+  } else if (formatterResponse.formatterChoice === 'custom') {
+    const customFormatterResponse = await prompts(
+      {
+        type: 'text',
+        name: 'formatter',
+        message: 'Enter the path or command for your formatter:',
+        validate: (value: string) =>
+          value.trim() !== '' || 'Formatter cannot be empty',
+      },
+      {
+        onCancel: () => {
+          process.exit(130)
+        },
+      },
+    )
+    outputFormatter = customFormatterResponse.formatter
+  }
+
   // Check if using --project without a global config
   if (options.project) {
     const globalConfigPath = CONFIG_PATHS.getConfigFilePath()
@@ -146,6 +203,11 @@ export async function handleCcInit(args: string[]): Promise<void> {
     config.toolsets = ['internal:core']
   }
 
+  // Add output formatter if configured
+  if (outputFormatter) {
+    config.output_formatter = outputFormatter
+  }
+
   // Add empty roots list
   config.roots = []
 
@@ -172,6 +234,10 @@ export async function handleCcInit(args: string[]): Promise<void> {
 
     if (options.useCoreToolset) {
       log('✓ Core toolset enabled')
+    }
+
+    if (outputFormatter) {
+      log(`✓ Output formatter configured: ${outputFormatter}`)
     }
   } catch (error) {
     console.error('Error writing configuration file:', error)

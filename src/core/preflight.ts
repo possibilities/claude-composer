@@ -166,6 +166,11 @@ export async function runPreflight(
   }
   // If no CLI flag provided, config value is preserved from loadConfigFile above
 
+  // Handle output formatter
+  if (parsedOptions.outputFormatter !== undefined) {
+    appConfig.output_formatter = parsedOptions.outputFormatter
+  }
+
   let toolsetArgs: string[] = []
   let tempMcpConfigPath: string | undefined
 
@@ -251,10 +256,68 @@ export async function runPreflight(
       i++
     } else if (arg === '--mode' && i + 1 < argv.length) {
       i++
+    } else if (arg === '--output-formatter' && i + 1 < argv.length) {
+      i++
     }
   }
 
   childArgs.push(...toolsetArgs)
+
+  // Validate output formatter if specified and conditions are met (before isPrint early return)
+  if (appConfig.output_formatter && hasPrintOption) {
+    // Check if --output-format is json or stream-json
+    const hasJsonOutputFormat = childArgs.some(
+      arg =>
+        arg === '--output-format=json' ||
+        arg === '--output-format=stream-json' ||
+        (arg === '--output-format' &&
+          childArgs[childArgs.indexOf(arg) + 1] &&
+          ['json', 'stream-json'].includes(
+            childArgs[childArgs.indexOf(arg) + 1],
+          )),
+    )
+
+    if (hasJsonOutputFormat) {
+      // Apply appropriate buffering and enhancements
+      let formatterCommand = appConfig.output_formatter
+      const isStreamJson = childArgs.some(
+        arg =>
+          arg === '--output-format=stream-json' ||
+          (arg === '--output-format' &&
+            childArgs[childArgs.indexOf(arg) + 1] === 'stream-json'),
+      )
+
+      if (isStreamJson) {
+        // Apply line buffering to ALL formatters for stream-json
+        formatterCommand = `stdbuf -oL ${formatterCommand}`
+        log(`※ Using line-buffered output formatter for stream-json`)
+      }
+
+      const { OutputFormatter } = await import('./output-formatter.js')
+      const formatter = new OutputFormatter({
+        command: formatterCommand,
+      })
+      try {
+        await formatter.validate()
+        log(`※ Using output formatter: ${formatterCommand}`)
+      } catch (error) {
+        console.error(`※ ${error instanceof Error ? error.message : error}`)
+        return {
+          appConfig,
+          toolsetArgs,
+          childArgs,
+          shouldExit: true,
+          exitCode: 1,
+          knownOptions,
+          hasPrintOption,
+        }
+      }
+    } else {
+      log(
+        `※ Output formatter configured but not active (requires --output-format json or stream-json)`,
+      )
+    }
+  }
 
   if (isPrint) {
     log(`※ Starting Claude Code in non-interactive mode due to --print option`)

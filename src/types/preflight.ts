@@ -37,6 +37,7 @@ export interface ParsedOptions {
   allowBufferSnapshots?: boolean
   quiet?: boolean
   mode?: string
+  outputFormatter?: string
 }
 
 // Re-export for convenience

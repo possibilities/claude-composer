@@ -20,6 +20,10 @@ export function createClaudeComposerCommand(): Command {
     .option('--quiet', 'Suppress preflight messages')
     .option('--mode <mode>', 'Start mode (act or plan)')
     .option(
+      '--output-formatter <script>',
+      "Path to executable script that will format Claude's output",
+    )
+    .option(
       '--allow-buffer-snapshots',
       'Enable Ctrl+Shift+S to save terminal buffer snapshots to ~/.claude-composer/logs/',
     )

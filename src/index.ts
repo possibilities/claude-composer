@@ -386,16 +386,92 @@ export async function main() {
       )
       const childAppPath = process.env.CLAUDE_APP_PATH || defaultChildAppPath
 
-      const printProcess = spawn(childAppPath, preflightResult.childArgs, {
-        stdio: 'inherit',
-        env: process.env,
-      })
+      // Check if we have an output formatter configured and --output-format is json or stream-json
+      const hasOutputFormat = preflightResult.childArgs.some(
+        arg =>
+          arg === '--output-format=json' ||
+          arg === '--output-format=stream-json' ||
+          (arg === '--output-format' &&
+            preflightResult.childArgs[
+              preflightResult.childArgs.indexOf(arg) + 1
+            ] &&
+            ['json', 'stream-json'].includes(
+              preflightResult.childArgs[
+                preflightResult.childArgs.indexOf(arg) + 1
+              ],
+            )),
+      )
 
-      printProcess.on('exit', code => {
-        setImmediate(() => {
-          process.exit(code || 0)
+      if (preflightResult.appConfig.output_formatter && hasOutputFormat) {
+        // Use piped stdio to capture output for formatting
+        let formatterCommand = preflightResult.appConfig.output_formatter
+
+        // Apply appropriate buffering and enhancements
+        const isStreamJson = preflightResult.childArgs.some(
+          arg =>
+            arg === '--output-format=stream-json' ||
+            (arg === '--output-format' &&
+              preflightResult.childArgs[
+                preflightResult.childArgs.indexOf(arg) + 1
+              ] === 'stream-json'),
+        )
+
+        if (isStreamJson) {
+          // Apply line buffering to ALL formatters for stream-json
+          formatterCommand = `stdbuf -oL ${formatterCommand}`
+        }
+
+        const { OutputFormatter } = await import('./core/output-formatter.js')
+        const formatter = new OutputFormatter({
+          command: formatterCommand,
+          env: process.env,
         })
-      })
+
+        formatter.start()
+
+        const printProcess = spawn(childAppPath, preflightResult.childArgs, {
+          stdio: ['inherit', 'pipe', 'inherit'],
+          env: process.env,
+        })
+
+        // Connect the formatter's output to stdout
+        const formatterOutput = formatter.getOutputStream()
+        if (formatterOutput) {
+          formatterOutput.pipe(process.stdout)
+        }
+
+        // Pipe the child process stdout directly to the formatter's stdin
+        const formatterInput = formatter.getInputStream()
+        if (formatterInput && printProcess.stdout) {
+          printProcess.stdout.pipe(formatterInput)
+        }
+
+        printProcess.on('exit', code => {
+          // End the formatter's stdin to signal EOF
+          const formatterInput = formatter.getInputStream()
+          if (formatterInput) {
+            formatterInput.end()
+          }
+
+          // Wait a bit for formatter to finish processing
+          setTimeout(() => {
+            formatter.stop()
+            process.exit(code || 0)
+          }, 100)
+        })
+      } else {
+        // Normal --print behavior without formatter
+        const printProcess = spawn(childAppPath, preflightResult.childArgs, {
+          stdio: 'inherit',
+          env: process.env,
+        })
+
+        printProcess.on('exit', code => {
+          setImmediate(() => {
+            process.exit(code || 0)
+          })
+        })
+      }
 
       return
     }

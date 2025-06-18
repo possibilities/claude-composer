@@ -39,6 +39,30 @@ claude-composer --mode plan
 
 Ignore global configuration file.
 
+### Output Formatting
+
+#### `--output-formatter <script>`
+
+Path to executable script that will format Claude's output when using `--print` with `--output-format json` or `--output-format stream-json`.
+
+```bash
+# Format JSON output with jq
+claude-composer --output-formatter "jq" --print --output-format json "explain kubernetes"
+
+# Use custom formatter script
+claude-composer --output-formatter ./my-formatter.sh --print --output-format stream-json "write a function"
+
+# Use jq with custom filter
+claude-composer --output-formatter "jq '.completion.segments[]'" --print --output-format json "write code"
+
+# Force color output if needed
+claude-composer --output-formatter "jq -C" --print --output-format json "explain kubernetes"
+```
+
+The formatter script receives Claude's output on stdin and should write formatted output to stdout.
+
+**Note**: For `--output-format stream-json`, formatters are automatically wrapped with `stdbuf -oL` to ensure line-buffered output. This means each JSON line is processed and displayed immediately as it's generated, providing real-time streaming output.
+
 ### Safety Options
 
 ⚠️ **Warning**: These bypass safety checks.
@@ -94,6 +118,12 @@ Options:
 - `--project` - Create project config
 - `--use-yolo` - Enable YOLO mode (accept all prompts)
 - `--use-core-toolset` / `--no-use-core-toolset` - Enable/disable core toolset
+
+The command will prompt for:
+
+- YOLO mode configuration
+- Core toolset enablement
+- Output formatter (offers `jq` if detected, or custom command)
 
 ## Pass-through Arguments
 

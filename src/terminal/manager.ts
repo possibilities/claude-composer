@@ -14,6 +14,7 @@ import type {
 import { saveTerminalSnapshot } from './utils'
 import type { AppConfig } from '../config/schemas'
 import type { ResponseQueue } from '../core/response-queue'
+import { OutputFormatter } from '../core/output-formatter'
 
 export class TerminalManager {
   private state: TerminalState = {
@@ -28,6 +29,7 @@ export class TerminalManager {
   private tempMcpConfigPath?: string
   private appConfig?: AppConfig
   private responseQueue?: ResponseQueue
+  private outputFormatter?: OutputFormatter
 
   constructor(appConfig?: AppConfig, responseQueue?: ResponseQueue) {
     this.appConfig = appConfig
@@ -36,6 +38,16 @@ export class TerminalManager {
 
   async initialize(config: TerminalConfig): Promise<void> {
     const { isTTY, cols, rows, env, cwd, childAppPath, childArgs } = config
+
+    // Set up output formatter if configured
+    if (this.appConfig?.output_formatter) {
+      this.outputFormatter = new OutputFormatter({
+        scriptPath: this.appConfig.output_formatter,
+        env,
+      })
+      // Validation already done in preflight, but start the process
+      this.outputFormatter.start()
+    }
 
     if (isTTY) {
       await this.initializePty(childAppPath, childArgs, cols, rows, env, cwd)
@@ -67,9 +79,28 @@ export class TerminalManager {
     if (this.appConfig && this.shouldInitializeXterm()) {
       await this.initializeXterm(cols, rows)
     }
-    this.state.ptyProcess.onData((data: string) => {
-      this.dataHandlers.forEach(handler => handler(data))
-    })
+
+    if (this.outputFormatter && this.outputFormatter.isRunning()) {
+      // Set up formatter data flow
+      const formatterOutput = this.outputFormatter.getOutputStream()
+      if (formatterOutput) {
+        formatterOutput.on('data', (data: Buffer) => {
+          const dataStr = data.toString()
+          this.dataHandlers.forEach(handler => handler(dataStr))
+        })
+      }
+
+      this.state.ptyProcess.onData((data: string) => {
+        // Send data to formatter instead of directly to handlers
+        const formatterStream = this.outputFormatter!.getTransformStream()
+        formatterStream.write(data)
+      })
+    } else {
+      // Normal flow without formatter
+      this.state.ptyProcess.onData((data: string) => {
+        this.dataHandlers.forEach(handler => handler(data))
+      })
+    }
 
     this.state.ptyProcess.onExit(exitCode => {
       this.exitHandlers.forEach(handler => handler(exitCode.exitCode || 0))
@@ -120,10 +151,28 @@ export class TerminalManager {
       process.stdin.pipe(this.state.childProcess.stdin!)
     }
 
-    this.state.childProcess.stdout!.on('data', (data: Buffer) => {
-      const dataStr = data.toString()
-      this.dataHandlers.forEach(handler => handler(dataStr))
-    })
+    if (this.outputFormatter && this.outputFormatter.isRunning()) {
+      // Set up formatter data flow
+      const formatterOutput = this.outputFormatter.getOutputStream()
+      if (formatterOutput) {
+        formatterOutput.on('data', (data: Buffer) => {
+          const dataStr = data.toString()
+          this.dataHandlers.forEach(handler => handler(dataStr))
+        })
+      }
+
+      this.state.childProcess.stdout!.on('data', (data: Buffer) => {
+        // Send data to formatter instead of directly to handlers
+        const formatterStream = this.outputFormatter!.getTransformStream()
+        formatterStream.write(data)
+      })
+    } else {
+      // Normal flow without formatter
+      this.state.childProcess.stdout!.on('data', (data: Buffer) => {
+        const dataStr = data.toString()
+        this.dataHandlers.forEach(handler => handler(dataStr))
+      })
+    }
 
     this.state.childProcess.stderr!.pipe(process.stderr)
     this.state.childProcess.on('exit', (code: number | null) => {
@@ -244,6 +293,11 @@ export class TerminalManager {
     if (this.state.terminal) {
       this.state.terminal.dispose()
       this.state.terminal = undefined
+    }
+
+    if (this.outputFormatter) {
+      this.outputFormatter.stop()
+      this.outputFormatter = undefined
     }
 
     if (this.state.ptyProcess) {

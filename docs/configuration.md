@@ -75,7 +75,35 @@ roots:
 show_notifications: true
 sticky_notifications: false
 mode: plan # Optional: 'act' or 'plan'
+output_formatter: jq # Optional: path to formatter executable
 ```
+
+### Output Formatter
+
+The `output_formatter` option specifies a command to process Claude's output when using `--print` with JSON output formats:
+
+```yaml
+# Use jq to format JSON
+output_formatter: jq
+
+# Use a custom formatter script
+output_formatter: ~/scripts/json-formatter.sh
+
+# Use an absolute path
+output_formatter: /usr/local/bin/my-formatter
+```
+
+The formatter is only activated when:
+
+- Using the `--print` flag
+- AND `--output-format` is set to `json` or `stream-json`
+
+The formatter receives Claude's output on stdin and should write formatted output to stdout.
+
+**Automatic enhancements**:
+
+- For `stream-json`: All formatters are wrapped with `stdbuf -oL` for line-buffered output
+- Environment variables like `FORCE_COLOR=1` and `CLICOLOR_FORCE=1` are set to encourage color output
 
 ## Environment Variables
 

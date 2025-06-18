@@ -18,6 +18,7 @@ export const appConfigSchema = z
     log_all_pattern_matches: z.boolean().optional(),
     allow_buffer_snapshots: z.boolean().optional(),
     mode: z.enum(['plan', 'act']).optional(),
+    output_formatter: z.string().optional(),
 
     // Trust roots - directories where trust prompts are auto-accepted
     roots: z.array(z.string()).optional(),
