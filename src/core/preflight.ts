@@ -18,6 +18,7 @@ import {
   checkDirtyDirectory,
   handleAutomaticAcceptanceWarning,
 } from '../safety/checker.js'
+import { CLAUDE_PATHS } from '../config/paths.js'
 import { parseCommandLineArgs, buildKnownOptionsSet } from '../cli/parser.js'
 import { detectSubcommand } from '../cli/subcommand.js'
 import { log, warn, setQuietMode, clearScreen } from '../utils/logging.js'
@@ -301,15 +302,8 @@ export async function runPreflight(
     }
   }
 
-  const defaultChildAppPath = path.join(
-    os.homedir(),
-    '.claude',
-    'local',
-    'claude',
-  )
-  const childAppPath = process.env.CLAUDE_APP_PATH || defaultChildAppPath
-
   try {
+    const childAppPath = CLAUDE_PATHS.findClaudeCommand()
     checkChildAppPath(childAppPath)
   } catch (error) {
     console.error(`※ ${error instanceof Error ? error.message : error}`)

@@ -15,6 +15,7 @@ import {
 } from './patterns/registry'
 import { type AppConfig } from './config/schemas.js'
 import { runPreflight, log, warn } from './core/preflight.js'
+import { CLAUDE_PATHS } from './config/paths.js'
 import {
   showNotification,
   showPatternNotification,
@@ -315,13 +316,7 @@ export async function main() {
     program.outputHelp()
     console.log('\n--- Claude CLI Help ---\n')
 
-    const defaultChildAppPath = path.join(
-      os.homedir(),
-      '.claude',
-      'local',
-      'claude',
-    )
-    const childAppPath = process.env.CLAUDE_APP_PATH || defaultChildAppPath
+    const childAppPath = CLAUDE_PATHS.findClaudeCommand()
 
     const helpProcess = spawn(childAppPath, ['--help'], {
       stdio: 'inherit',
@@ -346,13 +341,7 @@ export async function main() {
       console.log('Claude Composer')
     }
 
-    const defaultChildAppPath = path.join(
-      os.homedir(),
-      '.claude',
-      'local',
-      'claude',
-    )
-    const childAppPath = process.env.CLAUDE_APP_PATH || defaultChildAppPath
+    const childAppPath = CLAUDE_PATHS.findClaudeCommand()
 
     const versionProcess = spawn(childAppPath, ['--version'], {
       stdio: 'inherit',
@@ -378,13 +367,7 @@ export async function main() {
     }
 
     if (process.argv.includes('--print')) {
-      const defaultChildAppPath = path.join(
-        os.homedir(),
-        '.claude',
-        'local',
-        'claude',
-      )
-      const childAppPath = process.env.CLAUDE_APP_PATH || defaultChildAppPath
+      const childAppPath = CLAUDE_PATHS.findClaudeCommand()
 
       const printProcess = spawn(childAppPath, preflightResult.childArgs, {
         stdio: 'inherit',
@@ -402,13 +385,7 @@ export async function main() {
 
     const args = preflightResult.childArgs
     if (args.length > 0 && !args[0].includes(' ') && !args[0].startsWith('-')) {
-      const defaultChildAppPath = path.join(
-        os.homedir(),
-        '.claude',
-        'local',
-        'claude',
-      )
-      const childAppPath = process.env.CLAUDE_APP_PATH || defaultChildAppPath
+      const childAppPath = CLAUDE_PATHS.findClaudeCommand()
 
       const subcommandProcess = spawn(childAppPath, preflightResult.childArgs, {
         stdio: 'inherit',
@@ -437,15 +414,9 @@ export async function main() {
     terminalManager.setTempMcpConfigPath(tempMcpConfigPath)
   }
 
-  const defaultChildAppPath = path.join(
-    os.homedir(),
-    '.claude',
-    'local',
-    'claude',
-  )
-  const childAppPath = process.env.CLAUDE_APP_PATH || defaultChildAppPath
+  const childAppPath = CLAUDE_PATHS.findClaudeCommand()
 
-  if (childAppPath === defaultChildAppPath) {
+  if (childAppPath === CLAUDE_PATHS.getDefaultAppPath()) {
     try {
       const childCliPath = path.join(
         os.homedir(),
