@@ -386,16 +386,57 @@ export async function main() {
       )
       const childAppPath = process.env.CLAUDE_APP_PATH || defaultChildAppPath
 
-      const printProcess = spawn(childAppPath, preflightResult.childArgs, {
-        stdio: 'inherit',
-        env: process.env,
-      })
+      let outputFormat: string | undefined
+      const fmtIndex = preflightResult.childArgs.findIndex(arg =>
+        arg.startsWith('--output-format'),
+      )
+      if (fmtIndex !== -1) {
+        const arg = preflightResult.childArgs[fmtIndex]
+        if (arg.includes('=')) {
+          outputFormat = arg.split('=')[1]
+        } else if (fmtIndex + 1 < preflightResult.childArgs.length) {
+          outputFormat = preflightResult.childArgs[fmtIndex + 1]
+        }
+      }
 
-      printProcess.on('exit', code => {
-        setImmediate(() => {
-          process.exit(code || 0)
+      const useFormatter =
+        appConfig?.output_formatter &&
+        (outputFormat === 'json' || outputFormat === 'stream-json')
+
+      if (useFormatter) {
+        const printProcess = spawn(childAppPath, preflightResult.childArgs, {
+          stdio: ['ignore', 'pipe', 'inherit'],
+          env: process.env,
         })
-      })
+
+        const formatterProcess = spawn(appConfig.output_formatter, {
+          shell: true,
+          stdio: ['pipe', 'inherit', 'inherit'],
+        })
+
+        printProcess.stdout!.pipe(formatterProcess.stdin!)
+
+        printProcess.on('exit', () => {
+          formatterProcess.stdin?.end()
+        })
+
+        formatterProcess.on('exit', code => {
+          setImmediate(() => {
+            process.exit(code || 0)
+          })
+        })
+      } else {
+        const printProcess = spawn(childAppPath, preflightResult.childArgs, {
+          stdio: 'inherit',
+          env: process.env,
+        })
+
+        printProcess.on('exit', code => {
+          setImmediate(() => {
+            process.exit(code || 0)
+          })
+        })
+      }
 
       return
     }

@@ -9,6 +9,8 @@ export interface CcInitOptions {
   useCoreToolset?: boolean
   noUseCoreToolset?: boolean
   project?: boolean
+  useJqAsOutputFormatter?: boolean
+  noUseJqAsOutputFormatter?: boolean
 }
 
 export async function handleCcInit(args: string[]): Promise<void> {
@@ -24,6 +26,12 @@ export async function handleCcInit(args: string[]): Promise<void> {
     )
     console.log('  --use-core-toolset       Enable core toolset')
     console.log('  --no-use-core-toolset    Disable core toolset')
+    console.log(
+      '  --use-jq-as-output-formatter       Use jq for JSON formatting',
+    )
+    console.log(
+      '  --no-use-jq-as-output-formatter    Do not set an output formatter',
+    )
     console.log(
       '  --project                Create config in current directory (.claude-composer/config.yaml)',
     )
@@ -48,6 +56,12 @@ export async function handleCcInit(args: string[]): Promise<void> {
       case '--no-use-core-toolset':
         options.noUseCoreToolset = true
         break
+      case '--use-jq-as-output-formatter':
+        options.useJqAsOutputFormatter = true
+        break
+      case '--no-use-jq-as-output-formatter':
+        options.noUseJqAsOutputFormatter = true
+        break
       case '--project':
         options.project = true
         break
@@ -64,6 +78,13 @@ export async function handleCcInit(args: string[]): Promise<void> {
   if (options.useCoreToolset && options.noUseCoreToolset) {
     console.error(
       'Error: --use-core-toolset and --no-use-core-toolset are mutually exclusive',
+    )
+    process.exit(1)
+  }
+
+  if (options.useJqAsOutputFormatter && options.noUseJqAsOutputFormatter) {
+    console.error(
+      'Error: --use-jq-as-output-formatter and --no-use-jq-as-output-formatter are mutually exclusive',
     )
     process.exit(1)
   }
@@ -109,6 +130,28 @@ export async function handleCcInit(args: string[]): Promise<void> {
     options.useCoreToolset = toolsetResponse.useCoreToolset
   }
 
+  // Prompt for output formatter if not specified
+  if (
+    options.useJqAsOutputFormatter === undefined &&
+    options.noUseJqAsOutputFormatter === undefined
+  ) {
+    const fmtResponse = await prompts(
+      {
+        type: 'confirm',
+        name: 'useJqAsOutputFormatter',
+        message: 'Use jq for formatting JSON output when using --print?',
+        initial: true,
+      },
+      {
+        onCancel: () => {
+          process.exit(130)
+        },
+      },
+    )
+
+    options.useJqAsOutputFormatter = fmtResponse.useJqAsOutputFormatter
+  }
+
   // Check if using --project without a global config
   if (options.project) {
     const globalConfigPath = CONFIG_PATHS.getConfigFilePath()
@@ -146,6 +189,10 @@ export async function handleCcInit(args: string[]): Promise<void> {
     config.toolsets = ['internal:core']
   }
 
+  if (options.useJqAsOutputFormatter && !options.noUseJqAsOutputFormatter) {
+    config.output_formatter = 'jq'
+  }
+
   // Add empty roots list
   config.roots = []
 
@@ -172,6 +219,9 @@ export async function handleCcInit(args: string[]): Promise<void> {
 
     if (options.useCoreToolset) {
       log('✓ Core toolset enabled')
+    }
+    if (options.useJqAsOutputFormatter) {
+      log('✓ Output formatter set to jq')
     }
   } catch (error) {
     console.error('Error writing configuration file:', error)

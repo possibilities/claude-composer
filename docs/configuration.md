@@ -75,6 +75,7 @@ roots:
 show_notifications: true
 sticky_notifications: false
 mode: plan # Optional: 'act' or 'plan'
+output_formatter: jq # Optional: command for formatting JSON output
 ```
 
 ## Environment Variables

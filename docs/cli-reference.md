@@ -35,6 +35,10 @@ Start in specified mode ('act' or 'plan').
 claude-composer --mode plan
 ```
 
+#### `--output-formatter <command>` / `--no-output-formatter`
+
+Pipe JSON output through this command when using `--print`.
+
 #### `--ignore-global-config`
 
 Ignore global configuration file.
@@ -94,6 +98,7 @@ Options:
 - `--project` - Create project config
 - `--use-yolo` - Enable YOLO mode (accept all prompts)
 - `--use-core-toolset` / `--no-use-core-toolset` - Enable/disable core toolset
+- `--use-jq-as-output-formatter` / `--no-use-jq-as-output-formatter` - Configure JSON formatter
 
 ## Pass-through Arguments
 

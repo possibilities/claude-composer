@@ -160,6 +160,13 @@ export async function runPreflight(
   if (parsedOptions.allowBufferSnapshots !== undefined) {
     appConfig.allow_buffer_snapshots = parsedOptions.allowBufferSnapshots
   }
+  if (parsedOptions.outputFormatter !== undefined) {
+    if (parsedOptions.outputFormatter === false) {
+      delete appConfig.output_formatter
+    } else {
+      appConfig.output_formatter = parsedOptions.outputFormatter as string
+    }
+  }
   // Handle mode: CLI flag takes precedence over config
   if (parsedOptions.mode !== undefined) {
     appConfig.mode = parsedOptions.mode
