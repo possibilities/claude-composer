@@ -108,13 +108,6 @@ export const CLAUDE_PATHS = {
     return path.join(os.homedir(), '.claude', 'local')
   },
 
-  /**
-   * Find the claude command path with fallback detection
-   * 1. Check CLAUDE_APP_PATH environment variable
-   * 2. Check default installation location
-   * 3. Use `which claude` as fallback
-   * @returns Path to claude executable or throws error if not found
-   */
   findClaudeCommand: (): string => {
     // First check environment variable
     if (process.env.CLAUDE_APP_PATH) {
@@ -124,33 +117,28 @@ export const CLAUDE_PATHS = {
       }
     }
 
-    // Check default installation location
     const defaultPath = CLAUDE_PATHS.getDefaultAppPath()
     if (fs.existsSync(defaultPath)) {
       return defaultPath
     }
 
-    // Fallback to `which claude`
     try {
-      const whichResult = execSync('which claude', { 
-        encoding: 'utf8', 
-        stdio: ['ignore', 'pipe', 'ignore'] 
+      const whichResult = execSync('which claude', {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
       }).trim()
-      
+
       if (whichResult && fs.existsSync(whichResult)) {
         return whichResult
       }
-    } catch {
-      // `which` command failed, continue to error
-    }
+    } catch {}
 
-    // If all methods fail, throw an error
     throw new Error(
       `Claude CLI not found. Please install Claude CLI or set CLAUDE_APP_PATH environment variable.\n` +
-      `Checked locations:\n` +
-      `- Environment variable: ${process.env.CLAUDE_APP_PATH || '(not set)'}\n` +
-      `- Default location: ${defaultPath}\n` +
-      `- System PATH: (not found)`
+        `Checked locations:\n` +
+        `- Environment variable: ${process.env.CLAUDE_APP_PATH || '(not set)'}\n` +
+        `- Default location: ${defaultPath}\n` +
+        `- System PATH: (not found)`,
     )
   },
 } as const
