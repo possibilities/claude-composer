@@ -110,5 +110,23 @@ describe('CLI Parser', () => {
       expect(opts.toolset).toEqual(['custom-tools'])
       expect(opts.yolo).toBe(true)
     })
+
+    it('should parse --output-formatter flag', () => {
+      const program = createClaudeComposerCommand()
+      program.parse(['node', 'claude-composer', '--output-formatter', 'jq'], {
+        from: 'user',
+      })
+      const opts = program.opts()
+      expect(opts.outputFormatter).toBe('jq')
+    })
+
+    it('should parse --no-output-formatter', () => {
+      const program = createClaudeComposerCommand()
+      program.parse(['node', 'claude-composer', '--no-output-formatter'], {
+        from: 'user',
+      })
+      const opts = program.opts()
+      expect(opts.outputFormatter).toBe(false)
+    })
   })
 })

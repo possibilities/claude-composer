@@ -161,6 +161,24 @@ describe('Config Validation', () => {
         expect(result.data.mode).toBeUndefined()
       }
     })
+
+    it('should accept config with output_formatter', () => {
+      const result = validateAppConfig({ output_formatter: 'jq' })
+
+      expect(result.success).toBe(true)
+      if (result.success) {
+        expect(result.data).toEqual({ output_formatter: 'jq' })
+      }
+    })
+
+    it('should reject non-string output_formatter', () => {
+      const result = validateAppConfig({ output_formatter: 123 })
+
+      expect(result.success).toBe(false)
+      if (!result.success) {
+        expect(result.error.issues[0].path).toEqual(['output_formatter'])
+      }
+    })
   })
 
   describe('ToolsetConfig validation', () => {
