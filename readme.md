@@ -120,3 +120,7 @@ See [docs/roots-config.md](docs/roots-config.md) for details.
 ## Environment Variables
 
 See [docs/environment-variables.md](docs/environment-variables.md) for details.
+
+## License
+
+This project is in the public domain. See the [UNLICENSE](UNLICENSE) file for details.

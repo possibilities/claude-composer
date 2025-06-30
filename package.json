@@ -3,7 +3,7 @@
   "version": "0.1.12",
   "description": "A tool that adds small enhancements to Claude Code",
   "author": "Mike Bannister <notimpossiblemike@gmail.com>",
-  "license": "MIT",
+  "license": "Unlicense",
   "homepage": "https://github.com/possibilities/claude-composer#readme",
   "repository": {
     "type": "git",

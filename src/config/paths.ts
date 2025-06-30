@@ -132,11 +132,11 @@ export const CLAUDE_PATHS = {
 
     // Fallback to `which claude`
     try {
-      const whichResult = execSync('which claude', { 
-        encoding: 'utf8', 
-        stdio: ['ignore', 'pipe', 'ignore'] 
+      const whichResult = execSync('which claude', {
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'ignore'],
       }).trim()
-      
+
       if (whichResult && fs.existsSync(whichResult)) {
         return whichResult
       }
@@ -147,10 +147,10 @@ export const CLAUDE_PATHS = {
     // If all methods fail, throw an error
     throw new Error(
       `Claude CLI not found. Please install Claude CLI or set CLAUDE_APP_PATH environment variable.\n` +
-      `Checked locations:\n` +
-      `- Environment variable: ${process.env.CLAUDE_APP_PATH || '(not set)'}\n` +
-      `- Default location: ${defaultPath}\n` +
-      `- System PATH: (not found)`
+        `Checked locations:\n` +
+        `- Environment variable: ${process.env.CLAUDE_APP_PATH || '(not set)'}\n` +
+        `- Default location: ${defaultPath}\n` +
+        `- System PATH: (not found)`,
     )
   },
 } as const
