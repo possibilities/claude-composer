@@ -1,5 +1,17 @@
 # Claude Composer
 
+---
+
+**THIS REPO HAS GRADUATED. THAT MEANS THAT I WILL NO LONGER BE USING IT AND WISH ANYONE LUCK AND JOY IF THEY WANT TO FORK IT, CONTINUE USING IT, TAKE IT OVER, OR WHATEVER OTHER ACTIVITIES MAKE A PERSON HAPPY. GOING FORWARD I AM USING HOOKS TO ACHIEVE YOLO MODE:**
+
+**https://github.com/possibilities/claude-code-generic-hooks**
+
+**AND I USE PERMISSION MODES TO START IN PLAN MODE:**
+
+**https://docs.anthropic.com/en/docs/claude-code/iam#permission-modes**
+
+---
+
 > A tool that adds small enhancements to Claude Code
 
 [![Tests](https://github.com/possibilities/claude-composer/actions/workflows/test.yml/badge.svg)](https://github.com/possibilities/claude-composer/actions/workflows/test.yml)
