@@ -10,6 +10,14 @@
 
 **https://docs.anthropic.com/en/docs/claude-code/iam#permission-modes**
 
+ALSO I JUST RELEASED MY COMPREHENSIVE REPLACEMENT FOR EVERYTHING CLAUDE COMPOSER DOES:
+
+https://github.com/possibilities/claude-code-inject
+
+ALSO USE `DIRTY-COMMIT` TO GET THE SAME CONFIRMATIONS THAT `CLAUDE-COMPOSER` PROVIDES AROUND NON-GIT AND DIRTY GIT DIRECTORIES:
+
+https://github.com/possibilities/dirty-commit
+
 ---
 
 > A tool that adds small enhancements to Claude Code
