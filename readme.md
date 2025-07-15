@@ -15,9 +15,9 @@
 
 https://github.com/possibilities/claude-code-inject
 
-**ALSO USE `DIRTY-COMMIT` TO GET THE SAME CONFIRMATIONS THAT `CLAUDE-COMPOSER` PROVIDES AROUND NON-GIT AND DIRTY GIT DIRECTORIES:**
+**ALSO USE `DIRTY-CONFIRM` TO GET THE SAME CONFIRMATIONS THAT `CLAUDE-COMPOSER` PROVIDES AROUND NON-GIT AND DIRTY GIT DIRECTORIES:**
 
-https://github.com/possibilities/dirty-commit
+https://github.com/possibilities/dirty-confirm
 ---
 
 > A tool that adds small enhancements to Claude Code
